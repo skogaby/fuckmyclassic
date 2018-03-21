@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.fuckmyclassic.MainWindow">
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="10" left="10" bottom="10" right="10"/>
+    <constraints>
+      <xy x="20" y="20" width="383" height="105"/>
+    </constraints>
+    <properties>
+      <maximumSize width="400" height="400"/>
+      <minimumSize width="50" height="50"/>
+      <preferredSize width="400" height="100"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <component id="ce009" class="javax.swing.JButton" binding="membootBootImgButton" default-binding="true">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Memboot boot.img"/>
+        </properties>
+      </component>
+      <component id="34fdd" class="javax.swing.JButton" binding="flashTheCustomKernelButton" default-binding="true">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Flash the custom kernel"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
