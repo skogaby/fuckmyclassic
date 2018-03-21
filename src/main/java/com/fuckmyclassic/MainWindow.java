@@ -60,7 +60,7 @@ public class MainWindow {
 
             final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
             byte[] kernelData = Files.readAllBytes(bootImgPath);
-            int size = KernelHelper.calculateKernelSize(kernelData);
+            long size = KernelHelper.calculateKernelSize(kernelData);
 
             if (size > kernelData.length ||
                     size > FelConstants.TRANSFER_MAX_SIZE) {
@@ -68,10 +68,10 @@ public class MainWindow {
             }
 
             size = (size + FelConstants.SECTOR_SIZE - 1) / FelConstants.SECTOR_SIZE;
-            size *= FelConstants.SECTOR_SIZE;
+            size *= FelConstants.SECTOR_SIZE * 32L;
 
             if (kernelData.length != size) {
-                kernelData = Arrays.copyOf(kernelData, size);
+                kernelData = Arrays.copyOf(kernelData, (int)size);
             }
 
             System.out.println("Uploading boot.img...");
