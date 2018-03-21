@@ -1,26 +1,25 @@
 package com.fuckmyclassic;
 
-import com.fuckmyclassic.boot.KernelHelper;
-import com.fuckmyclassic.fel.FelConstants;
-import com.fuckmyclassic.fel.FelDevice;
+import com.fuckmyclassic.boot.MembootHelper;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.usb.UsbException;
-import java.awt.image.Kernel;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 
+/**
+ * Binding class for the main window's form.
+ * @author skogaby (skogabyskogaby@gmail.com)
+ */
 public class MainWindow {
 
-    /** The path to the boot.img file */
+    /** The path to the boot.img file I'm using for testing */
     public static final String BOOT_IMG_PATH = "bootimg/boot.img";
 
-    /** The path to the kernel.hmod file */
+    /** The path to the kernel.hmod file I'm using for testing */
     public static final String KERNEL_HMOD_PATH = "bootimg/kernel.hmod";
 
     public JPanel mainPanel;
@@ -40,50 +39,9 @@ public class MainWindow {
     }
 
     private void handleMembootClick() throws UsbException, IOException, URISyntaxException, InterruptedException {
-        System.out.println("Membooting the boot.img file");
-
-        final FelDevice device = FelDevice.getFirstConnectedConsole();
-
-        if (device == null) {
-            System.out.println("No NES/SNES Minis in FEL mode detected");
-            return;
-        }
-
-        device.open();
-
-        try {
-            System.out.println("Loading fes1 and uboot...");
-            device.loadFes1AndUboot();
-            System.out.println("Done loading fes1 and uboot. Initializing DRAM...");
-            device.initializeDRAM();
-            System.out.println("Done initializing DRAM.");
-
-            final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
-            byte[] kernelData = Files.readAllBytes(bootImgPath);
-            long size = KernelHelper.calculateKernelSize(kernelData);
-
-            if (size > kernelData.length ||
-                    size > FelConstants.TRANSFER_MAX_SIZE) {
-                throw new RuntimeException("Invalid kernel size for boot.img");
-            }
-
-            size = (size + FelConstants.SECTOR_SIZE - 1) / FelConstants.SECTOR_SIZE;
-            size *= FelConstants.SECTOR_SIZE * 32L;
-
-            if (kernelData.length != size) {
-                kernelData = Arrays.copyOf(kernelData, (int)size);
-            }
-
-            System.out.println("Uploading boot.img...");
-            device.writeDeviceMemory(FelConstants.TRANSFER_BASE_M, kernelData);
-
-            System.out.println("Done uploading boot.img. Running boot.img...");
-            final String bootCommand = String.format("boota %08X", FelConstants.TRANSFER_BASE_M);
-            device.runUbootCmd(bootCommand, true);
-            System.out.println("Done membooting boot.img");
-        } finally {
-            device.close();
-        }
+        final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
+        final MembootHelper membootHelper = new MembootHelper();
+        membootHelper.membootKernelImage(bootImgPath);
     }
 
     private void handleFlashCustomKernelClick() {

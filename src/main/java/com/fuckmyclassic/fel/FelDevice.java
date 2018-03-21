@@ -214,6 +214,12 @@ public class FelDevice {
         }
     }
 
+    /**
+     * Writes data directly to the FEL device's memory.
+     * @param address The address to write to
+     * @param buffer The data to write to memory
+     * @throws UsbException
+     */
     public void writeDeviceMemory(int address, byte[] buffer) throws UsbException {
         if (address >= FelConstants.DRAM_BASE) {
             initializeDRAM();
@@ -243,6 +249,13 @@ public class FelDevice {
         }
     }
 
+    /**
+     * Read data directly from the FEL device's memory.
+     * @param address The address to read from.
+     * @param length The length of data to read
+     * @return A byte array representing the data at the given address of the given length
+     * @throws UsbException
+     */
     public byte[] readDeviceMemory(int address, int length) throws UsbException {
         if (address > FelConstants.DRAM_BASE) {
             initializeDRAM();
@@ -277,6 +290,13 @@ public class FelDevice {
         return data;
     }
 
+    /**
+     * Send a FEL request to the device
+     * @param command The command to send
+     * @param address The address to set on the command
+     * @param length The length to set on the command
+     * @throws UsbException
+     */
     public void felRequest(final FelStandardRequest.RequestType command, final int address, final int length)
             throws UsbException {
         final FelMessage req = new FelMessage();
@@ -286,6 +306,11 @@ public class FelDevice {
         felWrite(req.getData());
     }
 
+    /**
+     * Writes data to the FEL device.
+     * @param buffer The data to write.
+     * @throws UsbException
+     */
     public void felWrite(final byte[] buffer) throws UsbException {
         final AwUsbRequest req = new AwUsbRequest();
         req.setCommand(AwUsbRequest.RequestType.AW_USB_WRITE);
@@ -299,6 +324,12 @@ public class FelDevice {
         }
     }
 
+    /**
+     * Reads data from the FEL device.
+     * @param length The length of data to read.
+     * @return A byte array of the given length containing data from the FEL device.
+     * @throws UsbException
+     */
     public byte[] felRead(final int length) throws UsbException {
         final AwUsbRequest req = new AwUsbRequest();
         req.setCommand(AwUsbRequest.RequestType.AW_USB_READ);
@@ -315,6 +346,11 @@ public class FelDevice {
         return result;
     }
 
+    /**
+     * Sends data directly to the USB interface for the FEL device.
+     * @param buffer The data to send to the USB interface.
+     * @throws UsbException
+     */
     public void writeToUSB(final byte[] buffer) throws UsbException {
         int sent = this.outPipe.syncSubmit(buffer);
         System.out.println(String.format("FEL -> {%d} bytes of {%d} requested bytes written", sent, buffer.length));
@@ -324,6 +360,12 @@ public class FelDevice {
         }
     }
 
+    /**
+     * Reads data directly from the USB interface.
+     * @param length The length of data to read from the USB device.
+     * @return A byte array of the given length containing data from the USB interface.
+     * @throws UsbException
+     */
     public byte[] readFromUSB(final int length) throws UsbException {
         final byte[] result = new byte[length];
         int received = this.inPipe.syncSubmit(result);
@@ -337,12 +379,17 @@ public class FelDevice {
         return result;
     }
 
+    /**
+     * Executes the code at the given address.
+     * @param address The address to jump to.
+     * @throws UsbException
+     */
     public void execute(int address) throws UsbException {
         felRequest(FelStandardRequest.RequestType.FEL_RUN, address, 0);
         final FelStatusResponse status = new FelStatusResponse(felRead(8));
 
         if (status.getState() != 0) {
-            throw new FelException("FEL run error");
+            throw new FelException("FEL execution error");
         }
     }
 
