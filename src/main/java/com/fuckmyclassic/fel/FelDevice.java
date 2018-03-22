@@ -34,12 +34,6 @@ public class FelDevice {
     /** The claimed USB FEL interface */
     private final UsbInterface iface;
 
-    /** The in endpoint address. */
-    private final byte inEndpoint;
-
-    /** The out endpoint address. */
-    private final byte outEndpoint;
-
     /** The pipe to read from the USB device */
     private final UsbPipe inPipe;
 
@@ -70,8 +64,6 @@ public class FelDevice {
         }
 
         this.iface = iface;
-        this.inEndpoint = inEndpoint;
-        this.outEndpoint = outEndpoint;
         this.dramInitialized = false;
         this.inPipe = iface.getUsbEndpoint(inEndpoint).getUsbPipe();
         this.outPipe = iface.getUsbEndpoint(outEndpoint).getUsbPipe();

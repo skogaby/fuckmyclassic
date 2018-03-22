@@ -1,4 +1,4 @@
-package com.fuckmyclassic;
+package com.fuckmyclassic.ui;
 
 import com.fuckmyclassic.boot.MembootHelper;
 
