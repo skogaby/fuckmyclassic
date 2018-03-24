@@ -1,32 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.fuckmyclassic.ui.MainWindow">
-  <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-    <margin top="10" left="10" bottom="10" right="10"/>
+  <grid id="27dc6" binding="mainPanel" layout-manager="GridBagLayout">
     <constraints>
-      <xy x="20" y="20" width="383" height="105"/>
+      <xy x="20" y="20" width="1531" height="1042"/>
     </constraints>
     <properties>
-      <maximumSize width="400" height="400"/>
-      <minimumSize width="50" height="50"/>
-      <preferredSize width="400" height="100"/>
+      <maximumSize width="3840" height="2160"/>
+      <minimumSize width="1000" height="800"/>
+      <preferredSize width="1600" height="900"/>
     </properties>
     <border type="none"/>
     <children>
-      <component id="ce009" class="javax.swing.JButton" binding="membootBootImgButton" default-binding="true">
+      <component id="a3af8" class="javax.swing.JLabel">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="1.0" weighty="0.0"/>
         </constraints>
         <properties>
-          <text resource-bundle="i18n/MainWindow" key="memboot.boot.img"/>
+          <text resource-bundle="i18n/MainWindow" key="lblCurrentCollection"/>
         </properties>
       </component>
-      <component id="34fdd" class="javax.swing.JButton" binding="flashTheCustomKernelButton" default-binding="true">
+      <component id="5eef0" class="javax.swing.JComboBox" binding="cmbGamesCollection">
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="1.0" weighty="0.0"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="80cae" class="javax.swing.JButton" binding="btnStructureOptions">
+        <constraints>
+          <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <gridbag weightx="1.0" weighty="0.0"/>
         </constraints>
         <properties>
-          <text resource-bundle="i18n/MainWindow" key="flash.the.custom.kernel"/>
+          <text resource-bundle="i18n/MainWindow" key="btnStructureOptions"/>
         </properties>
+      </component>
+      <component id="259d" class="javax.swing.JTree" binding="treeGameCollection">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+            <preferred-size width="150" height="50"/>
+          </grid>
+          <gridbag weightx="1.0" weighty="1.0"/>
+        </constraints>
+        <properties/>
       </component>
     </children>
   </grid>
