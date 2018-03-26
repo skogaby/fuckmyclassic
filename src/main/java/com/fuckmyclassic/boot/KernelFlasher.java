@@ -18,22 +18,21 @@ public class KernelFlasher {
     /** The path to the memboot.img prebaked kernel we memboot into for flashing */
     public static final String BOOT_IMG_PATH = "uboot/memboot.img";
 
+
     public void flashCustomKernel() throws UsbException, URISyntaxException, JSchException, IOException {
         System.out.println("----- Flashing the custom kernel to the console -----");
         System.out.println("First, membooting into the prebaked kernel image...");
 
-        /*final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
+        final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
         final MembootHelper membootHelper = new MembootHelper();
 
         if (!membootHelper.membootKernelImage(bootImgPath)) {
             return;
-        }*/
+        }
 
         System.out.println("Done membooting. Waiting until network connection is detected...");
 
         final SshConnection connection = new SshConnection();
-        //connection.addPrivateSshkey("/Users/joshuaholmes/Desktop/fuckmyclassic/src/main/resources/uboot/keyfile");
-
         int seconds = 0;
 
         while (seconds <= 10) {
@@ -41,6 +40,7 @@ public class KernelFlasher {
                 Thread.sleep(1000);
                 seconds++;
                 connection.connect();
+                break;
             } catch (JSchException e) {
                 System.out.println("No SSH connection available yet...");
                 e.printStackTrace();

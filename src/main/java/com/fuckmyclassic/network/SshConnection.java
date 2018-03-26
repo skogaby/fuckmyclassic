@@ -8,8 +8,16 @@ import com.jcraft.jsch.Session;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import static com.fuckmyclassic.network.NetworkConstants.CONNECTION_TIMEOUT;
+import static com.fuckmyclassic.network.NetworkConstants.CONSOLE_IP;
+import static com.fuckmyclassic.network.NetworkConstants.CONSOLE_PORT;
+import static com.fuckmyclassic.network.NetworkConstants.SSH_PRIVATE_KEY;
+import static com.fuckmyclassic.network.NetworkConstants.USER_NAME;
 
 /**
  * Class to represent an SSH connection to the Mini console.
@@ -18,26 +26,6 @@ import java.util.concurrent.TimeUnit;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 public class SshConnection {
-
-    /**
-     * The default username to login to SSH with.
-     */
-    public static final String USER_NAME = "root";
-
-    /**
-     * The hardcoded static IP address for the console.
-     */
-    public static final String CONSOLE_IP = "10.234.137.10";
-
-    /**
-     * The hardcoded port to SSH into for the console.
-     */
-    public static final int CONSOLE_PORT = 22;
-
-    /**
-     * The connection timeout for SSH connections.
-     */
-    public static final int CONNECTION_TIMEOUT = 5000;
 
     /**
      * Private instance of the JSch structure.
@@ -53,21 +41,15 @@ public class SshConnection {
      * Constructor.
      * @throws JSchException
      */
-    public SshConnection() throws JSchException {
+    public SshConnection() throws JSchException, URISyntaxException {
         Properties config = new java.util.Properties();
         config.put("StrictHostKeyChecking", "no");
 
         this.jSch = new JSch();
+        loadPrivateSshKey();
+
         this.connection = this.jSch.getSession(USER_NAME, CONSOLE_IP, CONSOLE_PORT);
         this.connection.setConfig(config);
-    }
-
-    /**
-     * Constructor.
-     * @param connection An existing SSH connection to the console.
-     */
-    public SshConnection(final Session connection) {
-        this.connection = connection;
     }
 
     /**
@@ -99,13 +81,12 @@ public class SshConnection {
     }
 
     /**
-     * Adds a private SSH key to the identity story.
-     * @param key The key to add
+     * Loads the predefined SSH private key.
+     * @throws URISyntaxException
      * @throws JSchException
      */
-    public void addPrivateSshkey(final String key) throws JSchException, IOException {
-        System.out.println(String.format("Adding private SSH key: %s", key));
-        this.jSch.addIdentity(key);
+    private void loadPrivateSshKey() throws URISyntaxException, JSchException {
+        this.jSch.addIdentity(Paths.get(ClassLoader.getSystemResource(SSH_PRIVATE_KEY).toURI()).toString());
     }
 
     /**
