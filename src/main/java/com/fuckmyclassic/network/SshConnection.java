@@ -8,6 +8,7 @@ import com.jcraft.jsch.Session;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,8 +54,12 @@ public class SshConnection {
      * @throws JSchException
      */
     public SshConnection() throws JSchException {
+        Properties config = new java.util.Properties();
+        config.put("StrictHostKeyChecking", "no");
+
         this.jSch = new JSch();
         this.connection = this.jSch.getSession(USER_NAME, CONSOLE_IP, CONSOLE_PORT);
+        this.connection.setConfig(config);
     }
 
     /**
@@ -98,7 +103,8 @@ public class SshConnection {
      * @param key The key to add
      * @throws JSchException
      */
-    public void addPrivateSshkey(final String key) throws JSchException {
+    public void addPrivateSshkey(final String key) throws JSchException, IOException {
+        System.out.println(String.format("Adding private SSH key: %s", key));
         this.jSch.addIdentity(key);
     }
 

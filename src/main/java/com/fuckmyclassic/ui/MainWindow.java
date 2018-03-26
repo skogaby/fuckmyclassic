@@ -9,6 +9,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.usb.UsbException;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -43,7 +44,7 @@ public class MainWindow {
         membootHelper.membootKernelImage(bootImgPath);
     }
 
-    private void handleFlashCustomKernelClick() throws UsbException, JSchException, URISyntaxException {
+    private void handleFlashCustomKernelClick() throws UsbException, JSchException, URISyntaxException, IOException {
         final KernelFlasher kernelFlasher = new KernelFlasher();
         kernelFlasher.flashCustomKernel();
     }
