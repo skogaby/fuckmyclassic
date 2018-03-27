@@ -2,6 +2,7 @@ package com.fuckmyclassic.boot;
 
 import com.fuckmyclassic.fel.FelConstants;
 import com.fuckmyclassic.fel.FelDevice;
+import org.springframework.stereotype.Component;
 
 import javax.usb.UsbException;
 import java.nio.file.Files;
@@ -13,6 +14,7 @@ import java.util.Arrays;
  * specific kernel images to boot.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
+@Component
 public class MembootHelper {
 
     /**

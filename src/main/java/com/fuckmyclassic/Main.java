@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) {
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-        ctx.register(ApplicationConfig.class);
+        ctx.register(ApplicationConfiguration.class);
         ctx.refresh();
         MainApplication app = ctx.getBean(MainApplication.class);
         app.start(args);

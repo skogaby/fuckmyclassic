@@ -1,7 +1,6 @@
 package com.fuckmyclassic;
 
 import com.fuckmyclassic.boot.KernelFlasher;
-import com.fuckmyclassic.network.SshConnection;
 import com.fuckmyclassic.ui.MainWindow;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -12,8 +11,8 @@ import org.springframework.context.annotation.Configuration;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Configuration
-@ComponentScan({"com.fuckmyclassic.network"})
-public class ApplicationConfig {
+@ComponentScan({"com.fuckmyclassic.boot"})
+public class ApplicationConfiguration {
 
     @Bean
     public MainApplication getMainApplication(MainWindow mainWindow) {
@@ -23,10 +22,5 @@ public class ApplicationConfig {
     @Bean
     public MainWindow getMainWindow(KernelFlasher kernelFlasher) {
         return new MainWindow(kernelFlasher);
-    }
-
-    @Bean
-    public KernelFlasher getKernelFlasher(SshConnection sshConnection) {
-        return new KernelFlasher(sshConnection);
     }
 }

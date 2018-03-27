@@ -27,12 +27,18 @@ public class KernelFlasher {
     private final SshConnection sshConnection;
 
     /**
+     * The helper for memboot operations.
+     */
+    private final MembootHelper membootHelper;
+
+    /**
      * Constructor.
      * @param sshConnection
      */
     @Autowired
-    public KernelFlasher(final SshConnection sshConnection) {
+    public KernelFlasher(final SshConnection sshConnection, final MembootHelper membootHelper) {
         this.sshConnection = sshConnection;
+        this.membootHelper = membootHelper;
     }
 
     public void flashCustomKernel() throws UsbException, URISyntaxException, JSchException, IOException {
@@ -40,9 +46,7 @@ public class KernelFlasher {
         System.out.println("First, membooting into the prebaked kernel image...");
 
         final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
-        final MembootHelper membootHelper = new MembootHelper();
-
-        if (!membootHelper.membootKernelImage(bootImgPath)) {
+        if (!this.membootHelper.membootKernelImage(bootImgPath)) {
             return;
         }
 
