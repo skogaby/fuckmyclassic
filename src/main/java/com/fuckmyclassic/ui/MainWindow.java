@@ -2,57 +2,52 @@ package com.fuckmyclassic.ui;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.jcraft.jsch.JSchException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JTree;
 import javax.usb.UsbException;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
+
 /**
- * Binding class for the main window's form.
+ * Controller for the main application window.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Component
 public class MainWindow {
 
-    /** The path to the boot.img file I'm using for testing */
-    public static final String BOOT_IMG_PATH = "uboot/memboot.img";
+    static Logger LOG = LogManager.getLogger(MainWindow.class.getName());
 
-    public JPanel mainPanel;
-    private JComboBox cmbGamesCollection;
-    private JButton btnStructureOptions;
-    private JTree treeGameCollection;
+    /**
+     * Helper instance for membooting consoles.
+     */
+    private final MembootHelper membootHelper;
 
+    /**
+     * Helper instance for kernel flashing operations.
+     */
     private final KernelFlasher kernelFlasher;
 
     @Autowired
-    public MainWindow(final KernelFlasher kernelFlasher) {
+    public MainWindow(final MembootHelper membootHelper,
+                      final KernelFlasher kernelFlasher) {
+        this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
-
-        btnStructureOptions.addActionListener(a -> {
-            try {
-                handleFlashCustomKernelClick();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
     }
 
-    private void handleMembootClick() throws UsbException, URISyntaxException {
+    public void handleMembootClick() throws UsbException, URISyntaxException {
+        LOG.debug("Memboot button clicked");
         final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
-        final MembootHelper membootHelper = new MembootHelper();
-        membootHelper.membootKernelImage(bootImgPath);
+        this.membootHelper.membootKernelImage(bootImgPath);
     }
 
-    private void handleFlashCustomKernelClick() throws UsbException, JSchException, URISyntaxException, IOException {
+    public void handleFlashCustomKernelClick() throws UsbException, URISyntaxException {
+        LOG.debug("Custom kernel flash button clicked");
         this.kernelFlasher.flashCustomKernel();
     }
 }

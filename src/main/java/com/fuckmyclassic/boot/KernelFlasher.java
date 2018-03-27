@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.usb.UsbException;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,7 +44,7 @@ public class KernelFlasher {
         this.membootHelper = membootHelper;
     }
 
-    public void flashCustomKernel() throws UsbException, URISyntaxException, JSchException, IOException {
+    public void flashCustomKernel() throws UsbException, URISyntaxException {
         LOG.info("Flashing the custom kernel to the console");
         LOG.debug("First, membooting into the prebaked kernel image");
 
@@ -57,7 +56,7 @@ public class KernelFlasher {
         LOG.debug("Waiting until network connection is detected");
         int retries = 0;
 
-        while (retries <= 10) {
+        while (retries <= 20) {
             try {
                 Thread.sleep(3000);
                 retries++;

@@ -1,6 +1,7 @@
 package com.fuckmyclassic;
 
 import com.fuckmyclassic.boot.KernelFlasher;
+import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.ui.MainWindow;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -15,12 +16,7 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationConfiguration {
 
     @Bean
-    public MainApplication getMainApplication(MainWindow mainWindow) {
-        return new MainApplication(mainWindow);
-    }
-
-    @Bean
-    public MainWindow getMainWindow(KernelFlasher kernelFlasher) {
-        return new MainWindow(kernelFlasher);
+    public MainWindow getMainWindow(MembootHelper membootHelper, KernelFlasher kernelFlasher) {
+        return new MainWindow(membootHelper, kernelFlasher);
     }
 }
