@@ -46,8 +46,7 @@ public class SshConnection {
         config.put("StrictHostKeyChecking", "no");
 
         this.jSch = new JSch();
-        loadPrivateSshKey();
-
+        this.jSch.addIdentity(Paths.get(ClassLoader.getSystemResource(SSH_PRIVATE_KEY).toURI()).toString());
         this.connection = this.jSch.getSession(USER_NAME, CONSOLE_IP, CONSOLE_PORT);
         this.connection.setConfig(config);
     }
@@ -78,15 +77,6 @@ public class SshConnection {
         if (isConnected()) {
             this.connection.disconnect();
         }
-    }
-
-    /**
-     * Loads the predefined SSH private key.
-     * @throws URISyntaxException
-     * @throws JSchException
-     */
-    private void loadPrivateSshKey() throws URISyntaxException, JSchException {
-        this.jSch.addIdentity(Paths.get(ClassLoader.getSystemResource(SSH_PRIVATE_KEY).toURI()).toString());
     }
 
     /**
@@ -132,7 +122,7 @@ public class SshConnection {
                 final SshCommandResult result = new SshCommandResult(channel.getExitStatus(), outputString.toString());
 
                 System.out.println(String.format("[SSH] %s # exit code: %d", command, result.getExitCode()));
-                System.out.println(outputString.toString());
+                System.out.println(result.getOutput());
 
                 return result;
             } finally {

@@ -30,7 +30,7 @@ public class KernelFlasher {
             return;
         }
 
-        System.out.println("Done membooting. Waiting until network connection is detected...");
+        System.out.println("Waiting until network connection is detected...");
 
         final SshConnection connection = new SshConnection();
         int seconds = 0;
@@ -43,7 +43,6 @@ public class KernelFlasher {
                 break;
             } catch (JSchException e) {
                 System.out.println("No SSH connection available yet...");
-                e.printStackTrace();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -53,6 +52,7 @@ public class KernelFlasher {
             System.out.println("Connected to SSH successfully! Initiating kernel installation...");
         } else {
             System.out.println("Something went wrong, couldn't SSH to console after membooting...");
+            return;
         }
     }
 }
