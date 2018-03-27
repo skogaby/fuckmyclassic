@@ -3,6 +3,8 @@ package com.fuckmyclassic.ui;
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
 import com.jcraft.jsch.JSchException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -18,6 +20,7 @@ import java.nio.file.Paths;
  * Binding class for the main window's form.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
+@Component
 public class MainWindow {
 
     /** The path to the boot.img file I'm using for testing */
@@ -28,7 +31,12 @@ public class MainWindow {
     private JButton btnStructureOptions;
     private JTree treeGameCollection;
 
-    public MainWindow() {
+    private final KernelFlasher kernelFlasher;
+
+    @Autowired
+    public MainWindow(final KernelFlasher kernelFlasher) {
+        this.kernelFlasher = kernelFlasher;
+
         btnStructureOptions.addActionListener(a -> {
             try {
                 handleFlashCustomKernelClick();
@@ -45,7 +53,6 @@ public class MainWindow {
     }
 
     private void handleFlashCustomKernelClick() throws UsbException, JSchException, URISyntaxException, IOException {
-        final KernelFlasher kernelFlasher = new KernelFlasher();
-        kernelFlasher.flashCustomKernel();
+        this.kernelFlasher.flashCustomKernel();
     }
 }

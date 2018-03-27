@@ -4,19 +4,18 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static com.fuckmyclassic.network.NetworkConstants.CONNECTION_TIMEOUT;
 import static com.fuckmyclassic.network.NetworkConstants.CONSOLE_IP;
 import static com.fuckmyclassic.network.NetworkConstants.CONSOLE_PORT;
-import static com.fuckmyclassic.network.NetworkConstants.SSH_PRIVATE_KEY;
 import static com.fuckmyclassic.network.NetworkConstants.USER_NAME;
 
 /**
@@ -25,28 +24,29 @@ import static com.fuckmyclassic.network.NetworkConstants.USER_NAME;
  * if you don't need to retain a long-lived connection.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
+@Component
 public class SshConnection {
 
     /**
      * Private instance of the JSch structure.
      */
-    private JSch jSch;
+    private final JSch jSch;
 
     /**
      * The actual SSH connection to the console.
      */
-    private Session connection;
+    private final Session connection;
 
     /**
      * Constructor.
      * @throws JSchException
      */
-    public SshConnection() throws JSchException, URISyntaxException {
+    @Autowired
+    public SshConnection(final JSch jSch) throws JSchException {
         Properties config = new java.util.Properties();
         config.put("StrictHostKeyChecking", "no");
 
-        this.jSch = new JSch();
-        this.jSch.addIdentity(Paths.get(ClassLoader.getSystemResource(SSH_PRIVATE_KEY).toURI()).toString());
+        this.jSch = jSch;
         this.connection = this.jSch.getSession(USER_NAME, CONSOLE_IP, CONSOLE_PORT);
         this.connection.setConfig(config);
     }
