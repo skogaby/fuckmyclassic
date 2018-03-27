@@ -2,6 +2,8 @@ package com.fuckmyclassic.fel;
 
 import com.fuckmyclassic.usb.AwUsbRequest;
 import com.fuckmyclassic.usb.AwUsbResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.usb.UsbException;
 import javax.usb.UsbInterface;
@@ -24,6 +26,8 @@ import java.util.List;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 public class FelDevice {
+
+    static Logger LOG = LogManager.getLogger(FelDevice.class.getName());
 
     /** The path to the fes1.bin file */
     public static final String FES1_PATH = "uboot/fes1.bin";
@@ -345,7 +349,7 @@ public class FelDevice {
      */
     public void writeToUSB(final byte[] buffer) throws UsbException {
         int sent = this.outPipe.syncSubmit(buffer);
-        System.out.println(String.format("FEL -> {%d} bytes of {%d} requested bytes written", sent, buffer.length));
+        LOG.trace(String.format("FEL -> {%d} bytes of {%d} requested bytes written", sent, buffer.length));
 
         if (sent < buffer.length) {
             throw new FelException("Can't write to USB");
@@ -361,8 +365,7 @@ public class FelDevice {
     public byte[] readFromUSB(final int length) throws UsbException {
         final byte[] result = new byte[length];
         int received = this.inPipe.syncSubmit(result);
-
-        System.out.println(String.format("FEL <- {%d} bytes of {%d} requested bytes received", received, length));
+        LOG.trace(String.format("FEL <- {%d} bytes of {%d} requested bytes received", received, length));
 
         if (received < length) {
             throw new FelException("Can't read from USB");

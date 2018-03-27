@@ -4,6 +4,8 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +28,8 @@ import static com.fuckmyclassic.network.NetworkConstants.USER_NAME;
  */
 @Component
 public class SshConnection {
+
+    static Logger LOG = LogManager.getLogger(SshConnection.class.getName());
 
     /**
      * Private instance of the JSch structure.
@@ -121,8 +125,8 @@ public class SshConnection {
 
                 final SshCommandResult result = new SshCommandResult(channel.getExitStatus(), outputString.toString());
 
-                System.out.println(String.format("[SSH] %s # exit code: %d", command, result.getExitCode()));
-                System.out.println(result.getOutput());
+                LOG.debug(String.format("[SSH] %s # exit code: %d", command, result.getExitCode()));
+                LOG.trace(result.getOutput());
 
                 return result;
             } finally {
@@ -172,7 +176,7 @@ public class SshConnection {
                 }
 
                 int result = channel.getExitStatus();
-                System.out.println(String.format("[SSH] %s # exit code: %d", command, result));
+                LOG.debug(String.format("[SSH] %s # exit code: %d", command, result));
 
                 return result;
             } finally {

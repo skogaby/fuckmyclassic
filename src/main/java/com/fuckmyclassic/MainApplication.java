@@ -2,6 +2,8 @@ package com.fuckmyclassic;
 
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.MainWindow;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,8 @@ import javax.swing.UIManager;
  */
 @Component
 public class MainApplication {
+
+    static Logger LOG = LogManager.getLogger(MainApplication.class.getName());
 
     /**
      * Reference to the main window of the application.
@@ -40,7 +44,7 @@ public class MainApplication {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             // we tried :shrug:
-            System.out.println("[WARN] Can't set the application theme -- falling back to cross-platform default");
+            LOG.warn("Can't set the application theme -- falling back to cross-platform default");
         }
 
         // create the window

@@ -28,7 +28,7 @@ public class MembootHelper {
      * @throws UsbException
      */
     public boolean membootKernelImage(final Path bootImagePath) throws UsbException {
-        LOG.debug(String.format("Membooting kernel image located at %s", bootImagePath.toString()));
+        LOG.info(String.format("Membooting kernel image located at %s", bootImagePath.toString()));
 
         final FelDevice device = FelDevice.getFirstConnectedConsole();
         if (device == null) {
@@ -72,7 +72,7 @@ public class MembootHelper {
             LOG.debug("Executing the boot command...");
             final String bootCommand = String.format("boota %08X", FelConstants.TRANSFER_BASE_M);
             device.runUbootCmd(bootCommand, true);
-            LOG.debug("Done membooting the kernel image.");
+            LOG.info("Done membooting the kernel image");
 
             return true;
         } catch (Exception e) {

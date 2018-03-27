@@ -2,6 +2,8 @@ package com.fuckmyclassic.boot;
 
 import com.fuckmyclassic.network.SshConnection;
 import com.jcraft.jsch.JSchException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +19,8 @@ import java.nio.file.Paths;
  */
 @Component
 public class KernelFlasher {
+
+    static Logger LOG = LogManager.getLogger(KernelFlasher.class.getName());
 
     /** The path to the memboot.img prebaked kernel we memboot into for flashing */
     public static final String BOOT_IMG_PATH = "uboot/memboot.img";
@@ -42,15 +46,15 @@ public class KernelFlasher {
     }
 
     public void flashCustomKernel() throws UsbException, URISyntaxException, JSchException, IOException {
-        System.out.println("----- Flashing the custom kernel to the console -----");
-        System.out.println("First, membooting into the prebaked kernel image...");
+        LOG.info("Flashing the custom kernel to the console");
+        LOG.debug("First, membooting into the prebaked kernel image");
 
         final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
         if (!this.membootHelper.membootKernelImage(bootImgPath)) {
             return;
         }
 
-        System.out.println("Waiting until network connection is detected...");
+        LOG.debug("Waiting until network connection is detected");
         int retries = 0;
 
         while (retries <= 10) {
@@ -60,16 +64,16 @@ public class KernelFlasher {
                 this.sshConnection.connect();
                 break;
             } catch (JSchException e) {
-                System.out.println("No SSH connection available yet...");
+                LOG.debug("No SSH connection available yet");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
 
         if (this.sshConnection.isConnected()) {
-            System.out.println("Connected to SSH successfully! Initiating kernel installation...");
+            LOG.debug("Connected to SSH successfully! Initiating kernel installation");
         } else {
-            System.out.println("Something went wrong, couldn't SSH to console after membooting...");
+            LOG.error("Something went wrong, couldn't SSH to console after membooting");
             return;
         }
     }
