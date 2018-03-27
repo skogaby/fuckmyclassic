@@ -25,4 +25,7 @@ dependencies {
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
     // https://mvnrepository.com/artifact/org.springframework/spring-context
     compile group: 'org.springframework', name: 'spring-context', version: '5.0.4.RELEASE'
+    // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
+
 }
