@@ -2,7 +2,7 @@ package com.fuckmyclassic;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.ui.MainWindow;
+import com.fuckmyclassic.controller.MainWindow;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

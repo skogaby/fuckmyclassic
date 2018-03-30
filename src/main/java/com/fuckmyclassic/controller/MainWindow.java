@@ -1,4 +1,4 @@
-package com.fuckmyclassic.ui;
+package com.fuckmyclassic.controller;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
@@ -42,14 +42,14 @@ public class MainWindow {
     }
 
     @FXML
-    private void handleMembootClick() throws UsbException, URISyntaxException {
+    private void onMembootCustomKernelClicked() throws UsbException, URISyntaxException {
         LOG.debug("Memboot button clicked");
         final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
         this.membootHelper.membootKernelImage(bootImgPath);
     }
 
     @FXML
-    private void handleFlashCustomKernelClick() throws UsbException, URISyntaxException {
+    private void onFlashCustomKernelClicked() throws UsbException, URISyntaxException, InterruptedException {
         LOG.debug("Custom kernel flash button clicked");
         this.kernelFlasher.flashCustomKernel();
     }

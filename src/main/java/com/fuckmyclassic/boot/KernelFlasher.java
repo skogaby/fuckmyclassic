@@ -44,7 +44,7 @@ public class KernelFlasher {
         this.membootHelper = membootHelper;
     }
 
-    public void flashCustomKernel() throws UsbException, URISyntaxException {
+    public void flashCustomKernel() throws UsbException, URISyntaxException, InterruptedException {
         LOG.info("Flashing the custom kernel to the console");
         LOG.debug("First, membooting into the prebaked kernel image");
 
@@ -53,19 +53,17 @@ public class KernelFlasher {
             return;
         }
 
+        Thread.sleep(10000);
         LOG.debug("Waiting until network connection is detected");
-        int retries = 0;
+        boolean connected = false;
 
-        while (retries <= 20) {
+        while (!connected) {
             try {
                 Thread.sleep(3000);
-                retries++;
                 this.sshConnection.connect();
-                break;
+                connected = true;
             } catch (JSchException e) {
                 LOG.debug("No SSH connection available yet");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
 
