@@ -2,6 +2,7 @@ package com.fuckmyclassic.ui;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
+import javafx.fxml.FXML;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,13 +41,15 @@ public class MainWindow {
         this.kernelFlasher = kernelFlasher;
     }
 
-    public void handleMembootClick() throws UsbException, URISyntaxException {
+    @FXML
+    private void handleMembootClick() throws UsbException, URISyntaxException {
         LOG.debug("Memboot button clicked");
         final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
         this.membootHelper.membootKernelImage(bootImgPath);
     }
 
-    public void handleFlashCustomKernelClick() throws UsbException, URISyntaxException {
+    @FXML
+    private void handleFlashCustomKernelClick() throws UsbException, URISyntaxException {
         LOG.debug("Custom kernel flash button clicked");
         this.kernelFlasher.flashCustomKernel();
     }
