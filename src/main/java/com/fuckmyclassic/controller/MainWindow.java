@@ -3,6 +3,8 @@ package com.fuckmyclassic.controller;
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.layout.HBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,11 @@ public class MainWindow {
                       final KernelFlasher kernelFlasher) {
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
+    }
+
+    @FXML
+    public void initialize() {
+
     }
 
     @FXML

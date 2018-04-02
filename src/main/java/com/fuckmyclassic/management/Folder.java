@@ -1,5 +1,8 @@
 package com.fuckmyclassic.management;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 /**
  * Class to represent a folder on the console's home menu. This is
  * a subclass of Application so we can make <code>.desktop</code>
@@ -8,10 +11,7 @@ package com.fuckmyclassic.management;
  */
 public class Folder extends Application {
 
-    /**
-     * The ID of the destination folder that this folder points to.
-     */
-    private String destinationFolder;
+    private StringProperty destinationFolder;
 
     public Folder() {
 
@@ -19,15 +19,15 @@ public class Folder extends Application {
 
     public Folder(final String destinationFolder) {
         super();
-        this.destinationFolder = destinationFolder;
+        this.destinationFolder = new SimpleStringProperty(destinationFolder);
     }
 
     public String getDestinationFolder() {
-        return destinationFolder;
+        return destinationFolder.get();
     }
 
     public Folder setDestinationFolder(String destinationFolder) {
-        this.destinationFolder = destinationFolder;
+        this.destinationFolder = new SimpleStringProperty(destinationFolder);
         return this;
     }
 }

@@ -1,5 +1,16 @@
 package com.fuckmyclassic.management;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
 import java.time.LocalDate;
 
 /**
@@ -8,91 +19,31 @@ import java.time.LocalDate;
  */
 public class Application {
 
-    /**
-     * The actual command to run this application on the console.
-     */
-    private String commandLine;
-
-    /**
-     * The path on the console where the saves for this application live.
-     */
-    private String savePath;
-
-    /**
-     * The name of the application that gets displayed on the console.
-     */
-    private String applicationName;
-
-    /**
-     * The path (locally) to the box art. This will get transformed as appropriate in the
-     * generated <code>.desktop</code> file that gets generated during game sync.
-     */
-    private String boxArtPath;
-
-    /**
-     * The application ID that we generate for the folder name. Example: <code>CLV-S-IANKC</code>
-     */
-    private String applicationId;
-
-    /**
-     * The TestID value in the <code>.desktop</code> file.
-     */
-    private int testId;
-
-    /**
-     * The ID value in the <code>.desktop</code> file.
-     */
-    private int id;
-
-    /**
-     * The number of players this game supports (1-4).
-     */
-    private int numPlayers;
-
-    /**
-     * Whether or not the game supports simultaneous multiplayer.
-     */
-    private boolean hasSimultaneousMultiplayer;
-
-    /**
-     * The release date for the game.
-     */
-    private LocalDate releaseDate;
-
-    /**
-     * The number of save states present for the application.
-     */
-    private int saveCount;
-
-    /**
-     * The string used to sort this game in the main menu.
-     */
-    private String sortName;
-
-    /**
-     * The publisher for the application.
-     */
-    private String publisher;
-
-    /**
-     * The size of the application.
-     */
-    private long applicationSize;
-
-    /**
-     * Whether or not to use compression for the application.
-     */
-    private boolean isCompressed;
+    private StringProperty commandLine;
+    private StringProperty savePath;
+    private StringProperty applicationName;
+    private StringProperty boxArtPath;
+    private StringProperty applicationId;
+    private IntegerProperty testId;
+    private IntegerProperty id;
+    private IntegerProperty numPlayers;
+    private BooleanProperty hasSimultaneousMultiplayer;
+    private ObjectProperty<LocalDate> releaseDate;
+    private IntegerProperty saveCount;
+    private StringProperty sortName;
+    private StringProperty publisher;
+    private LongProperty applicationSize;
+    private BooleanProperty isCompressed;
 
     public Application() {
-        this.testId = 0;
-        this.id = 0;
-        this.numPlayers = 1;
-        this.hasSimultaneousMultiplayer = false;
-        this.releaseDate = LocalDate.of(2017, 9, 29);
-        this.saveCount = 0;
-        this.publisher = "fuckmyclassic 2018";
-        this.isCompressed = false;
+        this.testId = new SimpleIntegerProperty(0);
+        this.id = new SimpleIntegerProperty(0);
+        this.numPlayers = new SimpleIntegerProperty(1);
+        this.hasSimultaneousMultiplayer = new SimpleBooleanProperty(false);
+        this.releaseDate = new SimpleObjectProperty<>(LocalDate.of(2017, 9, 29));
+        this.saveCount = new SimpleIntegerProperty(0);
+        this.publisher = new SimpleStringProperty("fuckmyclassic 2018");
+        this.isCompressed = new SimpleBooleanProperty(false);
     }
 
     public Application(final String commandLine, final String savePath, final String applicationName,
@@ -100,155 +51,155 @@ public class Application {
                        final int numPlayers, final boolean hasSimultaneousMultiplayer, final LocalDate releaseDate,
                        final int saveCount, final String sortName, final String publisher, final long applicationSize,
                        final boolean isCompressed) {
-        this.commandLine = commandLine;
-        this.savePath = savePath;
-        this.applicationName = applicationName;
-        this.boxArtPath = boxArtPath;
-        this.applicationId = applicationId;
-        this.testId = testId;
-        this.id = id;
-        this.numPlayers = numPlayers;
-        this.hasSimultaneousMultiplayer = hasSimultaneousMultiplayer;
-        this.releaseDate = releaseDate;
-        this.saveCount = saveCount;
-        this.sortName = sortName;
-        this.publisher = publisher;
-        this.applicationSize = applicationSize;
-        this.isCompressed = isCompressed;
+        this.commandLine = new SimpleStringProperty(commandLine);
+        this.savePath = new SimpleStringProperty(savePath);
+        this.applicationName = new SimpleStringProperty(applicationName);
+        this.boxArtPath = new SimpleStringProperty(boxArtPath);
+        this.applicationId = new SimpleStringProperty(applicationId);
+        this.testId = new SimpleIntegerProperty(testId);
+        this.id = new SimpleIntegerProperty(id);
+        this.numPlayers = new SimpleIntegerProperty(numPlayers);
+        this.hasSimultaneousMultiplayer = new SimpleBooleanProperty(hasSimultaneousMultiplayer);
+        this.releaseDate = new SimpleObjectProperty<>(releaseDate);
+        this.saveCount = new SimpleIntegerProperty(saveCount);
+        this.sortName = new SimpleStringProperty(sortName);
+        this.publisher = new SimpleStringProperty(publisher);
+        this.applicationSize = new SimpleLongProperty(applicationSize);
+        this.isCompressed = new SimpleBooleanProperty(isCompressed);
     }
 
     public String getCommandLine() {
-        return commandLine;
+        return commandLine.get();
     }
 
     public Application setCommandLine(String commandLine) {
-        this.commandLine = commandLine;
+        this.commandLine = new SimpleStringProperty(commandLine);
         return this;
     }
 
     public String getSavePath() {
-        return savePath;
+        return savePath.get();
     }
 
     public Application setSavePath(String savePath) {
-        this.savePath = savePath;
+        this.savePath = new SimpleStringProperty(savePath);
         return this;
     }
 
     public String getApplicationName() {
-        return applicationName;
+        return applicationName.get();
     }
 
     public Application setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
+        this.applicationName = new SimpleStringProperty(applicationName);
         return this;
     }
 
     public String getBoxArtPath() {
-        return boxArtPath;
+        return boxArtPath.get();
     }
 
     public Application setBoxArtPath(String boxArtPath) {
-        this.boxArtPath = boxArtPath;
+        this.boxArtPath = new SimpleStringProperty(boxArtPath);
         return this;
     }
 
     public String getApplicationId() {
-        return applicationId;
+        return applicationId.get();
     }
 
     public Application setApplicationId(String applicationId) {
-        this.applicationId = applicationId;
+        this.applicationId = new SimpleStringProperty(applicationId);
         return this;
     }
 
     public int getTestId() {
-        return testId;
+        return testId.get();
     }
 
     public Application setTestId(int testId) {
-        this.testId = testId;
+        this.testId = new SimpleIntegerProperty(testId);
         return this;
     }
 
     public int getId() {
-        return id;
+        return id.get();
     }
 
     public Application setId(int id) {
-        this.id = id;
+        this.id = new SimpleIntegerProperty(id);
         return this;
     }
 
     public int getNumPlayers() {
-        return numPlayers;
+        return numPlayers.get();
     }
 
     public Application setNumPlayers(int numPlayers) {
-        this.numPlayers = numPlayers;
+        this.numPlayers = new SimpleIntegerProperty(numPlayers);
         return this;
     }
 
     public boolean isHasSimultaneousMultiplayer() {
-        return hasSimultaneousMultiplayer;
+        return hasSimultaneousMultiplayer.get();
     }
 
     public Application setHasSimultaneousMultiplayer(boolean hasSimultaneousMultiplayer) {
-        this.hasSimultaneousMultiplayer = hasSimultaneousMultiplayer;
+        this.hasSimultaneousMultiplayer = new SimpleBooleanProperty(hasSimultaneousMultiplayer);
         return this;
     }
 
     public LocalDate getReleaseDate() {
-        return releaseDate;
+        return releaseDate.get();
     }
 
     public Application setReleaseDate(LocalDate releaseDate) {
-        this.releaseDate = releaseDate;
+        this.releaseDate = new SimpleObjectProperty<>(releaseDate);
         return this;
     }
 
     public int getSaveCount() {
-        return saveCount;
+        return saveCount.get();
     }
 
     public Application setSaveCount(int saveCount) {
-        this.saveCount = saveCount;
+        this.saveCount = new SimpleIntegerProperty(saveCount);
         return this;
     }
 
     public String getSortName() {
-        return sortName;
+        return sortName.get();
     }
 
     public Application setSortName(String sortName) {
-        this.sortName = sortName;
+        this.sortName = new SimpleStringProperty(sortName);
         return this;
     }
 
     public String getPublisher() {
-        return publisher;
+        return publisher.get();
     }
 
     public Application setPublisher(String publisher) {
-        this.publisher = publisher;
+        this.publisher = new SimpleStringProperty(publisher);
         return this;
     }
 
     public long getApplicationSize() {
-        return applicationSize;
+        return applicationSize.get();
     }
 
     public Application setApplicationSize(long applicationSize) {
-        this.applicationSize = applicationSize;
+        this.applicationSize = new SimpleLongProperty(applicationSize);
         return this;
     }
 
     public boolean isCompressed() {
-        return isCompressed;
+        return isCompressed.get();
     }
 
     public Application setCompressed(boolean compressed) {
-        isCompressed = compressed;
+        isCompressed = new SimpleBooleanProperty(compressed);
         return this;
     }
 }
