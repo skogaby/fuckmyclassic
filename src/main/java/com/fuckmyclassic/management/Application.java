@@ -32,25 +32,34 @@ public class Application {
     private IntegerProperty saveCount;
     private StringProperty sortName;
     private StringProperty publisher;
+    private StringProperty copyright;
     private LongProperty applicationSize;
     private BooleanProperty isCompressed;
 
     public Application() {
+        this.commandLine = new SimpleStringProperty(null);
+        this.savePath = new SimpleStringProperty(null);
+        this.applicationName = new SimpleStringProperty(null);
+        this.boxArtPath = new SimpleStringProperty(null);
+        this.applicationId = new SimpleStringProperty(null);
         this.testId = new SimpleIntegerProperty(0);
         this.id = new SimpleIntegerProperty(0);
         this.numPlayers = new SimpleIntegerProperty(1);
         this.hasSimultaneousMultiplayer = new SimpleBooleanProperty(false);
         this.releaseDate = new SimpleObjectProperty<>(LocalDate.of(2017, 9, 29));
         this.saveCount = new SimpleIntegerProperty(0);
+        this.sortName = new SimpleStringProperty(null);
         this.publisher = new SimpleStringProperty("fuckmyclassic 2018");
+        this.copyright = new SimpleStringProperty("fuckmyclassic 2018");
+        this.applicationSize = new SimpleLongProperty(0);
         this.isCompressed = new SimpleBooleanProperty(false);
     }
 
-    public Application(final String commandLine, final String savePath, final String applicationName,
-                       final String boxArtPath, final String applicationId, final int testId, final int id,
+    public Application(final String applicationId, final String applicationName, final String commandLine,
+                       final String boxArtPath, final String savePath, final int testId, final int id,
                        final int numPlayers, final boolean hasSimultaneousMultiplayer, final LocalDate releaseDate,
-                       final int saveCount, final String sortName, final String publisher, final long applicationSize,
-                       final boolean isCompressed) {
+                       final int saveCount, final String sortName, final String publisher, final String copyright,
+                       final long applicationSize, final boolean isCompressed) {
         this.commandLine = new SimpleStringProperty(commandLine);
         this.savePath = new SimpleStringProperty(savePath);
         this.applicationName = new SimpleStringProperty(applicationName);
@@ -64,6 +73,7 @@ public class Application {
         this.saveCount = new SimpleIntegerProperty(saveCount);
         this.sortName = new SimpleStringProperty(sortName);
         this.publisher = new SimpleStringProperty(publisher);
+        this.copyright = new SimpleStringProperty(copyright);
         this.applicationSize = new SimpleLongProperty(applicationSize);
         this.isCompressed = new SimpleBooleanProperty(isCompressed);
     }
@@ -185,6 +195,15 @@ public class Application {
         return this;
     }
 
+    public String getCopyright() {
+        return copyright.get();
+    }
+
+    public Application setCopyright(String copyright) {
+        this.copyright = new SimpleStringProperty(copyright);
+        return this;
+    }
+
     public long getApplicationSize() {
         return applicationSize.get();
     }
@@ -201,5 +220,77 @@ public class Application {
     public Application setCompressed(boolean compressed) {
         isCompressed = new SimpleBooleanProperty(compressed);
         return this;
+    }
+
+    public String toString() {
+        return this.applicationName.get();
+    }
+
+    public StringProperty commandLineProperty() {
+        return commandLine;
+    }
+
+    public StringProperty savePathProperty() {
+        return savePath;
+    }
+
+    public StringProperty applicationNameProperty() {
+        return applicationName;
+    }
+
+    public StringProperty boxArtPathProperty() {
+        return boxArtPath;
+    }
+
+    public StringProperty applicationIdProperty() {
+        return applicationId;
+    }
+
+    public IntegerProperty testIdProperty() {
+        return testId;
+    }
+
+    public IntegerProperty idProperty() {
+        return id;
+    }
+
+    public IntegerProperty numPlayersProperty() {
+        return numPlayers;
+    }
+
+    public BooleanProperty hasSimultaneousMultiplayerProperty() {
+        return hasSimultaneousMultiplayer;
+    }
+
+    public ObjectProperty<LocalDate> releaseDateProperty() {
+        return releaseDate;
+    }
+
+    public IntegerProperty saveCountProperty() {
+        return saveCount;
+    }
+
+    public StringProperty sortNameProperty() {
+        return sortName;
+    }
+
+    public StringProperty publisherProperty() {
+        return publisher;
+    }
+
+    public StringProperty copyrightProperty() {
+        return copyright;
+    }
+
+    public LongProperty applicationSizeProperty() {
+        return applicationSize;
+    }
+
+    public boolean isIsCompressed() {
+        return isCompressed.get();
+    }
+
+    public BooleanProperty isCompressedProperty() {
+        return isCompressed;
     }
 }

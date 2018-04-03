@@ -30,4 +30,8 @@ public class Folder extends Application {
         this.destinationFolder = new SimpleStringProperty(destinationFolder);
         return this;
     }
+
+    public StringProperty destinationFolderProperty() {
+        return destinationFolder;
+    }
 }
