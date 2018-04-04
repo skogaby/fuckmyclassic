@@ -10,8 +10,11 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeView;
+import javafx.scene.image.ImageView;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +24,6 @@ import javax.usb.UsbException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ResourceBundle;
 
 import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
 
@@ -41,6 +43,7 @@ public class MainWindow {
     @FXML private CheckBox chkCompressed;
     @FXML private TextField txtApplicationName;
     @FXML private TextField txtApplicationSortName;
+    @FXML private ToggleGroup maxPlayersToggleGroup;
     @FXML private RadioButton radOnePlayer;
     @FXML private RadioButton radTwoPlayerNoSim;
     @FXML private RadioButton radTwoPlayerSim;
@@ -49,6 +52,7 @@ public class MainWindow {
     @FXML private Spinner spnSaveCount;
     @FXML private TextField txtCommandLine;
     @FXML private TextField txtGameGenieCodes;
+    @FXML private ImageView imgBoxArtPreview;
 
     /**
      * Helper instance for membooting consoles.
@@ -61,9 +65,9 @@ public class MainWindow {
     private final KernelFlasher kernelFlasher;
 
     /**
-     * Resource bundle so we can get localized strings.
+     * The currently selected application in the TreeView.
      */
-    private final ResourceBundle resources;
+    private Application currentApp;
 
     /**
      * Constructor.
@@ -75,7 +79,6 @@ public class MainWindow {
                       final KernelFlasher kernelFlasher) {
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
-        this.resources = ResourceBundle.getBundle("i18n/MainWindow");
     }
 
     /**
@@ -83,8 +86,9 @@ public class MainWindow {
      */
     @FXML
     public void initialize() {
-        // setup the application view
         initializeApplicationTreeView();
+        initializeSaveCountSpinner();
+        initializePlayerCountSelection();
     }
 
     /**
@@ -95,25 +99,73 @@ public class MainWindow {
             // bind the UI to the data
             final Application app = newValue.getValue();
             final Application oldApp = oldValue == null ? null : oldValue.getValue();
+            this.currentApp = app;
+
+            System.out.println("Selected " + app.toString());
 
             BindingHelper.bindProperty(app.applicationIdProperty(), this.lblApplicationId.textProperty());
             BindingHelper.bindProperty(app.applicationSizeProperty().asString(), this.lblGameSize.textProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.isCompressedProperty(),
-                    app.isCompressedProperty(), this.chkCompressed.selectedProperty());
+            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.compressedProperty(),
+                    app.compressedProperty(), this.chkCompressed.selectedProperty());
             BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.applicationNameProperty(),
                     app.applicationNameProperty(), this.txtApplicationName.textProperty());
             BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.sortNameProperty(),
                     app.sortNameProperty(), this.txtApplicationSortName.textProperty());
+            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.releaseDateProperty(),
+                    app.releaseDateProperty(), this.dateReleaseDate.valueProperty());
             BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.publisherProperty(),
                     app.publisherProperty(), this.txtPublisher.textProperty());
+            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.saveCountProperty(),
+                    app.saveCountProperty(), this.spnSaveCount.getValueFactory().valueProperty());
             BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.commandLineProperty(),
                     app.commandLineProperty(), this.txtCommandLine.textProperty());
 
+            this.radOnePlayer.setSelected(app.isSinglePlayer());
+            this.radTwoPlayerNoSim.setSelected(app.getNonSimultaneousMultiplayer());
+            this.radTwoPlayerSim.setSelected(app.isSimultaneousMultiplayer());
+
+            // refresh the TreeView in case any data changed in the last item
             this.treeViewGames.refresh();
         });
 
         // populate with test data until we store real data persistently
         this.treeViewGames.setRoot(ApplicationTestData.getTestApplicationData());
+    }
+
+    /**
+     * Initializes the save count spinner's value factory.
+     */
+    private void initializeSaveCountSpinner() {
+        this.spnSaveCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 4));
+    }
+
+    /**
+     * Sets up the radio buttons to select player count for an app.
+     */
+    private void initializePlayerCountSelection() {
+        final String userDataSinglePlayer = "single";
+        final String userDataNoSimMultiplayer = "multi";
+        final String userDataSimMultiplayer = "simul";
+        this.maxPlayersToggleGroup = new ToggleGroup();
+
+        this.radOnePlayer.setToggleGroup(this.maxPlayersToggleGroup);
+        this.radOnePlayer.setUserData(userDataSinglePlayer);
+        this.radTwoPlayerNoSim.setToggleGroup(this.maxPlayersToggleGroup);
+        this.radTwoPlayerNoSim.setUserData(userDataNoSimMultiplayer);
+        this.radTwoPlayerSim.setToggleGroup(this.maxPlayersToggleGroup);
+        this.radTwoPlayerSim.setUserData(userDataSimMultiplayer);
+
+        this.maxPlayersToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                if (newValue.getUserData().equals(userDataSinglePlayer)) {
+                    this.currentApp.setSinglePlayer(true);
+                } else if (newValue.getUserData().equals(userDataNoSimMultiplayer)) {
+                    this.currentApp.setNonSimultaneousMultiplayer(true);
+                } else if (newValue.getUserData().equals(userDataSimMultiplayer)) {
+                    this.currentApp.setSimultaneousMultiplayer(true);
+                }
+            }
+        });
     }
 
     // Stubbed out methods for testing FEL functionality

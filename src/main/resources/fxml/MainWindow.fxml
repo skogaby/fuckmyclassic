@@ -14,7 +14,6 @@
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -196,17 +195,14 @@
                                           <Font size="12.0" />
                                        </font></Label>
                                     <RadioButton fx:id="radOnePlayer" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radOnePlayer" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
-                                       <toggleGroup>
-                                          <ToggleGroup fx:id="maxPlayersToggleGroup" />
-                                       </toggleGroup>
                                        <font>
                                           <Font size="12.0" />
                                        </font></RadioButton>
-                                    <RadioButton fx:id="radTwoPlayerNoSim" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radTwoPlayerNoSim" toggleGroup="$maxPlayersToggleGroup" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                                    <RadioButton fx:id="radTwoPlayerNoSim" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radTwoPlayerNoSim" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                                        <font>
                                           <Font size="12.0" />
                                        </font></RadioButton>
-                                    <RadioButton fx:id="radTwoPlayerSim" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radTwoPlayerSim" toggleGroup="$maxPlayersToggleGroup" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                                    <RadioButton fx:id="radTwoPlayerSim" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radTwoPlayerSim" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
                                        <font>
                                           <Font size="12.0" />
                                        </font></RadioButton>

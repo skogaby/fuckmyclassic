@@ -26,15 +26,16 @@ public class Application {
     private StringProperty applicationId;
     private IntegerProperty testId;
     private IntegerProperty id;
-    private IntegerProperty numPlayers;
-    private BooleanProperty hasSimultaneousMultiplayer;
+    private BooleanProperty singlePlayer;
+    private BooleanProperty nonSimultaneousMultiplayer;
+    private BooleanProperty simultaneousMultiplayer;
     private ObjectProperty<LocalDate> releaseDate;
     private IntegerProperty saveCount;
     private StringProperty sortName;
     private StringProperty publisher;
     private StringProperty copyright;
     private LongProperty applicationSize;
-    private BooleanProperty isCompressed;
+    private BooleanProperty compressed;
 
     public Application() {
         this.commandLine = new SimpleStringProperty(null);
@@ -44,15 +45,16 @@ public class Application {
         this.applicationId = new SimpleStringProperty(null);
         this.testId = new SimpleIntegerProperty(0);
         this.id = new SimpleIntegerProperty(0);
-        this.numPlayers = new SimpleIntegerProperty(1);
-        this.hasSimultaneousMultiplayer = new SimpleBooleanProperty(false);
+        this.singlePlayer = new SimpleBooleanProperty(true);
+        this.nonSimultaneousMultiplayer = new SimpleBooleanProperty(false);
+        this.simultaneousMultiplayer = new SimpleBooleanProperty(false);
         this.releaseDate = new SimpleObjectProperty<>(LocalDate.of(2017, 9, 29));
         this.saveCount = new SimpleIntegerProperty(0);
         this.sortName = new SimpleStringProperty(null);
         this.publisher = new SimpleStringProperty("fuckmyclassic 2018");
         this.copyright = new SimpleStringProperty("fuckmyclassic 2018");
         this.applicationSize = new SimpleLongProperty(0);
-        this.isCompressed = new SimpleBooleanProperty(false);
+        this.compressed = new SimpleBooleanProperty(false);
     }
 
     public Application(final String applicationId, final String applicationName, final String commandLine,
@@ -67,23 +69,32 @@ public class Application {
         this.applicationId = new SimpleStringProperty(applicationId);
         this.testId = new SimpleIntegerProperty(testId);
         this.id = new SimpleIntegerProperty(id);
-        this.numPlayers = new SimpleIntegerProperty(numPlayers);
-        this.hasSimultaneousMultiplayer = new SimpleBooleanProperty(hasSimultaneousMultiplayer);
+        this.singlePlayer = new SimpleBooleanProperty(numPlayers <= 1);
+        this.nonSimultaneousMultiplayer = new SimpleBooleanProperty(numPlayers > 1 && !hasSimultaneousMultiplayer);
+        this.simultaneousMultiplayer = new SimpleBooleanProperty(numPlayers > 1 && hasSimultaneousMultiplayer);
         this.releaseDate = new SimpleObjectProperty<>(releaseDate);
         this.saveCount = new SimpleIntegerProperty(saveCount);
         this.sortName = new SimpleStringProperty(sortName);
         this.publisher = new SimpleStringProperty(publisher);
         this.copyright = new SimpleStringProperty(copyright);
         this.applicationSize = new SimpleLongProperty(applicationSize);
-        this.isCompressed = new SimpleBooleanProperty(isCompressed);
+        this.compressed = new SimpleBooleanProperty(isCompressed);
+    }
+
+    public String toString() {
+        return this.applicationName.get();
     }
 
     public String getCommandLine() {
         return commandLine.get();
     }
 
+    public StringProperty commandLineProperty() {
+        return commandLine;
+    }
+
     public Application setCommandLine(String commandLine) {
-        this.commandLine = new SimpleStringProperty(commandLine);
+        this.commandLine.set(commandLine);
         return this;
     }
 
@@ -91,8 +102,12 @@ public class Application {
         return savePath.get();
     }
 
+    public StringProperty savePathProperty() {
+        return savePath;
+    }
+
     public Application setSavePath(String savePath) {
-        this.savePath = new SimpleStringProperty(savePath);
+        this.savePath.set(savePath);
         return this;
     }
 
@@ -100,8 +115,12 @@ public class Application {
         return applicationName.get();
     }
 
+    public StringProperty applicationNameProperty() {
+        return applicationName;
+    }
+
     public Application setApplicationName(String applicationName) {
-        this.applicationName = new SimpleStringProperty(applicationName);
+        this.applicationName.set(applicationName);
         return this;
     }
 
@@ -109,8 +128,12 @@ public class Application {
         return boxArtPath.get();
     }
 
+    public StringProperty boxArtPathProperty() {
+        return boxArtPath;
+    }
+
     public Application setBoxArtPath(String boxArtPath) {
-        this.boxArtPath = new SimpleStringProperty(boxArtPath);
+        this.boxArtPath.set(boxArtPath);
         return this;
     }
 
@@ -118,8 +141,12 @@ public class Application {
         return applicationId.get();
     }
 
+    public StringProperty applicationIdProperty() {
+        return applicationId;
+    }
+
     public Application setApplicationId(String applicationId) {
-        this.applicationId = new SimpleStringProperty(applicationId);
+        this.applicationId.set(applicationId);
         return this;
     }
 
@@ -127,8 +154,12 @@ public class Application {
         return testId.get();
     }
 
+    public IntegerProperty testIdProperty() {
+        return testId;
+    }
+
     public Application setTestId(int testId) {
-        this.testId = new SimpleIntegerProperty(testId);
+        this.testId.set(testId);
         return this;
     }
 
@@ -136,26 +167,57 @@ public class Application {
         return id.get();
     }
 
+    public IntegerProperty idProperty() {
+        return id;
+    }
+
     public Application setId(int id) {
-        this.id = new SimpleIntegerProperty(id);
+        this.id.set(id);
         return this;
     }
 
-    public int getNumPlayers() {
-        return numPlayers.get();
+    public boolean isSinglePlayer() {
+        return singlePlayer.get();
     }
 
-    public Application setNumPlayers(int numPlayers) {
-        this.numPlayers = new SimpleIntegerProperty(numPlayers);
+    public BooleanProperty singlePlayerProperty() {
+        return singlePlayer;
+    }
+
+    public Application setSinglePlayer(boolean singlePlayer) {
+        this.singlePlayer.set(singlePlayer);
+        this.simultaneousMultiplayer.set(false);
+        this.nonSimultaneousMultiplayer.set(false);
         return this;
     }
 
-    public boolean isHasSimultaneousMultiplayer() {
-        return hasSimultaneousMultiplayer.get();
+    public boolean getNonSimultaneousMultiplayer() {
+        return nonSimultaneousMultiplayer.get();
     }
 
-    public Application setHasSimultaneousMultiplayer(boolean hasSimultaneousMultiplayer) {
-        this.hasSimultaneousMultiplayer = new SimpleBooleanProperty(hasSimultaneousMultiplayer);
+    public BooleanProperty nonSimultaneousMultiplayerProperty() {
+        return nonSimultaneousMultiplayer;
+    }
+
+    public Application setNonSimultaneousMultiplayer(boolean nonSimultaneousMultiplayer) {
+        this.singlePlayer.set(false);
+        this.simultaneousMultiplayer.set(false);
+        this.nonSimultaneousMultiplayer.set(nonSimultaneousMultiplayer);
+        return this;
+    }
+
+    public boolean isSimultaneousMultiplayer() {
+        return simultaneousMultiplayer.get();
+    }
+
+    public BooleanProperty simultaneousMultiplayerProperty() {
+        return simultaneousMultiplayer;
+    }
+
+    public Application setSimultaneousMultiplayer(boolean simultaneousMultiplayer) {
+        this.singlePlayer.set(false);
+        this.simultaneousMultiplayer.set(simultaneousMultiplayer);
+        this.nonSimultaneousMultiplayer.set(false);
         return this;
     }
 
@@ -163,8 +225,12 @@ public class Application {
         return releaseDate.get();
     }
 
+    public ObjectProperty<LocalDate> releaseDateProperty() {
+        return releaseDate;
+    }
+
     public Application setReleaseDate(LocalDate releaseDate) {
-        this.releaseDate = new SimpleObjectProperty<>(releaseDate);
+        this.releaseDate.set(releaseDate);
         return this;
     }
 
@@ -172,8 +238,12 @@ public class Application {
         return saveCount.get();
     }
 
+    public IntegerProperty saveCountProperty() {
+        return saveCount;
+    }
+
     public Application setSaveCount(int saveCount) {
-        this.saveCount = new SimpleIntegerProperty(saveCount);
+        this.saveCount.set(saveCount);
         return this;
     }
 
@@ -181,8 +251,12 @@ public class Application {
         return sortName.get();
     }
 
+    public StringProperty sortNameProperty() {
+        return sortName;
+    }
+
     public Application setSortName(String sortName) {
-        this.sortName = new SimpleStringProperty(sortName);
+        this.sortName.set(sortName);
         return this;
     }
 
@@ -190,8 +264,12 @@ public class Application {
         return publisher.get();
     }
 
+    public StringProperty publisherProperty() {
+        return publisher;
+    }
+
     public Application setPublisher(String publisher) {
-        this.publisher = new SimpleStringProperty(publisher);
+        this.publisher.set(publisher);
         return this;
     }
 
@@ -199,8 +277,12 @@ public class Application {
         return copyright.get();
     }
 
+    public StringProperty copyrightProperty() {
+        return copyright;
+    }
+
     public Application setCopyright(String copyright) {
-        this.copyright = new SimpleStringProperty(copyright);
+        this.copyright.set(copyright);
         return this;
     }
 
@@ -208,89 +290,25 @@ public class Application {
         return applicationSize.get();
     }
 
-    public Application setApplicationSize(long applicationSize) {
-        this.applicationSize = new SimpleLongProperty(applicationSize);
-        return this;
-    }
-
-    public boolean isCompressed() {
-        return isCompressed.get();
-    }
-
-    public Application setCompressed(boolean compressed) {
-        isCompressed = new SimpleBooleanProperty(compressed);
-        return this;
-    }
-
-    public String toString() {
-        return this.applicationName.get();
-    }
-
-    public StringProperty commandLineProperty() {
-        return commandLine;
-    }
-
-    public StringProperty savePathProperty() {
-        return savePath;
-    }
-
-    public StringProperty applicationNameProperty() {
-        return applicationName;
-    }
-
-    public StringProperty boxArtPathProperty() {
-        return boxArtPath;
-    }
-
-    public StringProperty applicationIdProperty() {
-        return applicationId;
-    }
-
-    public IntegerProperty testIdProperty() {
-        return testId;
-    }
-
-    public IntegerProperty idProperty() {
-        return id;
-    }
-
-    public IntegerProperty numPlayersProperty() {
-        return numPlayers;
-    }
-
-    public BooleanProperty hasSimultaneousMultiplayerProperty() {
-        return hasSimultaneousMultiplayer;
-    }
-
-    public ObjectProperty<LocalDate> releaseDateProperty() {
-        return releaseDate;
-    }
-
-    public IntegerProperty saveCountProperty() {
-        return saveCount;
-    }
-
-    public StringProperty sortNameProperty() {
-        return sortName;
-    }
-
-    public StringProperty publisherProperty() {
-        return publisher;
-    }
-
-    public StringProperty copyrightProperty() {
-        return copyright;
-    }
-
     public LongProperty applicationSizeProperty() {
         return applicationSize;
     }
 
-    public boolean isIsCompressed() {
-        return isCompressed.get();
+    public Application setApplicationSize(long applicationSize) {
+        this.applicationSize.set(applicationSize);
+        return this;
     }
 
-    public BooleanProperty isCompressedProperty() {
-        return isCompressed;
+    public boolean isCompressed() {
+        return compressed.get();
+    }
+
+    public BooleanProperty compressedProperty() {
+        return compressed;
+    }
+
+    public Application setCompressed(boolean compressed) {
+        this.compressed.set(compressed);
+        return this;
     }
 }
