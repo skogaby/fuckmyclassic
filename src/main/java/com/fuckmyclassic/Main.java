@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.hibernate.Session;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.ResourceBundle;
@@ -33,6 +34,13 @@ public class Main extends Application {
     @Override
     public void stop() {
         if (applicationContext != null) {
+            // shut down the Hibernate session if one exists
+            final Session session = applicationContext.getBean(Session.class);
+
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+
             applicationContext.close();
         }
     }

@@ -1,5 +1,7 @@
-package com.fuckmyclassic.boot;
+package com.fuckmyclassic.configuration;
 
+import com.fuckmyclassic.boot.KernelFlasher;
+import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.network.SshConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -10,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Configuration
-@ComponentScan({"com.fuckmyclassic.network"})
+@ComponentScan({"com.fuckmyclassic.configuration"})
 public class BootConfiguration {
 
     @Bean

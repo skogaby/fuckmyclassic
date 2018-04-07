@@ -1,4 +1,4 @@
-group 'com.minisnes'
+group 'com.fuckmyclassic'
 version '1.0'
 
 apply plugin: 'java'
@@ -11,21 +11,35 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    // https://mvnrepository.com/artifact/org.springframework/spring-test
-    testCompile group: 'org.springframework', name: 'spring-test', version: '5.0.4.RELEASE'
 
-
+    // Imports for libusb
     // https://mvnrepository.com/artifact/org.usb4java/usb4java
     compile group: 'org.usb4java', name: 'usb4java', version: '1.2.0'
     // https://mvnrepository.com/artifact/org.usb4java/usb4java-javax
     compile group: 'org.usb4java', name: 'usb4java-javax', version: '1.2.0'
-    // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
-    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.21.0.1'
+
+    // Import for SSH support
     // https://mvnrepository.com/artifact/com.jcraft/jsch
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
+
+    // Imports for Spring support
     // https://mvnrepository.com/artifact/org.springframework/spring-context
     compile group: 'org.springframework', name: 'spring-context', version: '5.0.4.RELEASE'
+    // https://mvnrepository.com/artifact/org.springframework/spring-test
+    testCompile group: 'org.springframework', name: 'spring-test', version: '5.0.4.RELEASE'
+
+    // Import for logging functionality
     // https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.10.0'
+
+    // Imports for SQLite and the ORM we're using
+    // https://mvnrepository.com/artifact/org.hibernate/hibernate-core
+    compile group: 'org.hibernate', name: 'hibernate-core', version: '5.2.16.Final'
+    // https://mvnrepository.com/artifact/org.springframework/spring-orm
+    compile group: 'org.springframework', name: 'spring-orm', version: '5.0.5.RELEASE'
+    // https://mvnrepository.com/artifact/com.zsoltfabok/sqlite-dialect
+    compile group: 'com.zsoltfabok', name: 'sqlite-dialect', version: '1.0'
+    // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+    compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.21.0.1'
 
 }

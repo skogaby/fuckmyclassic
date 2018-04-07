@@ -2,7 +2,8 @@ package com.fuckmyclassic.controller;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.management.Application;
+import com.fuckmyclassic.hibernate.HibernateManager;
+import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.testdata.ApplicationTestData;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -17,7 +18,10 @@ import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Component;
 
 import javax.usb.UsbException;
@@ -55,6 +59,11 @@ public class MainWindow {
     @FXML private ImageView imgBoxArtPreview;
 
     /**
+     * Hibernate manager, for interacting with the database.
+     */
+    private final HibernateManager hibernateManager;
+
+    /**
      * Helper instance for membooting consoles.
      */
     private final MembootHelper membootHelper;
@@ -71,12 +80,15 @@ public class MainWindow {
 
     /**
      * Constructor.
+     * @param hibernateManager
      * @param membootHelper
      * @param kernelFlasher
      */
     @Autowired
-    public MainWindow(final MembootHelper membootHelper,
+    public MainWindow(final HibernateManager hibernateManager,
+                      final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher) {
+        this.hibernateManager = hibernateManager;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
     }
@@ -101,7 +113,7 @@ public class MainWindow {
             final Application oldApp = oldValue == null ? null : oldValue.getValue();
             this.currentApp = app;
 
-            System.out.println("Selected " + app.toString());
+            // LOG.debug(String.format("Selected '%s'", app.getApplicationName()));
 
             BindingHelper.bindProperty(app.applicationIdProperty(), this.lblApplicationId.textProperty());
             BindingHelper.bindProperty(app.applicationSizeProperty().asString(), this.lblGameSize.textProperty());
@@ -124,7 +136,8 @@ public class MainWindow {
             this.radTwoPlayerNoSim.setSelected(app.getNonSimultaneousMultiplayer());
             this.radTwoPlayerSim.setSelected(app.isSimultaneousMultiplayer());
 
-            // refresh the TreeView in case any data changed in the last item
+            // persist the item to the database and refresh the application view
+            this.hibernateManager.persistEntity(oldApp);
             this.treeViewGames.refresh();
         });
 
@@ -157,13 +170,10 @@ public class MainWindow {
 
         this.maxPlayersToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                if (newValue.getUserData().equals(userDataSinglePlayer)) {
-                    this.currentApp.setSinglePlayer(true);
-                } else if (newValue.getUserData().equals(userDataNoSimMultiplayer)) {
-                    this.currentApp.setNonSimultaneousMultiplayer(true);
-                } else if (newValue.getUserData().equals(userDataSimMultiplayer)) {
-                    this.currentApp.setSimultaneousMultiplayer(true);
-                }
+                final String userData = (String) newValue.getUserData();
+                this.currentApp.setSinglePlayer(userData.equals(userDataSinglePlayer));
+                this.currentApp.setNonSimultaneousMultiplayer(userData.equals(userDataNoSimMultiplayer));
+                this.currentApp.setSimultaneousMultiplayer(userData.equals(userDataSimMultiplayer));
             }
         });
     }

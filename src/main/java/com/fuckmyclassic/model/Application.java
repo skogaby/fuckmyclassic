@@ -1,4 +1,4 @@
-package com.fuckmyclassic.management;
+package com.fuckmyclassic.model;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -11,21 +11,39 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.time.LocalDate;
 
 /**
  * Class to represent a game or app that runs on the NES/SNES Mini.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
-public class Application {
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Table(name = "games")
+public class Application implements Externalizable {
 
+    private static final long serialVersionUID = 1L;
+
+    private IntegerProperty id;
     private StringProperty commandLine;
     private StringProperty savePath;
     private StringProperty applicationName;
     private StringProperty boxArtPath;
     private StringProperty applicationId;
     private IntegerProperty testId;
-    private IntegerProperty id;
+    private IntegerProperty canoeId;
     private BooleanProperty singlePlayer;
     private BooleanProperty nonSimultaneousMultiplayer;
     private BooleanProperty simultaneousMultiplayer;
@@ -38,13 +56,14 @@ public class Application {
     private BooleanProperty compressed;
 
     public Application() {
+        this.id = new SimpleIntegerProperty(this, "id");
         this.commandLine = new SimpleStringProperty(null);
         this.savePath = new SimpleStringProperty(null);
         this.applicationName = new SimpleStringProperty(null);
         this.boxArtPath = new SimpleStringProperty(null);
         this.applicationId = new SimpleStringProperty(null);
         this.testId = new SimpleIntegerProperty(0);
-        this.id = new SimpleIntegerProperty(0);
+        this.canoeId = new SimpleIntegerProperty(0);
         this.singlePlayer = new SimpleBooleanProperty(true);
         this.nonSimultaneousMultiplayer = new SimpleBooleanProperty(false);
         this.simultaneousMultiplayer = new SimpleBooleanProperty(false);
@@ -58,17 +77,18 @@ public class Application {
     }
 
     public Application(final String applicationId, final String applicationName, final String commandLine,
-                       final String boxArtPath, final String savePath, final int testId, final int id,
+                       final String boxArtPath, final String savePath, final int testId, final int canoeId,
                        final int numPlayers, final boolean hasSimultaneousMultiplayer, final LocalDate releaseDate,
                        final int saveCount, final String sortName, final String publisher, final String copyright,
                        final long applicationSize, final boolean isCompressed) {
+        this.id = new SimpleIntegerProperty(this, "id");
         this.commandLine = new SimpleStringProperty(commandLine);
         this.savePath = new SimpleStringProperty(savePath);
         this.applicationName = new SimpleStringProperty(applicationName);
         this.boxArtPath = new SimpleStringProperty(boxArtPath);
         this.applicationId = new SimpleStringProperty(applicationId);
         this.testId = new SimpleIntegerProperty(testId);
-        this.id = new SimpleIntegerProperty(id);
+        this.canoeId = new SimpleIntegerProperty(canoeId);
         this.singlePlayer = new SimpleBooleanProperty(numPlayers <= 1);
         this.nonSimultaneousMultiplayer = new SimpleBooleanProperty(numPlayers > 1 && !hasSimultaneousMultiplayer);
         this.simultaneousMultiplayer = new SimpleBooleanProperty(numPlayers > 1 && hasSimultaneousMultiplayer);
@@ -81,10 +101,70 @@ public class Application {
         this.compressed = new SimpleBooleanProperty(isCompressed);
     }
 
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(getId());
+        out.writeUTF(getCommandLine());
+        out.writeUTF(getSavePath());
+        out.writeUTF(getApplicationName());
+        out.writeUTF(getBoxArtPath());
+        out.writeUTF(getApplicationId());
+        out.writeInt(getTestId());
+        out.writeInt(getCanoeId());
+        out.writeBoolean(isSinglePlayer());
+        out.writeBoolean(getNonSimultaneousMultiplayer());
+        out.writeBoolean(isSimultaneousMultiplayer());
+        out.writeObject(getReleaseDate());
+        out.writeInt(getSaveCount());
+        out.writeUTF(getSortName());
+        out.writeUTF(getPublisher());
+        out.writeUTF(getCopyright());
+        out.writeLong(getApplicationSize());
+        out.writeBoolean(isCompressed());
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        setId(in.readInt());
+        setCommandLine(in.readUTF());
+        setSavePath(in.readUTF());
+        setApplicationName(in.readUTF());
+        setBoxArtPath(in.readUTF());
+        setApplicationId(in.readUTF());
+        setTestId(in.readInt());
+        setCanoeId(in.readInt());
+        setSinglePlayer(in.readBoolean());
+        setNonSimultaneousMultiplayer(in.readBoolean());
+        setSimultaneousMultiplayer(in.readBoolean());
+        setReleaseDate((LocalDate)in.readObject());
+        setSaveCount(in.readInt());
+        setSortName(in.readUTF());
+        setPublisher(in.readUTF());
+        setCopyright(in.readUTF());
+        setApplicationSize(in.readLong());
+        setCompressed(in.readBoolean());
+    }
+
     public String toString() {
         return this.applicationName.get();
     }
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id", updatable = false, nullable = false)
+    public int getId() {
+        return id.get();
+    }
+
+    public IntegerProperty idProperty() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id.set(id);
+    }
+
+    @Column(name = "command_line")
     public String getCommandLine() {
         return commandLine.get();
     }
@@ -98,6 +178,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "save_path")
     public String getSavePath() {
         return savePath.get();
     }
@@ -111,6 +192,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "application_name")
     public String getApplicationName() {
         return applicationName.get();
     }
@@ -124,6 +206,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "boxart_path")
     public String getBoxArtPath() {
         return boxArtPath.get();
     }
@@ -137,6 +220,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "application_id")
     public String getApplicationId() {
         return applicationId.get();
     }
@@ -150,6 +234,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "test_id")
     public int getTestId() {
         return testId.get();
     }
@@ -163,19 +248,20 @@ public class Application {
         return this;
     }
 
-    public int getId() {
-        return id.get();
+    @Column(name = "canoe_id")
+    public int getCanoeId() {
+        return canoeId.get();
     }
 
-    public IntegerProperty idProperty() {
-        return id;
+    public IntegerProperty canoeIdProperty() {
+        return canoeId;
     }
 
-    public Application setId(int id) {
-        this.id.set(id);
-        return this;
+    public void setCanoeId(int canoeId) {
+        this.canoeId.set(canoeId);
     }
 
+    @Column(name = "is_single_player")
     public boolean isSinglePlayer() {
         return singlePlayer.get();
     }
@@ -186,11 +272,10 @@ public class Application {
 
     public Application setSinglePlayer(boolean singlePlayer) {
         this.singlePlayer.set(singlePlayer);
-        this.simultaneousMultiplayer.set(false);
-        this.nonSimultaneousMultiplayer.set(false);
         return this;
     }
 
+    @Column(name = "is_non_simul_multiplayer")
     public boolean getNonSimultaneousMultiplayer() {
         return nonSimultaneousMultiplayer.get();
     }
@@ -200,12 +285,11 @@ public class Application {
     }
 
     public Application setNonSimultaneousMultiplayer(boolean nonSimultaneousMultiplayer) {
-        this.singlePlayer.set(false);
-        this.simultaneousMultiplayer.set(false);
         this.nonSimultaneousMultiplayer.set(nonSimultaneousMultiplayer);
         return this;
     }
 
+    @Column(name = "is_simul_multiplayer")
     public boolean isSimultaneousMultiplayer() {
         return simultaneousMultiplayer.get();
     }
@@ -215,12 +299,11 @@ public class Application {
     }
 
     public Application setSimultaneousMultiplayer(boolean simultaneousMultiplayer) {
-        this.singlePlayer.set(false);
         this.simultaneousMultiplayer.set(simultaneousMultiplayer);
-        this.nonSimultaneousMultiplayer.set(false);
         return this;
     }
 
+    @Column(name = "release_date")
     public LocalDate getReleaseDate() {
         return releaseDate.get();
     }
@@ -234,6 +317,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "save_count")
     public int getSaveCount() {
         return saveCount.get();
     }
@@ -247,6 +331,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "application_sort_name")
     public String getSortName() {
         return sortName.get();
     }
@@ -260,6 +345,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "publisher")
     public String getPublisher() {
         return publisher.get();
     }
@@ -273,6 +359,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "copyright")
     public String getCopyright() {
         return copyright.get();
     }
@@ -286,6 +373,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "application_size")
     public long getApplicationSize() {
         return applicationSize.get();
     }
@@ -299,6 +387,7 @@ public class Application {
         return this;
     }
 
+    @Column(name = "is_compressed")
     public boolean isCompressed() {
         return compressed.get();
     }

@@ -3,6 +3,7 @@ package com.fuckmyclassic;
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.controller.MainWindow;
+import com.fuckmyclassic.hibernate.HibernateManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -12,11 +13,11 @@ import org.springframework.context.annotation.Configuration;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Configuration
-@ComponentScan({"com.fuckmyclassic.boot"})
+@ComponentScan({"com.fuckmyclassic.configuration"})
 public class ApplicationConfiguration {
 
     @Bean
-    public MainWindow getMainWindow(MembootHelper membootHelper, KernelFlasher kernelFlasher) {
-        return new MainWindow(membootHelper, kernelFlasher);
+    public MainWindow getMainWindow(HibernateManager hibernateManager, MembootHelper membootHelper, KernelFlasher kernelFlasher) {
+        return new MainWindow(hibernateManager, membootHelper, kernelFlasher);
     }
 }
