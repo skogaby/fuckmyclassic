@@ -10,6 +10,7 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -36,7 +37,7 @@ public class Application implements Externalizable {
 
     private static final long serialVersionUID = 1L;
 
-    private IntegerProperty id;
+    private LongProperty id;
     private StringProperty commandLine;
     private StringProperty savePath;
     private StringProperty applicationName;
@@ -56,7 +57,7 @@ public class Application implements Externalizable {
     private BooleanProperty compressed;
 
     public Application() {
-        this.id = new SimpleIntegerProperty(this, "id");
+        this.id = new SimpleLongProperty(this, "id");
         this.commandLine = new SimpleStringProperty(null);
         this.savePath = new SimpleStringProperty(null);
         this.applicationName = new SimpleStringProperty(null);
@@ -81,7 +82,7 @@ public class Application implements Externalizable {
                        final int numPlayers, final boolean hasSimultaneousMultiplayer, final LocalDate releaseDate,
                        final int saveCount, final String sortName, final String publisher, final String copyright,
                        final long applicationSize, final boolean isCompressed) {
-        this.id = new SimpleIntegerProperty(this, "id");
+        this.id = new SimpleLongProperty(this, "id");
         this.commandLine = new SimpleStringProperty(commandLine);
         this.savePath = new SimpleStringProperty(savePath);
         this.applicationName = new SimpleStringProperty(applicationName);
@@ -103,7 +104,7 @@ public class Application implements Externalizable {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeInt(getId());
+        out.writeLong(getId());
         out.writeUTF(getCommandLine());
         out.writeUTF(getSavePath());
         out.writeUTF(getApplicationName());
@@ -125,7 +126,7 @@ public class Application implements Externalizable {
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        setId(in.readInt());
+        setId(in.readLong());
         setCommandLine(in.readUTF());
         setSavePath(in.readUTF());
         setApplicationName(in.readUTF());
@@ -152,16 +153,31 @@ public class Application implements Externalizable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false, nullable = false)
-    public int getId() {
+    public long getId() {
         return id.get();
     }
 
-    public IntegerProperty idProperty() {
+    public LongProperty idProperty() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id.set(id);
+    }
+
+    @NaturalId
+    @Column(name = "application_id", unique = true)
+    public String getApplicationId() {
+        return applicationId.get();
+    }
+
+    public StringProperty applicationIdProperty() {
+        return applicationId;
+    }
+
+    public Application setApplicationId(String applicationId) {
+        this.applicationId.set(applicationId);
+        return this;
     }
 
     @Column(name = "command_line")
@@ -217,20 +233,6 @@ public class Application implements Externalizable {
 
     public Application setBoxArtPath(String boxArtPath) {
         this.boxArtPath.set(boxArtPath);
-        return this;
-    }
-
-    @Column(name = "application_id")
-    public String getApplicationId() {
-        return applicationId.get();
-    }
-
-    public StringProperty applicationIdProperty() {
-        return applicationId;
-    }
-
-    public Application setApplicationId(String applicationId) {
-        this.applicationId.set(applicationId);
         return this;
     }
 

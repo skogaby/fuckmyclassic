@@ -37,8 +37,6 @@ dependencies {
     compile group: 'org.hibernate', name: 'hibernate-core', version: '5.2.16.Final'
     // https://mvnrepository.com/artifact/org.springframework/spring-orm
     compile group: 'org.springframework', name: 'spring-orm', version: '5.0.5.RELEASE'
-    // https://mvnrepository.com/artifact/com.zsoltfabok/sqlite-dialect
-    compile group: 'com.zsoltfabok', name: 'sqlite-dialect', version: '1.0'
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
     compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.21.0.1'
 

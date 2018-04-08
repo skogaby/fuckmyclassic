@@ -2,6 +2,7 @@ package com.fuckmyclassic.controller;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
+import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.testdata.ApplicationTestData;
@@ -64,6 +65,11 @@ public class MainWindow {
     private final HibernateManager hibernateManager;
 
     /**
+     * DAO for handling Applications.
+     */
+    private final ApplicationDAO applicationDAO;
+
+    /**
      * Helper instance for membooting consoles.
      */
     private final MembootHelper membootHelper;
@@ -81,14 +87,17 @@ public class MainWindow {
     /**
      * Constructor.
      * @param hibernateManager
+     * @param applicationDAO
      * @param membootHelper
      * @param kernelFlasher
      */
     @Autowired
     public MainWindow(final HibernateManager hibernateManager,
+                      final ApplicationDAO applicationDAO,
                       final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher) {
         this.hibernateManager = hibernateManager;
+        this.applicationDAO = applicationDAO;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
     }
@@ -137,12 +146,12 @@ public class MainWindow {
             this.radTwoPlayerSim.setSelected(app.isSimultaneousMultiplayer());
 
             // persist the item to the database and refresh the application view
-            this.hibernateManager.persistEntity(oldApp);
+            this.hibernateManager.updateEntity(oldApp);
             this.treeViewGames.refresh();
         });
 
-        // populate with test data until we store real data persistently
-        this.treeViewGames.setRoot(ApplicationTestData.getTestApplicationData());
+        // load the library for the current console and library ID
+        this.treeViewGames.setRoot(applicationDAO.loadLibraryForConsole("UNKNOWN", 0));
     }
 
     /**

@@ -24,17 +24,19 @@ public class HibernateManager {
     }
 
     /**
-     * Persists an entity to the database, wrapping it in
-     * a transaction.
-     * @param entity The entity to persist.
+     * Performs the given mutation on the given entity in the database.
+     * @param entity Entity to operate on
+     * @param operation The operation to perform
      */
-    public void persistEntity(final Object entity) {
+    public void performMutation(final Object entity, PersistenceOperation operation) {
         if (entity != null) {
             Transaction tx = null;
 
             try {
                 tx = this.hibernateSession.beginTransaction();
-                this.hibernateSession.persist(entity);
+                operation.call(entity);
+                this.hibernateSession.flush();
+                this.hibernateSession.clear();
                 tx.commit();
             } catch (Exception e) {
                 if (tx != null) {
@@ -44,5 +46,29 @@ public class HibernateManager {
                 throw e;
             }
         }
+    }
+
+    /**
+     * Saves a new entity.
+     * @param entity
+     */
+    public void saveEntity(final Object entity) {
+        performMutation(entity, x -> this.hibernateSession.persist(x));
+    }
+
+    /**
+     * Updates an existing entity.
+     * @param entity
+     */
+    public void updateEntity(final Object entity) {
+        performMutation(entity, x -> this.hibernateSession.merge(x));
+    }
+
+    /**
+     * Deletes an existing entity.
+     * @param entity
+     */
+    public void deleteEntity(final Object entity) {
+        performMutation(entity, x -> this.hibernateSession.remove(x));
     }
 }

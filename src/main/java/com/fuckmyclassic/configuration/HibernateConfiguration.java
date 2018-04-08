@@ -1,5 +1,7 @@
 package com.fuckmyclassic.configuration;
 
+import com.fuckmyclassic.hibernate.ApplicationDAO;
+import com.fuckmyclassic.hibernate.ApplicationDAOImpl;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,9 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.Properties;
@@ -78,5 +78,10 @@ public class HibernateConfiguration {
     @Bean
     public HibernateManager hibernateManager(Session session) {
         return new HibernateManager(session);
+    }
+
+    @Bean
+    public ApplicationDAO applicationDAO(HibernateManager hibernateManager, Session session) {
+        return new ApplicationDAOImpl(hibernateManager, session);
     }
 }
