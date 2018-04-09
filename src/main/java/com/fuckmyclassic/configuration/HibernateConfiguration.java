@@ -3,6 +3,8 @@ package com.fuckmyclassic.configuration;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.ApplicationDAOImpl;
 import com.fuckmyclassic.hibernate.HibernateManager;
+import com.fuckmyclassic.hibernate.LibraryDAO;
+import com.fuckmyclassic.hibernate.LibraryDAOImpl;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -83,5 +85,10 @@ public class HibernateConfiguration {
     @Bean
     public ApplicationDAO applicationDAO(HibernateManager hibernateManager, Session session) {
         return new ApplicationDAOImpl(hibernateManager, session);
+    }
+
+    @Bean
+    public LibraryDAO libraryDAO(HibernateManager hibernateManager, Session session) {
+        return new LibraryDAOImpl(hibernateManager, session);
     }
 }

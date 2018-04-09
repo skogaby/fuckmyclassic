@@ -5,6 +5,7 @@ import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.controller.MainWindow;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
+import com.fuckmyclassic.hibernate.LibraryDAO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +19,8 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationConfiguration {
 
     @Bean
-    public MainWindow getMainWindow(HibernateManager hibernateManager, ApplicationDAO applicationDAO,
+    public MainWindow getMainWindow(HibernateManager hibernateManager, ApplicationDAO applicationDAO, LibraryDAO libraryDAO,
                                     MembootHelper membootHelper, KernelFlasher kernelFlasher) {
-        return new MainWindow(hibernateManager, applicationDAO, membootHelper, kernelFlasher);
+        return new MainWindow(hibernateManager, applicationDAO, libraryDAO, membootHelper, kernelFlasher);
     }
 }

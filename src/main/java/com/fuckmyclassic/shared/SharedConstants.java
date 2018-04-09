@@ -24,4 +24,14 @@ public class SharedConstants {
      * Application ID for the home folder.
      */
     public static String HOME_FOLDER_ID = "000";
+
+    /**
+     * The default library name when none exists for a console.
+     */
+    public static String DEFAULT_LIBRARY_NAME = "Default library";
+
+    /**
+     * Default console SID when none have been connected, yet.
+     */
+    public static String DEFAULT_CONSOLE_SID = "UNKNOWN";
 }

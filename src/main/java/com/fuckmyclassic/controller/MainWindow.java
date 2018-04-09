@@ -4,10 +4,16 @@ import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
+import com.fuckmyclassic.hibernate.LibraryDAO;
 import com.fuckmyclassic.model.Application;
+import com.fuckmyclassic.model.Library;
+import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.testdata.ApplicationTestData;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -29,6 +35,7 @@ import javax.usb.UsbException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
 
@@ -42,6 +49,7 @@ public class MainWindow {
     static Logger LOG = LogManager.getLogger(MainWindow.class.getName());
 
     // References to all of the UI objects that we need to manipulate
+    @FXML private ComboBox<Library> cmbCurrentCollection;
     @FXML private TreeView<Application> treeViewGames;
     @FXML private Label lblApplicationId;
     @FXML private Label lblGameSize;
@@ -70,6 +78,11 @@ public class MainWindow {
     private final ApplicationDAO applicationDAO;
 
     /**
+     * DAO for library metadata.
+     */
+    private final LibraryDAO libraryDAO;
+
+    /**
      * Helper instance for membooting consoles.
      */
     private final MembootHelper membootHelper;
@@ -85,21 +98,36 @@ public class MainWindow {
     private Application currentApp;
 
     /**
+     * The SID for the console whose collection we're viewing.
+     */
+    private String currentConsoleSid;
+
+    /**
+     * The current library we're viewing.
+     */
+    private Library currentLibrary;
+
+    /**
      * Constructor.
      * @param hibernateManager
      * @param applicationDAO
+     * @param libraryDAO
      * @param membootHelper
      * @param kernelFlasher
      */
     @Autowired
     public MainWindow(final HibernateManager hibernateManager,
                       final ApplicationDAO applicationDAO,
+                      final LibraryDAO libraryDAO,
                       final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher) {
         this.hibernateManager = hibernateManager;
         this.applicationDAO = applicationDAO;
+        this.libraryDAO = libraryDAO;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
+        this.currentConsoleSid = SharedConstants.DEFAULT_CONSOLE_SID;
+        this.currentLibrary = null;
     }
 
     /**
@@ -107,6 +135,7 @@ public class MainWindow {
      */
     @FXML
     public void initialize() {
+        initializeLibrarySelection();
         initializeApplicationTreeView();
         initializeSaveCountSpinner();
         initializePlayerCountSelection();
@@ -147,11 +176,13 @@ public class MainWindow {
 
             // persist the item to the database and refresh the application view
             this.hibernateManager.updateEntity(oldApp);
+            //this.hibernateManager.saveEntity(oldApp);
             this.treeViewGames.refresh();
         });
 
         // load the library for the current console and library ID
-        this.treeViewGames.setRoot(applicationDAO.loadLibraryForConsole("UNKNOWN", 0));
+        this.treeViewGames.setRoot(applicationDAO.loadLibraryForConsole(this.currentLibrary));
+        //this.treeViewGames.setRoot(ApplicationTestData.getTestApplicationData());
     }
 
     /**
@@ -185,6 +216,17 @@ public class MainWindow {
                 this.currentApp.setSimultaneousMultiplayer(userData.equals(userDataSimMultiplayer));
             }
         });
+    }
+
+    /**
+     * Sets up the dropdown for the library selection.
+     */
+    private void initializeLibrarySelection() {
+        final List<Library> libraries = libraryDAO.getLibrariesForConsole(this.currentConsoleSid);
+        final ObservableList<Library> items = FXCollections.observableArrayList(libraries);
+        this.cmbCurrentCollection.setItems(items);
+        this.cmbCurrentCollection.getSelectionModel().selectFirst();
+        this.currentLibrary = items.get(0);
     }
 
     // Stubbed out methods for testing FEL functionality

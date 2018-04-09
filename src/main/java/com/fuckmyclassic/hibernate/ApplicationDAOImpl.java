@@ -2,6 +2,7 @@ package com.fuckmyclassic.hibernate;
 
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
+import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.shared.SharedConstants;
 import javafx.scene.control.TreeItem;
@@ -35,52 +36,61 @@ public class ApplicationDAOImpl implements ApplicationDAO {
         this.session = session;
     }
 
+    /**
+     * Loads a specific application by its string ID.
+     * @param applicationId The ID string of the application (ex. CLV-S-00000)
+     * @return The Application corresponding to the ID
+     */
     @Override
-    public Application loadApplicationById(final String applicationId) {
+    public Application loadApplicationByAppId(final String applicationId) {
         final Query<Application> query = session.createQuery("from Application where application_id = :id");
         query.setParameter("id", applicationId);
         final List<Application> results = query.getResultList();
         Application app = null;
 
-        if (results != null && !results.isEmpty()) {
+        if (!results.isEmpty()) {
             app = results.get(0);
         }
 
         return app;
     }
 
+    /**
+     * Loads all the applications that are in a given folder (in the given library)
+     * @param parentFolder The folder to load the applications from
+     * @param library The metadata for the library that needs to be loaded.
+     */
     @Override
-    public List<TreeItem<Application>> loadApplications(List<String> applicationIds) {
-        final Query<Application> query = session.createQuery("from Application where applicatison_id in (:ids)");
-        query.setParameterList("ids", applicationIds);
-        return query.getResultStream().map(r -> new TreeItem<>(r)).collect(Collectors.toList());
-    }
-
-    @Override
-    public void loadApplicationsForFolder(TreeItem<Application> parentFolder, String consoleSid, int libraryId) {
+    public void loadApplicationsForFolder(TreeItem<Application> parentFolder, Library library) {
         // get all the applications in the top-level folder
-        final Query<LibraryItem> query = session.createQuery("from LibraryItem l where l.consoleSid = :console_sid and l.libraryId = :library_id and l.folder = :folder");
-        query.setParameter("console_sid", consoleSid);
-        query.setParameter("library_id", libraryId);
+        final Query<LibraryItem> query = session.createQuery(
+                "from LibraryItem l where l.library = :library and l.folder = :folder");
+        query.setParameter("library", library);
         query.setParameter("folder", parentFolder.getValue());
 
         final List<TreeItem<Application>> itemResults = query.getResultStream()
-                .map(r -> new TreeItem<Application>(r.getApplication()))
+                .map(r -> new TreeItem<>(r.getApplication()))
                 .collect(Collectors.toList());
         parentFolder.getChildren().addAll(itemResults);
 
         // iterate through the results and recurse down for any folders that are inside this one
         for (TreeItem<Application> itemResult : itemResults) {
             if (itemResult.getValue() instanceof Folder) {
-                loadApplicationsForFolder(itemResult, consoleSid, libraryId);
+                itemResult.setExpanded(true);
+                loadApplicationsForFolder(itemResult, library);
             }
         }
     }
 
+    /**
+     * Loads a library from the database, given a console SID and a library ID.
+     * @param library The metadata for the library that needs to be loaded.
+     * @return A tree representing the requested library.
+     */
     @Override
-    public TreeItem<Application> loadLibraryForConsole(String consoleSid, int libraryId) {
+    public TreeItem<Application> loadLibraryForConsole(Library library) {
         // check if the HOME folder exists, create one if it doesn't
-        Application homeFolder = loadApplicationById(SharedConstants.HOME_FOLDER_ID);
+        Application homeFolder = loadApplicationByAppId(SharedConstants.HOME_FOLDER_ID);
 
         if (homeFolder == null) {
             homeFolder = new Folder();
@@ -92,7 +102,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
         // now select all items in the home folder and recurse down for any folders
         final TreeItem<Application> homeItem = new TreeItem<>(homeFolder);
         homeItem.setExpanded(true);
-        loadApplicationsForFolder(homeItem, consoleSid, libraryId);
+        loadApplicationsForFolder(homeItem, library);
 
         return homeItem;
     }

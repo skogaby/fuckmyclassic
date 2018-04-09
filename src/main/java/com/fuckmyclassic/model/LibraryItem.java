@@ -7,7 +7,6 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,33 +21,28 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 /**
- * Class to represent an item in a library. Each library is tied to a particular
- * console (hardware ID) and can contain multiple applications and folders.
+ * Class to represent an item in a library. Each item belongs to
+ * a particular library, has an application, and has a parent folder.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Entity
-@Table(name = "libraries")
+@Table(name = "library_items")
 public class LibraryItem implements Externalizable {
 
     private static final long serialVersionUID = 1L;
 
     private LongProperty id;
-    private StringProperty consoleSid;
-    private IntegerProperty libraryId;
+    private Library library;
     private Application application;
     private Folder folder;
 
     public LibraryItem() {
         this.id = new SimpleLongProperty(this, "id");
-        this.consoleSid = new SimpleStringProperty(null);
-        this.libraryId = new SimpleIntegerProperty(0);
     }
 
-    public LibraryItem(final String consoleSid, final int libraryId, final Application application,
-                       final Folder folder) {
+    public LibraryItem(final Library library, final Application application, final Folder folder) {
         this.id = new SimpleLongProperty(this, "id");
-        this.consoleSid = new SimpleStringProperty(consoleSid);
-        this.libraryId = new SimpleIntegerProperty(libraryId);
+        this.library = library;
         this.application = application;
         this.folder = folder;
     }
@@ -56,8 +50,7 @@ public class LibraryItem implements Externalizable {
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeLong(getId());
-        out.writeUTF(getConsoleSid());
-        out.writeInt(getLibraryId());
+        out.writeObject(getLibrary());
         out.writeObject(getApplication());
         out.writeObject(getFolder());
     }
@@ -65,8 +58,7 @@ public class LibraryItem implements Externalizable {
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         setId(in.readLong());
-        setConsoleSid(in.readUTF());
-        setLibraryId(in.readInt());
+        setLibrary((Library)in.readObject());
         setApplication((Application)in.readObject());
         setFolder((Folder)in.readObject());
     }
@@ -87,31 +79,14 @@ public class LibraryItem implements Externalizable {
         return this;
     }
 
-    @Column(name = "console_sid")
-    public String getConsoleSid() {
-        return consoleSid.get();
+    @ManyToOne
+    @JoinColumn(name = "library_id")
+    public Library getLibrary() {
+        return library;
     }
 
-    public StringProperty consoleSidProperty() {
-        return consoleSid;
-    }
-
-    public LibraryItem setConsoleSid(String consoleSid) {
-        this.consoleSid.set(consoleSid);
-        return this;
-    }
-
-    @Column(name = "library_id")
-    public int getLibraryId() {
-        return libraryId.get();
-    }
-
-    public IntegerProperty libraryIdProperty() {
-        return libraryId;
-    }
-
-    public LibraryItem setLibraryId(int libraryId) {
-        this.libraryId.set(libraryId);
+    public LibraryItem setLibrary(Library library) {
+        this.library = library;
         return this;
     }
 

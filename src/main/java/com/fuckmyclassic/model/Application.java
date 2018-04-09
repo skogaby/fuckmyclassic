@@ -32,7 +32,7 @@ import java.time.LocalDate;
  */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@Table(name = "games")
+@Table(name = "games_and_folders")
 public class Application implements Externalizable {
 
     private static final long serialVersionUID = 1L;

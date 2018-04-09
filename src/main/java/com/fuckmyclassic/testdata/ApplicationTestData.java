@@ -2,6 +2,7 @@ package com.fuckmyclassic.testdata;
 
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
+import com.fuckmyclassic.shared.SharedConstants;
 import javafx.scene.control.TreeItem;
 
 import java.time.LocalDate;
@@ -20,8 +21,8 @@ public class ApplicationTestData {
     public static TreeItem<Application> getTestApplicationData() {
         final TreeItem<Application> rootItem = new TreeItem<>();
         final Folder homeFolder = new Folder();
-        homeFolder.setApplicationName("HOME");
-        homeFolder.setApplicationId("HOME");
+        homeFolder.setApplicationName(SharedConstants.HOME_FOLDER_NAME);
+        homeFolder.setApplicationId(SharedConstants.HOME_FOLDER_ID);
 
         final Application app1 = new Application("CLV-P-NAAAE", "Super Mario Bros.",
                 "/bin/clover-kachikachi-wr /var/squashfs/usr/share/games/nes/kachikachi/CLV-P-NAAAE/CLV-P-NAAAE.nes  --guest-overscan-dimensions 0,0,9,3 --initial-fadein-durations 3,2 --volume 75 --enable-armet",
