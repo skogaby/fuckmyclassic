@@ -18,7 +18,7 @@ public class SharedConstants {
     /**
      * Application name for the home folder.
      */
-    public static String HOME_FOLDER_NAME = "HOME";
+    public static String HOME_FOLDER_NAME = "Home Folder";
 
     /**
      * Application ID for the home folder.
