@@ -30,20 +30,17 @@ public class Library implements Externalizable {
 
     private LongProperty id;
     private StringProperty consoleSid;
-    private IntegerProperty libraryId;
     private StringProperty libraryName;
 
     public Library() {
         this.id = new SimpleLongProperty(this, "id");
         this.consoleSid = new SimpleStringProperty(null);
-        this.libraryId = new SimpleIntegerProperty(-1);
         this.libraryName = new SimpleStringProperty(null);
     }
 
     public Library(final String consoleSid, final int libraryId, final String libraryName) {
         this.id = new SimpleLongProperty(this, "id");
         this.consoleSid = new SimpleStringProperty(consoleSid);
-        this.libraryId = new SimpleIntegerProperty(libraryId);
         this.libraryName = new SimpleStringProperty(libraryName);
     }
 
@@ -51,7 +48,6 @@ public class Library implements Externalizable {
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeLong(getId());
         out.writeUTF(getConsoleSid());
-        out.writeInt(getLibraryId());
         out.writeUTF(getLibraryName());
     }
 
@@ -59,7 +55,6 @@ public class Library implements Externalizable {
     public void readExternal(ObjectInput in) throws IOException {
         setId(in.readLong());
         setConsoleSid(in.readUTF());
-        setLibraryId(in.readInt());
         setLibraryName(in.readUTF());
     }
 
@@ -95,20 +90,6 @@ public class Library implements Externalizable {
 
     public Library setConsoleSid(String consoleSid) {
         this.consoleSid.set(consoleSid);
-        return this;
-    }
-
-    @Column(name = "library_id")
-    public int getLibraryId() {
-        return libraryId.get();
-    }
-
-    public IntegerProperty libraryIdProperty() {
-        return libraryId;
-    }
-
-    public Library setLibraryId(int libraryId) {
-        this.libraryId.set(libraryId);
         return this;
     }
 
