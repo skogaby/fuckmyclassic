@@ -25,10 +25,7 @@ import javafx.scene.control.TreeView;
 import javafx.scene.image.ImageView;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Component;
 
 import javax.usb.UsbException;
@@ -135,6 +132,8 @@ public class MainWindow {
      */
     @FXML
     public void initialize() {
+        LOG.info("Main window initializing");
+
         initializeLibrarySelection();
         initializeApplicationTreeView();
         initializeSaveCountSpinner();
@@ -142,16 +141,29 @@ public class MainWindow {
     }
 
     /**
+     * Sets up the dropdown for the library selection.
+     */
+    private void initializeLibrarySelection() {
+        LOG.debug("Initializing the dropdown box for library selection");
+
+        final List<Library> libraries = libraryDAO.getLibrariesForConsole(this.currentConsoleSid);
+        final ObservableList<Library> items = FXCollections.observableArrayList(libraries);
+        this.cmbCurrentCollection.setItems(items);
+        this.cmbCurrentCollection.getSelectionModel().selectFirst();
+        this.currentLibrary = items.get(0);
+    }
+
+    /**
      * Initializes the TreeView display for the applications and games.
      */
     private void initializeApplicationTreeView() {
+        LOG.debug("Initializing the tree view for games");
+
         this.treeViewGames.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             // bind the UI to the data
             final Application app = newValue.getValue();
             final Application oldApp = oldValue == null ? null : oldValue.getValue();
             this.currentApp = app;
-
-            // LOG.debug(String.format("Selected '%s'", app.getApplicationName()));
 
             BindingHelper.bindProperty(app.applicationIdProperty(), this.lblApplicationId.textProperty());
             BindingHelper.bindProperty(app.applicationSizeProperty().asString(), this.lblGameSize.textProperty());
@@ -176,19 +188,20 @@ public class MainWindow {
 
             // persist the item to the database and refresh the application view
             this.hibernateManager.updateEntity(oldApp);
-            //this.hibernateManager.saveEntity(oldApp);
             this.treeViewGames.refresh();
         });
 
-        // load the library for the current console and library ID
+        // load the library items for the current console and library
+        LOG.info(String.format("Loading library for console %s from the database", this.currentConsoleSid));
         this.treeViewGames.setRoot(applicationDAO.loadLibraryForConsole(this.currentLibrary));
-        //this.treeViewGames.setRoot(ApplicationTestData.getTestApplicationData());
     }
 
     /**
      * Initializes the save count spinner's value factory.
      */
     private void initializeSaveCountSpinner() {
+        LOG.debug("Initializing the spinner for save count");
+
         this.spnSaveCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 4));
     }
 
@@ -196,6 +209,8 @@ public class MainWindow {
      * Sets up the radio buttons to select player count for an app.
      */
     private void initializePlayerCountSelection() {
+        LOG.debug("Initializing the radio buttons for player count selection");
+
         final String userDataSinglePlayer = "single";
         final String userDataNoSimMultiplayer = "multi";
         final String userDataSimMultiplayer = "simul";
@@ -218,16 +233,6 @@ public class MainWindow {
         });
     }
 
-    /**
-     * Sets up the dropdown for the library selection.
-     */
-    private void initializeLibrarySelection() {
-        final List<Library> libraries = libraryDAO.getLibrariesForConsole(this.currentConsoleSid);
-        final ObservableList<Library> items = FXCollections.observableArrayList(libraries);
-        this.cmbCurrentCollection.setItems(items);
-        this.cmbCurrentCollection.getSelectionModel().selectFirst();
-        this.currentLibrary = items.get(0);
-    }
 
     // Stubbed out methods for testing FEL functionality
     @FXML
