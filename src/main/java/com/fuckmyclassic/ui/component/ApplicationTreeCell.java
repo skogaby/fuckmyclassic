@@ -1,13 +1,19 @@
 package com.fuckmyclassic.ui.component;
 
-import com.fuckmyclassic.ui.util.AppImporter;
+import com.fuckmyclassic.management.AppImporter;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.File;
 
 
 /**
@@ -20,6 +26,16 @@ public class ApplicationTreeCell extends TreeCell<Application> {
     static Logger LOG = LogManager.getLogger(ApplicationTreeCell.class.getName());
 
     /**
+     * The path to the stylesheet for this cell
+     */
+    private static final String styleSheetPath = String.format("%s%c%s", "css", File.separatorChar, "MainWindow.css");
+
+    /**
+     * CSS style class for a cell in the TreeView that's selected
+     */
+    private static final String SELECTED_CELL_STYLE_CLASS = "selected-cell";
+
+    /**
      * Helper class to import new games to the current library
      */
     private final AppImporter appImporter;
@@ -30,41 +46,14 @@ public class ApplicationTreeCell extends TreeCell<Application> {
     public ApplicationTreeCell(final AppImporter appImporter) {
         this.appImporter = appImporter;
 
-        // this event is fired if something is dragged over the cell
-        setOnDragOver(event -> {
-            Dragboard db = event.getDragboard();
+        // set the event handlers for the cell
+        setOnDragOver(event -> onDragOver(event));
+        setOnDragDropped(event -> onDragDropped(event));
+        setOnDragEntered(event -> onDragEntered(event));
+        setOnDragExited(event -> onDragExited(event));
 
-            if (db.hasFiles()) {
-                event.acceptTransferModes(TransferMode.COPY);
-            } else {
-                event.consume();
-            }
-        });
-
-        // this event is fired if something is dropped onto the cell
-        setOnDragDropped(event -> {
-            Dragboard db = event.getDragboard();
-            boolean success = false;
-
-            if (db.hasFiles()) {
-                success = true;
-                String filePath;
-
-                final Application app = getItem();
-
-                // if they're dragging files onto a folder, create a new app
-                if (app instanceof Folder) {
-                    final Application newApp = this.appImporter.createAndImportApplicationFromFiles(db.getFiles(), getTreeItem(), this);
-                } else {
-                // else if they're dragging files onto an existing game, just add
-                // the files to the game (in case there are multiple files they need to add)
-                // need to prompt them to make sure this is the desired behavior
-                }
-            }
-
-            event.setDropCompleted(success);
-            event.consume();
-        });
+        // styling
+        getStylesheets().add(styleSheetPath);
     }
 
     /**
@@ -73,7 +62,7 @@ public class ApplicationTreeCell extends TreeCell<Application> {
      * @param empty Whether the cell is empty
      */
     @Override
-    protected void updateItem(Application item, boolean empty) {
+    protected void updateItem(final Application item, final boolean empty) {
         super.updateItem(item, empty);
 
         // handle the display
@@ -83,5 +72,98 @@ public class ApplicationTreeCell extends TreeCell<Application> {
         } else {
             setText(item.getApplicationName());
         }
+    }
+
+    /**
+     * Event handler for when something is dragged over this particular cell.
+     * @param event
+     */
+    private void onDragOver(final DragEvent event) {
+        final Dragboard db = event.getDragboard();
+
+        if (db.hasFiles()) {
+            event.acceptTransferModes(TransferMode.COPY);
+        }
+
+        event.consume();
+    }
+
+    /**
+     * Event handler for when an item is dropped into this cell.
+     * @param event
+     */
+    private void onDragDropped(final DragEvent event) {
+        Dragboard db = event.getDragboard();
+        boolean success = false;
+
+        if (db.hasFiles()) {
+            success = true;
+            this.appImporter.handleFileImportAttempt(db.getFiles(), getTreeItem());
+        }
+
+        event.setDropCompleted(success);
+        event.consume();
+    }
+
+    /**
+     * Event handler for when a drag enters this cell. Used for styling.
+     * @param event
+     */
+    private void onDragEntered(final DragEvent event) {
+        final TreeItem<Application> item = getTreeItem();
+        final Application app = getItem();
+
+        if (app != null) {
+            if (app instanceof Folder) {
+                this.getStyleClass().add(SELECTED_CELL_STYLE_CLASS);
+            } else {
+                // style the parent folder
+                getCellForParentFolder(item).getStyleClass().add(SELECTED_CELL_STYLE_CLASS);
+            }
+        }
+
+        event.consume();
+    }
+
+    /**
+     * Event handler for when a drag leaves this cell. Used for styling.
+     * @param event
+     */
+    private void onDragExited(final DragEvent event) {
+        final TreeItem<Application> item = getTreeItem();
+        final Application app = getItem();
+
+        if (app != null) {
+            if (app instanceof Folder) {
+                this.getStyleClass().removeAll(SELECTED_CELL_STYLE_CLASS);
+            } else {
+                // style the parent folder
+                getCellForParentFolder(item).getStyleClass().removeAll(SELECTED_CELL_STYLE_CLASS);
+            }
+        }
+
+        event.consume();
+    }
+
+    /**
+     * Returns the TreeCell that represents the folder that the given app is inside of.
+     * @param application The application to find the parent folder TreeCell for
+     * @return The TreeCell for the folder the given application is inside of
+     */
+    private TreeCell<Application> getCellForParentFolder(final TreeItem<Application> application) {
+        // we'll need to iterate through the children of the parent
+        // node. fortunately, since TreeCells are recycled, there
+        // should only be about 30 items to iterate through in
+        // the worst case
+        final Application parentFolder = application.getParent().getValue();
+        final Group cellGroup = (Group) getStyleableParent();
+
+        for (Node node : cellGroup.getChildren()) {
+            if (((TreeCell<Application>) node).getTreeItem().getValue().equals(parentFolder)) {
+                return (TreeCell<Application>) node;
+            }
+        }
+
+        return null;
     }
 }

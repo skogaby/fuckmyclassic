@@ -2,8 +2,8 @@ package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.ui.util.AppImporter;
-import com.fuckmyclassic.ui.util.LibraryManager;
+import com.fuckmyclassic.management.AppImporter;
+import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;

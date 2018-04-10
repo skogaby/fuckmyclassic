@@ -1,7 +1,7 @@
-package com.fuckmyclassic.ui.util;
+package com.fuckmyclassic.management;
 
 import com.fuckmyclassic.model.Application;
-import javafx.scene.control.TreeCell;
+import com.fuckmyclassic.model.Folder;
 import javafx.scene.control.TreeItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,14 +27,20 @@ public class AppImporter {
 
     /**
      * Creates an application and copies the data locally, given a filepath, a folder, and a TreeCell
-     * @param files The paths of the files to add
-     * @param parentItem The TreeItem of the folder to add the app to
-     * @param parentCell The TreeCell of the folder to add the app to
-     * @return The new Application object that was created
+     * @param files The files that are being imported or drag 'n' dropped
+     * @param importTarget The TreeItem we're attempting to import the items to (the item that was a drag 'n'
+     *                     drop target, or the folder that we're importing to via the import games button)
      */
-    public Application createAndImportApplicationFromFiles(final List<File> files, final TreeItem<Application> parentItem,
-                                                           final TreeCell<Application> parentCell) {
-        LOG.info(String.format("Importing new app to '%s'", parentItem.getValue().getApplicationName()));
+    public void handleFileImportAttempt(final List<File> files, final TreeItem<Application> importTarget) {
+        TreeItem<Application> targetApp = importTarget;
+
+        if (!(targetApp.getValue() instanceof Folder)) {
+            // make the target the parent folder if the current target is a game
+            targetApp = targetApp.getParent();
+        }
+
+        LOG.info(String.format("Importing new app to '%s'. Number of files: %d",
+                targetApp.getValue().getApplicationName(), files.size()));
 
         // first, generate a new ID for the app
 
@@ -45,7 +51,5 @@ public class AppImporter {
         // create the new TreeItem and insert it
 
         // finally, refresh the View
-
-        return null;
     }
 }

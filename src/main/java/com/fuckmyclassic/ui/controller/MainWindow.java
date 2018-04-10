@@ -2,7 +2,7 @@ package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.ui.util.LibraryManager;
+import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.model.Application;
@@ -111,9 +111,9 @@ public class MainWindow {
     public void initialize() {
         LOG.info("Main window initializing");
 
+        initializeSaveCountSpinner();
         this.libraryManager.initializeLibrarySelection(this);
         this.libraryManager.initializeApplicationTreeView(this);
-        initializeSaveCountSpinner();
         initializePlayerCountSelection();
     }
 

@@ -1,4 +1,4 @@
-package com.fuckmyclassic.ui.util;
+package com.fuckmyclassic.management;
 
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
@@ -8,6 +8,7 @@ import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.component.ApplicationTreeCell;
+import com.fuckmyclassic.ui.util.BindingHelper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.logging.log4j.LogManager;
@@ -132,6 +133,7 @@ public class LibraryManager {
         // load the library items for the current console and library
         LOG.info(String.format("Loading library for console %s from the database", this.currentConsoleSid));
         mainWindow.treeViewGames.setRoot(this.applicationDAO.loadLibraryForConsole(this.currentLibrary));
+        mainWindow.treeViewGames.getSelectionModel().selectFirst();
     }
 
     public Application getCurrentApp() {

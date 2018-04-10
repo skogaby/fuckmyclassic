@@ -1,11 +1,9 @@
 package com.fuckmyclassic.model;
 
-import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.LongProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,16 +33,19 @@ public class LibraryItem implements Externalizable {
     private Library library;
     private Application application;
     private Folder folder;
+    private BooleanProperty selected;
 
     public LibraryItem() {
         this.id = new SimpleLongProperty(this, "id");
+        this.selected = new SimpleBooleanProperty(true);
     }
 
-    public LibraryItem(final Library library, final Application application, final Folder folder) {
+    public LibraryItem(final Library library, final Application application, final Folder folder, final boolean selected) {
         this.id = new SimpleLongProperty(this, "id");
         this.library = library;
         this.application = application;
         this.folder = folder;
+        this.selected = new SimpleBooleanProperty(selected);
     }
 
     @Override
@@ -53,6 +54,7 @@ public class LibraryItem implements Externalizable {
         out.writeObject(getLibrary());
         out.writeObject(getApplication());
         out.writeObject(getFolder());
+        out.writeBoolean(isSelected());
     }
 
     @Override
@@ -61,6 +63,7 @@ public class LibraryItem implements Externalizable {
         setLibrary((Library)in.readObject());
         setApplication((Application)in.readObject());
         setFolder((Folder)in.readObject());
+        setSelected(in.readBoolean());
     }
 
     @Id
@@ -109,6 +112,20 @@ public class LibraryItem implements Externalizable {
 
     public LibraryItem setFolder(Folder folder) {
         this.folder = folder;
+        return this;
+    }
+
+    @Column(name = "is_selected")
+    public boolean isSelected() {
+        return selected.get();
+    }
+
+    public BooleanProperty selectedProperty() {
+        return selected;
+    }
+
+    public LibraryItem setSelected(boolean selected) {
+        this.selected.set(selected);
         return this;
     }
 }
