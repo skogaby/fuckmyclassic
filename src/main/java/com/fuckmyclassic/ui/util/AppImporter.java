@@ -1,7 +1,6 @@
-package com.fuckmyclassic.controller.util;
+package com.fuckmyclassic.ui.util;
 
 import com.fuckmyclassic.model.Application;
-import com.fuckmyclassic.model.Folder;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import org.apache.logging.log4j.LogManager;

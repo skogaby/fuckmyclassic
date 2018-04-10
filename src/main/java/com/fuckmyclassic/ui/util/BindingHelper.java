@@ -1,4 +1,4 @@
-package com.fuckmyclassic.controller.util;
+package com.fuckmyclassic.ui.util;
 
 import javafx.beans.binding.Binding;
 import javafx.beans.property.Property;

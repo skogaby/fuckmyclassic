@@ -1,12 +1,13 @@
-package com.fuckmyclassic.controller.util;
+package com.fuckmyclassic.ui.util;
 
-import com.fuckmyclassic.controller.MainWindow;
+import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.LibraryDAO;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.shared.SharedConstants;
+import com.fuckmyclassic.ui.component.ApplicationTreeCell;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.logging.log4j.LogManager;

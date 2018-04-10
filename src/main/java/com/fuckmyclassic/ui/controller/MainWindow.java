@@ -1,8 +1,8 @@
-package com.fuckmyclassic.controller;
+package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.controller.util.LibraryManager;
+import com.fuckmyclassic.ui.util.LibraryManager;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.model.Application;

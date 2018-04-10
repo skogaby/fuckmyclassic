@@ -1,5 +1,6 @@
-package com.fuckmyclassic.controller.util;
+package com.fuckmyclassic.ui.component;
 
+import com.fuckmyclassic.ui.util.AppImporter;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
 import javafx.scene.control.TreeCell;
@@ -49,9 +50,7 @@ public class ApplicationTreeCell extends TreeCell<Application> {
                 success = true;
                 String filePath;
 
-                //final TreeItem<Application> item = getTreeItem();
                 final Application app = getItem();
-                //final TreeItem<Application> parentItem = (app instanceof Folder) ? item : item.getParent();
 
                 // if they're dragging files onto a folder, create a new app
                 if (app instanceof Folder) {
