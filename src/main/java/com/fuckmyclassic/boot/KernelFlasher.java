@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.usb.UsbException;
+import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,7 +23,7 @@ public class KernelFlasher {
     static Logger LOG = LogManager.getLogger(KernelFlasher.class.getName());
 
     /** The path to the memboot.img prebaked kernel we memboot into for flashing */
-    public static final String BOOT_IMG_PATH = "uboot/memboot.img";
+    public static final String BOOT_IMG_PATH = String.format("%s%c%s", "uboot", File.separatorChar, "memboot.img");
 
     /**
      * The SSH connection to the console.

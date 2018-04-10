@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import javax.usb.UsbException;
 import javax.usb.UsbInterface;
 import javax.usb.UsbPipe;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -30,10 +31,10 @@ public class FelDevice {
     static Logger LOG = LogManager.getLogger(FelDevice.class.getName());
 
     /** The path to the fes1.bin file */
-    public static final String FES1_PATH = "uboot/fes1.bin";
+    public static final String FES1_PATH = String.format("%s%c%s", "uboot", File.separatorChar, "fes1.bin");
 
     /** The path to the uboot.bin file */
-    public static final String UBOOT_PATH = "uboot/ubootSD.bin";
+    public static final String UBOOT_PATH = String.format("%s%c%s", "uboot", File.separatorChar, "ubootSD.bin");
 
     /** The claimed USB FEL interface */
     private final UsbInterface iface;

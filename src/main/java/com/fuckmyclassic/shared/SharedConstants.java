@@ -34,4 +34,14 @@ public class SharedConstants {
      * Default console SID when none have been connected, yet.
      */
     public static String DEFAULT_CONSOLE_SID = "UNKNOWN";
+
+    /**
+     * Directory where to store actual game data
+     */
+    public static String GAMES_DIRECTORY = "games";
+
+    /**
+     * Directory where boxart is stored
+     */
+    public static String BOXART_DIRECTORY = "boxart";
 }
