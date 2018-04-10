@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 
 
 /**
@@ -98,7 +99,16 @@ public class ApplicationTreeCell extends TreeCell<Application> {
 
         if (db.hasFiles()) {
             success = true;
-            this.appImporter.handleFileImportAttempt(db.getFiles(), getTreeItem());
+
+            try {
+                this.appImporter.handleFileImportAttempt(db.getFiles(), getTreeItem());
+            } catch (IOException e) {
+                LOG.error("Error in importing new app");
+                LOG.error(e.getMessage());
+                e.printStackTrace();
+            }
+
+            getTreeView().refresh();
         }
 
         event.setDropCompleted(success);

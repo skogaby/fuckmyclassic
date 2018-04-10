@@ -44,11 +44,6 @@ public class LibraryManager {
     private final LibraryDAO libraryDAO;
 
     /**
-     * Helper class to import new apps and games
-     */
-    private final AppImporter appImporter;
-
-    /**
      * The currently selected application in the TreeView
      */
     private Application currentApp;
@@ -65,11 +60,10 @@ public class LibraryManager {
 
     @Autowired
     public LibraryManager(final HibernateManager hibernateManager, final ApplicationDAO applicationDAO,
-                          final LibraryDAO libraryDAO, final AppImporter appImporter) {
+                          final LibraryDAO libraryDAO) {
         this.hibernateManager = hibernateManager;
         this.applicationDAO = applicationDAO;
         this.libraryDAO = libraryDAO;
-        this.appImporter = appImporter;
         this.currentApp = null;
         this.currentConsoleSid = SharedConstants.DEFAULT_CONSOLE_SID;
         this.currentLibrary = null;
@@ -95,7 +89,7 @@ public class LibraryManager {
         LOG.debug("Initializing the tree view for games");
 
         // initialize the cell factory so we can control theming, drag and drop, etc.
-        mainWindow.treeViewGames.setCellFactory(param -> new ApplicationTreeCell(this.appImporter));
+        mainWindow.treeViewGames.setCellFactory(param -> new ApplicationTreeCell(new AppImporter(this.hibernateManager, this)));
 
         // whenever an item is selected, we'll bind the data to the UI and save whatever app
         // was being viewed previously to the database

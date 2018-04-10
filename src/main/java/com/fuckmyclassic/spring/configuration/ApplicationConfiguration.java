@@ -2,7 +2,6 @@ package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.management.AppImporter;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
@@ -28,12 +27,7 @@ public class ApplicationConfiguration {
 
     @Bean
     public LibraryManager libraryManager(HibernateManager hibernateManager, ApplicationDAO applicationDAO,
-                                         LibraryDAO libraryDAO, AppImporter appImporter) {
-        return new LibraryManager(hibernateManager, applicationDAO, libraryDAO, appImporter);
-    }
-
-    @Bean
-    public AppImporter appImporter() {
-        return new AppImporter();
+                                         LibraryDAO libraryDAO) {
+        return new LibraryManager(hibernateManager, applicationDAO, libraryDAO);
     }
 }
