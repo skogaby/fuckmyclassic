@@ -1,5 +1,6 @@
 package com.fuckmyclassic;
 
+import com.fuckmyclassic.spring.configuration.ApplicationConfiguration;
 import com.fuckmyclassic.shared.SharedConstants;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

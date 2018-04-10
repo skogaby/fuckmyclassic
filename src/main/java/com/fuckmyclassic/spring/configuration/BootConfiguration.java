@@ -1,4 +1,4 @@
-package com.fuckmyclassic.configuration;
+package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Configuration
-@ComponentScan({"com.fuckmyclassic.configuration"})
+@ComponentScan({"com.fuckmyclassic.spring.configuration"})
 public class BootConfiguration {
 
     @Bean

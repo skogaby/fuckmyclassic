@@ -1,4 +1,4 @@
-package com.fuckmyclassic.configuration;
+package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.ApplicationDAOImpl;

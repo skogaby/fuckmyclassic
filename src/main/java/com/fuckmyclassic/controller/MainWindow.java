@@ -2,15 +2,11 @@ package com.fuckmyclassic.controller;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
+import com.fuckmyclassic.controller.util.LibraryManager;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.LibraryDAO;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Library;
-import com.fuckmyclassic.shared.SharedConstants;
-import com.fuckmyclassic.testdata.ApplicationTestData;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -32,7 +28,6 @@ import javax.usb.UsbException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
 
@@ -46,23 +41,23 @@ public class MainWindow {
     static Logger LOG = LogManager.getLogger(MainWindow.class.getName());
 
     // References to all of the UI objects that we need to manipulate
-    @FXML private ComboBox<Library> cmbCurrentCollection;
-    @FXML private TreeView<Application> treeViewGames;
-    @FXML private Label lblApplicationId;
-    @FXML private Label lblGameSize;
-    @FXML private CheckBox chkCompressed;
-    @FXML private TextField txtApplicationName;
-    @FXML private TextField txtApplicationSortName;
-    @FXML private ToggleGroup maxPlayersToggleGroup;
-    @FXML private RadioButton radOnePlayer;
-    @FXML private RadioButton radTwoPlayerNoSim;
-    @FXML private RadioButton radTwoPlayerSim;
-    @FXML private DatePicker dateReleaseDate;
-    @FXML private TextField txtPublisher;
-    @FXML private Spinner spnSaveCount;
-    @FXML private TextField txtCommandLine;
-    @FXML private TextField txtGameGenieCodes;
-    @FXML private ImageView imgBoxArtPreview;
+    public ComboBox<Library> cmbCurrentCollection;
+    public TreeView<Application> treeViewGames;
+    public Label lblApplicationId;
+    public Label lblGameSize;
+    public CheckBox chkCompressed;
+    public TextField txtApplicationName;
+    public TextField txtApplicationSortName;
+    public ToggleGroup maxPlayersToggleGroup;
+    public RadioButton radOnePlayer;
+    public RadioButton radTwoPlayerNoSim;
+    public RadioButton radTwoPlayerSim;
+    public DatePicker dateReleaseDate;
+    public TextField txtPublisher;
+    public Spinner spnSaveCount;
+    public TextField txtCommandLine;
+    public TextField txtGameGenieCodes;
+    public ImageView imgBoxArtPreview;
 
     /**
      * Hibernate manager, for interacting with the database.
@@ -75,11 +70,6 @@ public class MainWindow {
     private final ApplicationDAO applicationDAO;
 
     /**
-     * DAO for library metadata.
-     */
-    private final LibraryDAO libraryDAO;
-
-    /**
      * Helper instance for membooting consoles.
      */
     private final MembootHelper membootHelper;
@@ -90,41 +80,28 @@ public class MainWindow {
     private final KernelFlasher kernelFlasher;
 
     /**
-     * The currently selected application in the TreeView.
+     * Helper instance for managing the library loading and view.
      */
-    private Application currentApp;
-
-    /**
-     * The SID for the console whose collection we're viewing.
-     */
-    private String currentConsoleSid;
-
-    /**
-     * The current library we're viewing.
-     */
-    private Library currentLibrary;
+    private final LibraryManager libraryManager;
 
     /**
      * Constructor.
      * @param hibernateManager
      * @param applicationDAO
-     * @param libraryDAO
      * @param membootHelper
      * @param kernelFlasher
      */
     @Autowired
     public MainWindow(final HibernateManager hibernateManager,
                       final ApplicationDAO applicationDAO,
-                      final LibraryDAO libraryDAO,
                       final MembootHelper membootHelper,
-                      final KernelFlasher kernelFlasher) {
+                      final KernelFlasher kernelFlasher,
+                      final LibraryManager libraryManager) {
         this.hibernateManager = hibernateManager;
         this.applicationDAO = applicationDAO;
-        this.libraryDAO = libraryDAO;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
-        this.currentConsoleSid = SharedConstants.DEFAULT_CONSOLE_SID;
-        this.currentLibrary = null;
+        this.libraryManager = libraryManager;
     }
 
     /**
@@ -134,66 +111,10 @@ public class MainWindow {
     public void initialize() {
         LOG.info("Main window initializing");
 
-        initializeLibrarySelection();
-        initializeApplicationTreeView();
+        this.libraryManager.initializeLibrarySelection(this);
+        this.libraryManager.initializeApplicationTreeView(this);
         initializeSaveCountSpinner();
         initializePlayerCountSelection();
-    }
-
-    /**
-     * Sets up the dropdown for the library selection.
-     */
-    private void initializeLibrarySelection() {
-        LOG.debug("Initializing the dropdown box for library selection");
-
-        final List<Library> libraries = libraryDAO.getLibrariesForConsole(this.currentConsoleSid);
-        final ObservableList<Library> items = FXCollections.observableArrayList(libraries);
-        this.cmbCurrentCollection.setItems(items);
-        this.cmbCurrentCollection.getSelectionModel().selectFirst();
-        this.currentLibrary = items.get(0);
-    }
-
-    /**
-     * Initializes the TreeView display for the applications and games.
-     */
-    private void initializeApplicationTreeView() {
-        LOG.debug("Initializing the tree view for games");
-
-        this.treeViewGames.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            // bind the UI to the data
-            final Application app = newValue.getValue();
-            final Application oldApp = oldValue == null ? null : oldValue.getValue();
-            this.currentApp = app;
-
-            BindingHelper.bindProperty(app.applicationIdProperty(), this.lblApplicationId.textProperty());
-            BindingHelper.bindProperty(app.applicationSizeProperty().asString(), this.lblGameSize.textProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.compressedProperty(),
-                    app.compressedProperty(), this.chkCompressed.selectedProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.applicationNameProperty(),
-                    app.applicationNameProperty(), this.txtApplicationName.textProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.sortNameProperty(),
-                    app.sortNameProperty(), this.txtApplicationSortName.textProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.releaseDateProperty(),
-                    app.releaseDateProperty(), this.dateReleaseDate.valueProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.publisherProperty(),
-                    app.publisherProperty(), this.txtPublisher.textProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.saveCountProperty(),
-                    app.saveCountProperty(), this.spnSaveCount.getValueFactory().valueProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.commandLineProperty(),
-                    app.commandLineProperty(), this.txtCommandLine.textProperty());
-
-            this.radOnePlayer.setSelected(app.isSinglePlayer());
-            this.radTwoPlayerNoSim.setSelected(app.getNonSimultaneousMultiplayer());
-            this.radTwoPlayerSim.setSelected(app.isSimultaneousMultiplayer());
-
-            // persist the item to the database and refresh the application view
-            this.hibernateManager.updateEntity(oldApp);
-            this.treeViewGames.refresh();
-        });
-
-        // load the library items for the current console and library
-        LOG.info(String.format("Loading library for console %s from the database", this.currentConsoleSid));
-        this.treeViewGames.setRoot(applicationDAO.loadLibraryForConsole(this.currentLibrary));
     }
 
     /**
@@ -226,9 +147,9 @@ public class MainWindow {
         this.maxPlayersToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 final String userData = (String) newValue.getUserData();
-                this.currentApp.setSinglePlayer(userData.equals(userDataSinglePlayer));
-                this.currentApp.setNonSimultaneousMultiplayer(userData.equals(userDataNoSimMultiplayer));
-                this.currentApp.setSimultaneousMultiplayer(userData.equals(userDataSimMultiplayer));
+                this.libraryManager.getCurrentApp().setSinglePlayer(userData.equals(userDataSinglePlayer));
+                this.libraryManager.getCurrentApp().setNonSimultaneousMultiplayer(userData.equals(userDataNoSimMultiplayer));
+                this.libraryManager.getCurrentApp().setSimultaneousMultiplayer(userData.equals(userDataSimMultiplayer));
             }
         });
     }

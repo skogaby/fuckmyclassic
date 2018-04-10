@@ -1,10 +1,9 @@
-package com.fuckmyclassic.configuration;
+package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.network.SshConnection;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import java.net.URISyntaxException;
