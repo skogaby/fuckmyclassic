@@ -93,10 +93,6 @@ public class LibraryManager {
 
         // initialize the cell factory so we can control theming, drag and drop, etc.
         mainWindow.treeViewGames.setCellFactory(param -> new ApplicationTreeCell(new AppImporter(this.hibernateManager, this)));
-        mainWindow.imgBoxArtPreview.setFitWidth(228);
-        mainWindow.imgBoxArtPreview.setPreserveRatio(true);
-        mainWindow.imgBoxArtPreview.setSmooth(true);
-        mainWindow.imgBoxArtPreview.setCache(true);
 
         // whenever an item is selected, we'll bind the data to the UI and save whatever app
         // was being viewed previously to the database
@@ -141,7 +137,7 @@ public class LibraryManager {
 
         // load the library items for the current console and library
         LOG.info(String.format("Loading library for console %s from the database", this.currentConsoleSid));
-        mainWindow.treeViewGames.setRoot(this.applicationDAO.loadLibraryForConsole(this.currentLibrary));
+        mainWindow.treeViewGames.setRoot(this.applicationDAO.loadApplicationTreeForLibrary(this.currentLibrary));
         mainWindow.treeViewGames.getSelectionModel().selectFirst();
     }
 

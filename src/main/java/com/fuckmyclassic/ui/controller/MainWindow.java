@@ -34,11 +34,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
 
@@ -130,6 +127,7 @@ public class MainWindow {
         LOG.info("Main window initializing");
 
         initializeSaveCountSpinner();
+        initializeBoxartImageView();
         this.libraryManager.initializeLibrarySelection(this);
         this.libraryManager.initializeApplicationTreeView(this);
         initializePlayerCountSelection();
@@ -142,6 +140,16 @@ public class MainWindow {
         LOG.debug("Initializing the spinner for save count");
 
         this.spnSaveCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 4));
+    }
+
+    /**
+     * Initialized the ImageView that shows the boxart preview.
+     */
+    private void initializeBoxartImageView() {
+        this.imgBoxArtPreview.setFitWidth(SharedConstants.BOXART_SIZE);
+        this.imgBoxArtPreview.setPreserveRatio(true);
+        this.imgBoxArtPreview.setSmooth(true);
+        this.imgBoxArtPreview.setCache(true);
     }
 
     /**

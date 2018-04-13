@@ -56,8 +56,9 @@ public class ApplicationDAOImpl implements ApplicationDAO {
     }
 
     /**
-     * Loads all the applications that are in a given folder (in the given library)
-     * @param parentFolder The folder to load the applications from
+     * Loads all the applications that are in a given folder (in the given library), inserting
+     * them into the given Tree structure represented by parentFolder.
+     * @param parentFolder The folder to load the applications from and insert the nodes under
      * @param library The metadata for the library that needs to be loaded.
      */
     @Override
@@ -88,7 +89,7 @@ public class ApplicationDAOImpl implements ApplicationDAO {
      * @return A tree representing the requested library.
      */
     @Override
-    public TreeItem<Application> loadLibraryForConsole(Library library) {
+    public TreeItem<Application> loadApplicationTreeForLibrary(Library library) {
         // check if the HOME folder exists, create one if it doesn't
         Application homeFolder = loadApplicationByAppId(SharedConstants.HOME_FOLDER_ID);
 

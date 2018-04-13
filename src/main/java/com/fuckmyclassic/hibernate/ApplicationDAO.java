@@ -23,12 +23,11 @@ public interface ApplicationDAO {
      * @param library The metadata for the library that needs to be loaded.
      */
     void loadApplicationsForFolder(TreeItem<Application> parentFolder, Library library);
-
-
+    
     /**
-     * Loads a library from the database, given a console SID and a library ID.
+     * Loads a library from the database, given the library's metadata.
      * @param library The metadata for the library that needs to be loaded.
      * @return A tree representing the requested library.
      */
-    TreeItem<Application> loadLibraryForConsole(Library library);
+    TreeItem<Application> loadApplicationTreeForLibrary(Library library);
 }
