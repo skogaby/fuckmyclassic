@@ -31,4 +31,15 @@ public class ImageResizer {
         g2d.dispose();
         return resized;
     }
+
+    /**
+     * Dump method to say whether a file is an image based on its file extension.
+     * @param filename The name of the file to check
+     * @return Whether or not it has an extension we consider a valid image
+     */
+    public static boolean isImageFile(final String filename) {
+        return filename.endsWith(".png") ||
+                filename.endsWith(".jpg") ||
+                filename.endsWith(".bmp");
+    }
 }

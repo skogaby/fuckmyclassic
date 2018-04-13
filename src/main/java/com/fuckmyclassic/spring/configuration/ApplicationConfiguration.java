@@ -23,14 +23,14 @@ public class ApplicationConfiguration {
     @Bean
     public MainWindow getMainWindow(HibernateManager hibernateManager, ApplicationDAO applicationDAO,
                                     MembootHelper membootHelper, KernelFlasher kernelFlasher,
-                                    LibraryManager libraryManager, ImageResizer imageResizer) {
-        return new MainWindow(hibernateManager, applicationDAO, membootHelper, kernelFlasher, libraryManager, imageResizer);
+                                    LibraryManager libraryManager) {
+        return new MainWindow(hibernateManager, applicationDAO, membootHelper, kernelFlasher, libraryManager);
     }
 
     @Bean
     public LibraryManager libraryManager(HibernateManager hibernateManager, ApplicationDAO applicationDAO,
-                                         LibraryDAO libraryDAO) {
-        return new LibraryManager(hibernateManager, applicationDAO, libraryDAO);
+                                         LibraryDAO libraryDAO, ImageResizer imageResizer) {
+        return new LibraryManager(hibernateManager, applicationDAO, libraryDAO, imageResizer);
     }
 
     @Bean

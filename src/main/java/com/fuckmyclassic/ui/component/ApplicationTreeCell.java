@@ -103,9 +103,7 @@ public class ApplicationTreeCell extends TreeCell<Application> {
             try {
                 this.appImporter.handleFileImportAttempt(db.getFiles(), getTreeItem());
             } catch (IOException e) {
-                LOG.error("Error in importing new app");
-                LOG.error(e.getMessage());
-                e.printStackTrace();
+                LOG.error("Error in importing new app", e);
             }
 
             getTreeView().refresh();

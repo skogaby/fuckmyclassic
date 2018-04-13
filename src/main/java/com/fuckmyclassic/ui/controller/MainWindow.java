@@ -22,20 +22,21 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.stage.FileChooser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.imageio.ImageIO;
 import javax.usb.UsbException;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Locale;
 
 import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
 
@@ -93,11 +94,6 @@ public class MainWindow {
     private final LibraryManager libraryManager;
 
     /**
-     * Helper to resize boxart images when we import them.
-     */
-    private final ImageResizer imageResizer;
-
-    /**
      * Constructor.
      * @param hibernateManager
      * @param applicationDAO
@@ -109,14 +105,12 @@ public class MainWindow {
                       final ApplicationDAO applicationDAO,
                       final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher,
-                      final LibraryManager libraryManager,
-                      final ImageResizer imageResizer) {
+                      final LibraryManager libraryManager) {
         this.hibernateManager = hibernateManager;
         this.applicationDAO = applicationDAO;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
-        this.imageResizer = imageResizer;
     }
 
     /**
@@ -150,6 +144,46 @@ public class MainWindow {
         this.imgBoxArtPreview.setPreserveRatio(true);
         this.imgBoxArtPreview.setSmooth(true);
         this.imgBoxArtPreview.setCache(true);
+
+        // enable drag 'n' drop to change the boxart image
+        this.imgBoxArtPreview.setOnDragOver(event -> {
+            final Dragboard db = event.getDragboard();
+
+            if (db.hasFiles() && db.getFiles().size() == 1) {
+                final String filename = db.getFiles().get(0).getName().toLowerCase(Locale.getDefault());
+
+                // make sure it's an image file
+                if (ImageResizer.isImageFile(filename)) {
+                    event.acceptTransferModes(TransferMode.COPY);
+                }
+            }
+
+            event.consume();
+        });
+
+        this.imgBoxArtPreview.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+
+            if (db.hasFiles() && db.getFiles().size() == 1) {
+                final File boxart = db.getFiles().get(0);
+
+                // make sure it's an image file
+                if (ImageResizer.isImageFile(boxart.getName())) {
+                    try {
+                        final Image previewImage = this.libraryManager.importBoxartForCurrentApp(boxart);
+                        this.imgBoxArtPreview.setImage(previewImage);
+                        success = true;
+                    } catch (IOException e) {
+                        LOG.error("Unable to import new boxart for the current app", e);
+                        success = false;
+                    }
+                }
+            }
+
+            event.setDropCompleted(success);
+            event.consume();
+        });
     }
 
     /**
@@ -186,37 +220,13 @@ public class MainWindow {
     @FXML
     private void onBrowseForBoxArtClicked() throws IOException {
         final FileChooser fileChooser = new FileChooser();
-        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("PNG files (*.png)", "*.png"));
-        final File boxArt = fileChooser.showOpenDialog(this.treeViewGames.getScene().getWindow());
+        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("Image files", "*.png", "*.bmp", "*.jpg"));
+        final File boxartFile = fileChooser.showOpenDialog(this.treeViewGames.getScene().getWindow());
 
-        // if they selected a file, copy it to the boxart directory and replace whatever was there before
-        if (boxArt != null) {
-            // we need to read the selected image into a buffer, resize it to our desired dimensions,
-            // then save the 2 new copies in our boxart directory.
-            final Application currentApp = this.libraryManager.getCurrentApp();
-            LOG.debug(String.format("Selected '%s' as boxart for '%s'", boxArt.getName(), currentApp.getApplicationName()));
-
-            final String newBoxartFile = String.format("%s.png", currentApp.getApplicationId());
-            final String newThumbnailFile = String.format("%s_small.png", currentApp.getApplicationId());
-
-            // first, do the main boxart
-            BufferedImage inputImage = ImageIO.read(boxArt);
-            BufferedImage resizedImage = this.imageResizer.resizeProportionally(inputImage,
-                    SharedConstants.BOXART_SIZE, SharedConstants.BOXART_SIZE);
-            File outputFile = new File(Paths.get(SharedConstants.BOXART_DIRECTORY, newBoxartFile).toUri());
-            ImageIO.write(resizedImage, "png", outputFile);
-
-            // now, do the thumbnail
-            resizedImage = this.imageResizer.resizeProportionally(inputImage,
-                    SharedConstants.THUMBNAIL_SIZE, SharedConstants.THUMBNAIL_SIZE);
-            outputFile = new File(Paths.get(SharedConstants.BOXART_DIRECTORY, newThumbnailFile).toUri());
-            ImageIO.write(resizedImage, "png", outputFile);
-
-            // also update the Application itself and refresh the view
-            currentApp.setBoxArtPath(newBoxartFile);
-            this.hibernateManager.updateEntity(currentApp);
-            this.imgBoxArtPreview.setImage(new Image(
-                    Paths.get("file:" + SharedConstants.BOXART_DIRECTORY, newBoxartFile).toString()));
+        if (boxartFile != null && ImageResizer.isImageFile(boxartFile.getName())) {
+            final Image previewImage = this.libraryManager.importBoxartForCurrentApp(
+                    fileChooser.showOpenDialog(this.treeViewGames.getScene().getWindow()));
+            this.imgBoxArtPreview.setImage(previewImage);
         }
     }
 

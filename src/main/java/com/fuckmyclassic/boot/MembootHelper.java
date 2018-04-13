@@ -76,8 +76,7 @@ public class MembootHelper {
 
             return true;
         } catch (Exception e) {
-            LOG.error(String.format("Exception occurred during memboot: %s%n%s",
-                    e.getMessage(), e.getStackTrace()));
+            LOG.error("Exception occurred during memboot", e);
             return false;
         } finally {
             if (device != null) {

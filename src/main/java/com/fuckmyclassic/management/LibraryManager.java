@@ -9,6 +9,7 @@ import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.component.ApplicationTreeCell;
 import com.fuckmyclassic.ui.util.BindingHelper;
+import com.fuckmyclassic.ui.util.ImageResizer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
@@ -18,6 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
@@ -47,6 +52,11 @@ public class LibraryManager {
     private final LibraryDAO libraryDAO;
 
     /**
+     * For resizing boxart images we import.
+     */
+    private final ImageResizer imageResizer;
+
+    /**
      * The currently selected application in the TreeView
      */
     private Application currentApp;
@@ -63,10 +73,11 @@ public class LibraryManager {
 
     @Autowired
     public LibraryManager(final HibernateManager hibernateManager, final ApplicationDAO applicationDAO,
-                          final LibraryDAO libraryDAO) {
+                          final LibraryDAO libraryDAO, final ImageResizer imageResizer) {
         this.hibernateManager = hibernateManager;
         this.applicationDAO = applicationDAO;
         this.libraryDAO = libraryDAO;
+        this.imageResizer = imageResizer;
         this.currentApp = null;
         this.currentConsoleSid = SharedConstants.DEFAULT_CONSOLE_SID;
         this.currentLibrary = null;
@@ -139,6 +150,44 @@ public class LibraryManager {
         LOG.info(String.format("Loading library for console %s from the database", this.currentConsoleSid));
         mainWindow.treeViewGames.setRoot(this.applicationDAO.loadApplicationTreeForLibrary(this.currentLibrary));
         mainWindow.treeViewGames.getSelectionModel().selectFirst();
+    }
+
+    /**
+     * Imports a new boxart file for the currently selected app.
+     * @param boxArt The File containing the new boxart
+     * @return An Image object to set for the boxart preview
+     * @throws IOException
+     */
+    public Image importBoxartForCurrentApp(final File boxArt) throws IOException {
+        if (boxArt != null) {
+            // we need to read the selected image into a buffer, resize it to our desired dimensions,
+            // then save the 2 new copies in our boxart directory.
+            LOG.debug(String.format("Selected '%s' as boxart for '%s'", boxArt.getName(), this.currentApp.getApplicationName()));
+
+            final String newBoxartFile = String.format("%s.png", this.currentApp.getApplicationId());
+            final String newThumbnailFile = String.format("%s_small.png", this.currentApp.getApplicationId());
+
+            // first, do the main boxart
+            BufferedImage inputImage = ImageIO.read(boxArt);
+            BufferedImage resizedImage = this.imageResizer.resizeProportionally(inputImage,
+                    SharedConstants.BOXART_SIZE, SharedConstants.BOXART_SIZE);
+            File outputFile = new File(Paths.get(SharedConstants.BOXART_DIRECTORY, newBoxartFile).toUri());
+            ImageIO.write(resizedImage, "png", outputFile);
+
+            // now, do the thumbnail
+            resizedImage = this.imageResizer.resizeProportionally(inputImage,
+                    SharedConstants.THUMBNAIL_SIZE, SharedConstants.THUMBNAIL_SIZE);
+            outputFile = new File(Paths.get(SharedConstants.BOXART_DIRECTORY, newThumbnailFile).toUri());
+            ImageIO.write(resizedImage, "png", outputFile);
+
+            // also update the Application itself
+            this.currentApp.setBoxArtPath(newBoxartFile);
+            this.hibernateManager.updateEntity(currentApp);
+
+            return new Image(Paths.get("file:" + SharedConstants.BOXART_DIRECTORY, newBoxartFile).toString());
+        } else {
+            return null;
+        }
     }
 
     public Application getCurrentApp() {
