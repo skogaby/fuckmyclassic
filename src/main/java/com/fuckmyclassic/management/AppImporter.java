@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Random;
@@ -41,9 +42,11 @@ public class AppImporter {
         this.hibernateManager = hibernateManager;
         this.libraryManager = libraryManager;
 
-        // ensure that the games directory exists
+        // ensure that the games and boxart directories exists
         final File gamesDir = new File(SharedConstants.GAMES_DIRECTORY);
+        final File boxartDir = new File(SharedConstants.BOXART_DIRECTORY);
         gamesDir.mkdirs();
+        boxartDir.mkdirs();
     }
 
     /**
@@ -53,18 +56,18 @@ public class AppImporter {
      *                     drop target, or the folder that we're importing to via the import games button)
      */
     public void handleFileImportAttempt(final List<File> files, final TreeItem<Application> importTarget) throws IOException {
-        TreeItem<Application> targetApp = importTarget;
+        TreeItem<Application> targetFolder = importTarget;
 
-        if (!(targetApp.getValue() instanceof Folder)) {
+        if (!(targetFolder.getValue() instanceof Folder)) {
             // make the target the parent folder if the current target is a game
-            targetApp = targetApp.getParent();
+            targetFolder = targetFolder.getParent();
         }
 
         LOG.info(String.format("Attempting to import new files to '%s'. Number of files: %d",
-                targetApp.getValue().getApplicationName(), files.size()));
+                targetFolder.getValue().getApplicationName(), files.size()));
 
         // testing
-        this.importSingleFileAsNewApp(files.get(0), targetApp);
+        this.importFilesAsNewApp(files, targetFolder);
 
         /*
             Drag and drop behavior. For all imports, below is the logic for which folder to insert into:
@@ -93,26 +96,32 @@ public class AppImporter {
          */
     }
 
-    public void importSingleFileAsNewApp(final File file, final TreeItem<Application> importFolder) throws IOException {
+    public void importFilesAsNewApp(final List<File> files, final TreeItem<Application> importFolder) throws IOException {
         // first, generate a new ID for the app
         final String newAppId = generateRandomAppId();
         LOG.info(String.format("Creating new app with ID '%s'", newAppId));
 
-        // then, create the directory if it doesn't exist and copy the file
-        final File targetGameDirectory = new File(String.format("%s%c%s%c%s%c%s", SharedConstants.GAMES_DIRECTORY, File.separatorChar,
-                importFolder.getValue().getApplicationId(), File.separatorChar, newAppId, File.separatorChar, file.getName()));
+        // then, create the directory if it doesn't exist and copy the files
+        final File targetGameDirectory = new File(Paths.get(
+                SharedConstants.GAMES_DIRECTORY, importFolder.getValue().getApplicationId(), newAppId).toUri());
         targetGameDirectory.mkdirs();
-        Files.copy(file.toPath(), targetGameDirectory.toPath(), new CopyOption[] {
-                StandardCopyOption.REPLACE_EXISTING,
-                StandardCopyOption.COPY_ATTRIBUTES
-        });
+        long applicationSize = 0;
+
+        for (File file : files) {
+            Files.copy(file.toPath(), Paths.get(targetGameDirectory.toString(), file.getName()), new CopyOption[] {
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.COPY_ATTRIBUTES
+            });
+
+            applicationSize += file.length();
+        }
 
         // create the Application and LibraryItem and persist them to the database
         final Application newApp = new Application()
                 .setApplicationId(newAppId)
-                .setApplicationName(file.getName())
+                .setApplicationName(files.get(0).getName())
                 .setSinglePlayer(true)
-                .setApplicationSize(file.length())
+                .setApplicationSize(applicationSize)
                 .setCompressed(false);
         this.hibernateManager.saveEntity(newApp);
 

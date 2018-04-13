@@ -7,6 +7,8 @@ import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Library;
+import com.fuckmyclassic.shared.SharedConstants;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -18,16 +20,23 @@ import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeView;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.usb.UsbException;
+import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
 
@@ -152,6 +161,33 @@ public class MainWindow {
                 this.libraryManager.getCurrentApp().setSimultaneousMultiplayer(userData.equals(userDataSimMultiplayer));
             }
         });
+    }
+
+    /**
+     * Event handler for the button to browse for boxart.
+     */
+    @FXML
+    private void onBrowseForBoxArtClicked() throws IOException {
+        final FileChooser fileChooser = new FileChooser();
+        final File boxArt = fileChooser.showOpenDialog(this.treeViewGames.getScene().getWindow());
+
+        // if they selected a file, copy it to the boxart directory and replace whatever was there before
+        if (boxArt != null) {
+            final String newFilename = String.format(
+                    "%s.png", this.libraryManager.getCurrentApp().getApplicationId());
+            Files.copy(boxArt.toPath(), Paths.get(SharedConstants.BOXART_DIRECTORY, newFilename),
+                    new CopyOption[] {
+                            StandardCopyOption.REPLACE_EXISTING,
+                            StandardCopyOption.COPY_ATTRIBUTES
+                    });
+
+            // also update the Application itself and refresh the view
+            final Application app = this.libraryManager.getCurrentApp();
+            app.setBoxArtPath(newFilename);
+            this.hibernateManager.updateEntity(app);
+            this.imgBoxArtPreview.setImage(new Image(
+                    Paths.get("file:" + SharedConstants.BOXART_DIRECTORY, app.getBoxArtPath()).toString()));
+        }
     }
 
 

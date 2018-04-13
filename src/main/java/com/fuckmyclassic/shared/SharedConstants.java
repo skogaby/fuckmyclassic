@@ -44,4 +44,9 @@ public class SharedConstants {
      * Directory where boxart is stored
      */
     public static String BOXART_DIRECTORY = "boxart";
+
+    /**
+     * Resource path for the warning icon.
+     */
+    public static String WARNING_IMAGE = "images/warning.png";
 }

@@ -11,11 +11,14 @@ import com.fuckmyclassic.ui.component.ApplicationTreeCell;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.image.Image;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -90,6 +93,10 @@ public class LibraryManager {
 
         // initialize the cell factory so we can control theming, drag and drop, etc.
         mainWindow.treeViewGames.setCellFactory(param -> new ApplicationTreeCell(new AppImporter(this.hibernateManager, this)));
+        mainWindow.imgBoxArtPreview.setFitWidth(228);
+        mainWindow.imgBoxArtPreview.setPreserveRatio(true);
+        mainWindow.imgBoxArtPreview.setSmooth(true);
+        mainWindow.imgBoxArtPreview.setCache(true);
 
         // whenever an item is selected, we'll bind the data to the UI and save whatever app
         // was being viewed previously to the database
@@ -118,6 +125,14 @@ public class LibraryManager {
             mainWindow.radOnePlayer.setSelected(app.isSinglePlayer());
             mainWindow.radTwoPlayerNoSim.setSelected(app.getNonSimultaneousMultiplayer());
             mainWindow.radTwoPlayerSim.setSelected(app.isSimultaneousMultiplayer());
+
+            // set the box art if there is any
+            if (!StringUtils.isEmpty(app.getBoxArtPath())) {
+                mainWindow.imgBoxArtPreview.setImage(new Image(
+                        Paths.get("file:" + SharedConstants.BOXART_DIRECTORY, app.getBoxArtPath()).toString()));
+            } else {
+                mainWindow.imgBoxArtPreview.setImage(new Image(SharedConstants.WARNING_IMAGE));
+            }
 
             // persist the item to the database and refresh the application view
             this.hibernateManager.updateEntity(oldApp);
