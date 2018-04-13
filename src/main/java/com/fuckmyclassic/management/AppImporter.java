@@ -107,7 +107,7 @@ public class AppImporter {
 
         // then, create the directory if it doesn't exist and copy the files
         final File targetGameDirectory = new File(Paths.get(
-                SharedConstants.GAMES_DIRECTORY, importFolder.getValue().getApplicationId(), newAppId).toUri());
+                SharedConstants.GAMES_DIRECTORY, newAppId).toUri());
         targetGameDirectory.mkdirs();
         long applicationSize = 0;
 
