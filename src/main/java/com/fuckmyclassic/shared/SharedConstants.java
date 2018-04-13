@@ -49,4 +49,14 @@ public class SharedConstants {
      * Resource path for the warning icon.
      */
     public static String WARNING_IMAGE = "images/warning.png";
+
+    /**
+     * The size of each dimension for the game boxarts
+     */
+    public static int BOXART_SIZE = 228;
+
+    /**
+     * The size of each dimension for the game thumbnails
+     */
+    public static int THUMBNAIL_SIZE = 40;
 }

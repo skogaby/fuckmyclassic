@@ -8,7 +8,7 @@ import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.shared.SharedConstants;
-import javafx.event.ActionEvent;
+import com.fuckmyclassic.ui.util.ImageResizer;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -28,7 +28,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.imageio.ImageIO;
 import javax.usb.UsbException;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -94,6 +96,11 @@ public class MainWindow {
     private final LibraryManager libraryManager;
 
     /**
+     * Helper to resize boxart images when we import them.
+     */
+    private final ImageResizer imageResizer;
+
+    /**
      * Constructor.
      * @param hibernateManager
      * @param applicationDAO
@@ -105,12 +112,14 @@ public class MainWindow {
                       final ApplicationDAO applicationDAO,
                       final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher,
-                      final LibraryManager libraryManager) {
+                      final LibraryManager libraryManager,
+                      final ImageResizer imageResizer) {
         this.hibernateManager = hibernateManager;
         this.applicationDAO = applicationDAO;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
+        this.imageResizer = imageResizer;
     }
 
     /**
@@ -169,27 +178,39 @@ public class MainWindow {
     @FXML
     private void onBrowseForBoxArtClicked() throws IOException {
         final FileChooser fileChooser = new FileChooser();
+        fileChooser.setSelectedExtensionFilter(new FileChooser.ExtensionFilter("PNG files (*.png)", "*.png"));
         final File boxArt = fileChooser.showOpenDialog(this.treeViewGames.getScene().getWindow());
 
         // if they selected a file, copy it to the boxart directory and replace whatever was there before
         if (boxArt != null) {
-            final String newFilename = String.format(
-                    "%s.png", this.libraryManager.getCurrentApp().getApplicationId());
-            Files.copy(boxArt.toPath(), Paths.get(SharedConstants.BOXART_DIRECTORY, newFilename),
-                    new CopyOption[] {
-                            StandardCopyOption.REPLACE_EXISTING,
-                            StandardCopyOption.COPY_ATTRIBUTES
-                    });
+            // we need to read the selected image into a buffer, resize it to our desired dimensions,
+            // then save the 2 new copies in our boxart directory.
+            final Application currentApp = this.libraryManager.getCurrentApp();
+            LOG.debug(String.format("Selected '%s' as boxart for '%s'", boxArt.getName(), currentApp.getApplicationName()));
+
+            final String newBoxartFile = String.format("%s.png", currentApp.getApplicationId());
+            final String newThumbnailFile = String.format("%s_small.png", currentApp.getApplicationId());
+
+            // first, do the main boxart
+            BufferedImage inputImage = ImageIO.read(boxArt);
+            BufferedImage resizedImage = this.imageResizer.resizeProportionally(inputImage,
+                    SharedConstants.BOXART_SIZE, SharedConstants.BOXART_SIZE);
+            File outputFile = new File(Paths.get(SharedConstants.BOXART_DIRECTORY, newBoxartFile).toUri());
+            ImageIO.write(resizedImage, "png", outputFile);
+
+            // now, do the thumbnail
+            resizedImage = this.imageResizer.resizeProportionally(inputImage,
+                    SharedConstants.THUMBNAIL_SIZE, SharedConstants.THUMBNAIL_SIZE);
+            outputFile = new File(Paths.get(SharedConstants.BOXART_DIRECTORY, newThumbnailFile).toUri());
+            ImageIO.write(resizedImage, "png", outputFile);
 
             // also update the Application itself and refresh the view
-            final Application app = this.libraryManager.getCurrentApp();
-            app.setBoxArtPath(newFilename);
-            this.hibernateManager.updateEntity(app);
+            currentApp.setBoxArtPath(newBoxartFile);
+            this.hibernateManager.updateEntity(currentApp);
             this.imgBoxArtPreview.setImage(new Image(
-                    Paths.get("file:" + SharedConstants.BOXART_DIRECTORY, app.getBoxArtPath()).toString()));
+                    Paths.get("file:" + SharedConstants.BOXART_DIRECTORY, newBoxartFile).toString()));
         }
     }
-
 
     // Stubbed out methods for testing FEL functionality
     @FXML

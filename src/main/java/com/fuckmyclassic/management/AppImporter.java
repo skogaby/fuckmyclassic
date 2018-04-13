@@ -56,6 +56,10 @@ public class AppImporter {
      *                     drop target, or the folder that we're importing to via the import games button)
      */
     public void handleFileImportAttempt(final List<File> files, final TreeItem<Application> importTarget) throws IOException {
+        if (importTarget == null) {
+            return;
+        }
+
         TreeItem<Application> targetFolder = importTarget;
 
         if (!(targetFolder.getValue() instanceof Folder)) {
