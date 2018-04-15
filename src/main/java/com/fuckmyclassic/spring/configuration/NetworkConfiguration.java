@@ -1,6 +1,6 @@
 package com.fuckmyclassic.spring.configuration;
 
-import com.fuckmyclassic.network.SshConnection;
+import com.fuckmyclassic.network.NetworkConnection;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +27,7 @@ public class NetworkConfiguration {
     }
 
     @Bean
-    public SshConnection getSshConnection(JSch jSch) throws JSchException {
-        return new SshConnection(jSch);
+    public NetworkConnection getSshConnection(JSch jSch) throws JSchException {
+        return new NetworkConnection(jSch);
     }
 }

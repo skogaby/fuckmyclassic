@@ -1,6 +1,6 @@
 package com.fuckmyclassic.boot;
 
-import com.fuckmyclassic.network.SshConnection;
+import com.fuckmyclassic.network.NetworkConnection;
 import com.jcraft.jsch.JSchException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +28,7 @@ public class KernelFlasher {
     /**
      * The SSH connection to the console.
      */
-    private final SshConnection sshConnection;
+    private final NetworkConnection networkConnection;
 
     /**
      * The helper for memboot operations.
@@ -37,11 +37,11 @@ public class KernelFlasher {
 
     /**
      * Constructor.
-     * @param sshConnection
+     * @param networkConnection
      */
     @Autowired
-    public KernelFlasher(final SshConnection sshConnection, final MembootHelper membootHelper) {
-        this.sshConnection = sshConnection;
+    public KernelFlasher(final NetworkConnection networkConnection, final MembootHelper membootHelper) {
+        this.networkConnection = networkConnection;
         this.membootHelper = membootHelper;
     }
 
@@ -61,14 +61,14 @@ public class KernelFlasher {
         while (!connected) {
             try {
                 Thread.sleep(3000);
-                this.sshConnection.connect();
+                this.networkConnection.connect();
                 connected = true;
             } catch (JSchException e) {
                 LOG.debug("No SSH connection available yet");
             }
         }
 
-        if (this.sshConnection.isConnected()) {
+        if (this.networkConnection.isConnected()) {
             LOG.debug("Connected to SSH successfully! Initiating kernel installation");
         } else {
             LOG.error("Something went wrong, couldn't SSH to console after membooting");

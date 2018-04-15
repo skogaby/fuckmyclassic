@@ -317,8 +317,8 @@
          <left>
             <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER">
                <children>
-                  <Circle fx:id="shpConnectionStatus" fill="#dd0f0f" radius="10.0" stroke="BLACK" strokeType="INSIDE" />
-                  <Label text="%MainWindow.lblConsoleDisconnected">
+                  <Circle fx:id="shpConnectionStatus" fill="CRIMSON" radius="10.0" stroke="BLACK" strokeType="INSIDE" />
+                  <Label fx:id="lblConnectionStatus" text="%MainWindow.lblConsoleDisconnected">
                      <HBox.margin>
                         <Insets left="5.0" />
                      </HBox.margin>

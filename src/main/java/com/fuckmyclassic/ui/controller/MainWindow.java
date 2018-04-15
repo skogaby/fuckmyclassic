@@ -7,7 +7,9 @@ import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Library;
+import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.shared.SharedConstants;
+import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -24,6 +26,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,6 +70,8 @@ public class MainWindow {
     public TextField txtCommandLine;
     public TextField txtGameGenieCodes;
     public ImageView imgBoxArtPreview;
+    public Circle shpConnectionStatus;
+    public Label lblConnectionStatus;
 
     /**
      * Hibernate manager, for interacting with the database.
@@ -94,6 +99,11 @@ public class MainWindow {
     private final LibraryManager libraryManager;
 
     /**
+     * Manager for SSH operations and network connections.
+     */
+    private final NetworkConnection networkConnection;
+
+    /**
      * Constructor.
      * @param hibernateManager
      * @param applicationDAO
@@ -105,12 +115,14 @@ public class MainWindow {
                       final ApplicationDAO applicationDAO,
                       final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher,
-                      final LibraryManager libraryManager) {
+                      final LibraryManager libraryManager,
+                      final NetworkConnection networkConnection) {
         this.hibernateManager = hibernateManager;
         this.applicationDAO = applicationDAO;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
+        this.networkConnection = networkConnection;
     }
 
     /**
@@ -125,6 +137,7 @@ public class MainWindow {
         this.libraryManager.initializeLibrarySelection(this);
         this.libraryManager.initializeApplicationTreeView(this);
         initializePlayerCountSelection();
+        initializeConnectionStatus();
     }
 
     /**
@@ -212,6 +225,16 @@ public class MainWindow {
                 this.libraryManager.getCurrentApp().setSimultaneousMultiplayer(userData.equals(userDataSimMultiplayer));
             }
         });
+    }
+
+    /**
+     * Bind the connection status display to the real connection object.
+     */
+    private void initializeConnectionStatus() {
+        BindingHelper.bindProperty(this.networkConnection.connectionStatusColorProperty(),
+                this.shpConnectionStatus.fillProperty());
+        BindingHelper.bindProperty(this.networkConnection.connectionStatusProperty(),
+                this.lblConnectionStatus.textProperty());
     }
 
     /**

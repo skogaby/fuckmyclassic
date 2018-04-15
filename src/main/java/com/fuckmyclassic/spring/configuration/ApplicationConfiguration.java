@@ -3,6 +3,7 @@ package com.fuckmyclassic.spring.configuration;
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.management.LibraryManager;
+import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
@@ -23,8 +24,8 @@ public class ApplicationConfiguration {
     @Bean
     public MainWindow getMainWindow(HibernateManager hibernateManager, ApplicationDAO applicationDAO,
                                     MembootHelper membootHelper, KernelFlasher kernelFlasher,
-                                    LibraryManager libraryManager) {
-        return new MainWindow(hibernateManager, applicationDAO, membootHelper, kernelFlasher, libraryManager);
+                                    LibraryManager libraryManager, NetworkConnection networkConnection) {
+        return new MainWindow(hibernateManager, applicationDAO, membootHelper, kernelFlasher, libraryManager, networkConnection);
     }
 
     @Bean

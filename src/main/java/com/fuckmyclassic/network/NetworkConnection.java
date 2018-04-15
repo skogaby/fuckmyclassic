@@ -4,6 +4,12 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.scene.paint.Paint;
+import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 
 import static com.fuckmyclassic.network.NetworkConstants.CONNECTION_TIMEOUT;
@@ -21,15 +28,21 @@ import static com.fuckmyclassic.network.NetworkConstants.CONSOLE_PORT;
 import static com.fuckmyclassic.network.NetworkConstants.USER_NAME;
 
 /**
- * Class to represent an SSH connection to the Mini console.
- * It can also be used to statically issue one-off commands
- * if you don't need to retain a long-lived connection.
+ * Class to represent a network connection to the Mini console. This
+ * class handles connecting to the console and re-connecting automatically
+ * once it's detected, as well as enabling SSH commands.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Component
-public class SshConnection {
+public class NetworkConnection {
 
-    static Logger LOG = LogManager.getLogger(SshConnection.class.getName());
+    static Logger LOG = LogManager.getLogger(NetworkConnection.class.getName());
+
+    // Resource keys for connection status localized strings and displays
+    private static final String DISCONNECTED_STATUS_KEY = "MainWindow.lblConsoleDisconnected";
+    private static final String CONNECTED_STATUS_KEY = "MainWindow.lblConsoleConnected";
+    private static final String DISCONNECTED_CIRCLE_COLOR = "CRIMSON";
+    private static final String CONNECTED_CIRCLE_COLOR = "LIMEGREEN";
 
     /**
      * Private instance of the JSch structure.
@@ -42,17 +55,55 @@ public class SshConnection {
     private final Session connection;
 
     /**
+     * An FXML property that exposes whether the console is connected so we can
+     * bind it to the UI.
+     */
+    private boolean connected;
+
+    /**
+     * An FXML property that displays the localized connection status so
+     * we can bind it to the UI.
+     */
+    private StringProperty connectionStatus;
+
+    /**
+     * An FXML property that displays the color representing the connection status.
+     */
+    private ObjectProperty<Paint> connectionStatusColor;
+
+    /**
+     * ResourceBundle for getting localized connection status strings.
+     */
+    private ResourceBundle resourceBundle;
+
+    /**
      * Constructor.
      * @throws JSchException
+
      */
     @Autowired
-    public SshConnection(final JSch jSch) throws JSchException {
+    public NetworkConnection(final JSch jSch) throws JSchException {
         Properties config = new java.util.Properties();
         config.put("StrictHostKeyChecking", "no");
 
         this.jSch = jSch;
         this.connection = this.jSch.getSession(USER_NAME, CONSOLE_IP, CONSOLE_PORT);
         this.connection.setConfig(config);
+        this.connection.setServerAliveInterval(500);
+        this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
+        this.connected = false;
+        this.connectionStatus = new SimpleStringProperty(resourceBundle.getString(DISCONNECTED_STATUS_KEY));
+        this.connectionStatusColor = new SimpleObjectProperty<>(Paint.valueOf(DISCONNECTED_CIRCLE_COLOR));
+
+        // set a background service that polls for a connection periodically
+        final NetworkPollingService pollingService = new NetworkPollingService();
+        pollingService.setNetworkConnection(this);
+        pollingService.setPeriod(Duration.seconds(3));
+        pollingService.setOnSucceeded(t -> {
+            setConnected((boolean)t.getSource().getValue());
+        });
+
+        pollingService.start();
     }
 
     /**
@@ -60,27 +111,26 @@ public class SshConnection {
      * @throws JSchException
      */
     public void connect() throws JSchException {
-        if (this.connection != null &&
-                !this.connection.isConnected()) {
+        if (this.connection != null && !this.connection.isConnected()) {
             this.connection.connect(CONNECTION_TIMEOUT);
         }
-    }
-
-    /**
-     * Returns whether or not the SSH session is currently connected.
-     * @return
-     */
-    public boolean isConnected() {
-        return (this.connection != null && this.connection.isConnected());
     }
 
     /**
      * Disconnects the SSH session from the console.
      */
     public void disconnect() {
-        if (isConnected()) {
+        if (this.isConnected()) {
             this.connection.disconnect();
         }
+    }
+
+    /**
+     * Says whether the SSH connection is established.
+     * @return
+     */
+    public boolean isConnected() {
+        return (this.connection != null && this.connection.isConnected());
     }
 
     /**
@@ -185,5 +235,37 @@ public class SshConnection {
         } else {
             return -1;
         }
+    }
+
+    public void setConnected(boolean connected) {
+        // set the connection status properties
+        setConnectionStatus(resourceBundle.getString(
+                connected ? CONNECTED_STATUS_KEY : DISCONNECTED_STATUS_KEY));
+        setConnectionStatusColor(Paint.valueOf(
+                connected ? CONNECTED_CIRCLE_COLOR : DISCONNECTED_CIRCLE_COLOR));
+    }
+
+    public String getConnectionStatus() {
+        return connectionStatus.get();
+    }
+
+    public StringProperty connectionStatusProperty() {
+        return connectionStatus;
+    }
+
+    public void setConnectionStatus(String connectionStatus) {
+        this.connectionStatus.set(connectionStatus);
+    }
+
+    public Paint getConnectionStatusColor() {
+        return connectionStatusColor.get();
+    }
+
+    public ObjectProperty<Paint> connectionStatusColorProperty() {
+        return connectionStatusColor;
+    }
+
+    public void setConnectionStatusColor(Paint connectionStatusColor) {
+        this.connectionStatusColor.set(connectionStatusColor);
     }
 }

@@ -1,5 +1,6 @@
 package com.fuckmyclassic;
 
+import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.spring.configuration.ApplicationConfiguration;
 import com.fuckmyclassic.shared.SharedConstants;
 import javafx.application.Application;
@@ -40,6 +41,13 @@ public class Main extends Application {
 
             if (session != null && session.isOpen()) {
                 session.close();
+            }
+
+            // close the SSH connection if there is one
+            final NetworkConnection networkConnection = applicationContext.getBean(NetworkConnection.class);
+
+            if (networkConnection != null) {
+                networkConnection.disconnect();
             }
 
             applicationContext.close();

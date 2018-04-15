@@ -2,7 +2,7 @@ package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.network.SshConnection;
+import com.fuckmyclassic.network.NetworkConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +16,8 @@ import org.springframework.context.annotation.Configuration;
 public class BootConfiguration {
 
     @Bean
-    public KernelFlasher getKernelFlasher(SshConnection sshConnection, MembootHelper membootHelper) {
-        return new KernelFlasher(sshConnection, membootHelper);
+    public KernelFlasher getKernelFlasher(NetworkConnection networkConnection, MembootHelper membootHelper) {
+        return new KernelFlasher(networkConnection, membootHelper);
     }
 
     @Bean MembootHelper getMembootHelper() {

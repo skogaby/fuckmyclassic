@@ -2,6 +2,7 @@ package com.fuckmyclassic.shared;
 
 /**
  * Shared class to contain constant values.
+ * @author skogaby (skogabyskogaby@gmail.com)
  */
 public class SharedConstants {
 
