@@ -5,7 +5,7 @@ import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.shared.SharedConstants;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.CheckBoxTreeItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,23 +51,23 @@ public class AppImporter {
     /**
      * Creates an application and copies the data locally, given a filepath, a folder, and a TreeCell
      * @param files The files that are being imported or drag 'n' dropped
-     * @param importTarget The TreeItem we're attempting to import the items to (the item that was a drag 'n'
+     * @param importTarget The CheckBoxTreeItem we're attempting to import the items to (the item that was a drag 'n'
      *                     drop target, or the folder that we're importing to via the import games button)
      */
-    public void handleFileImportAttempt(final List<File> files, final TreeItem<Application> importTarget) throws IOException {
+    public void handleFileImportAttempt(final List<File> files, final CheckBoxTreeItem<LibraryItem> importTarget) throws IOException {
         if (importTarget == null) {
             return;
         }
 
-        TreeItem<Application> targetFolder = importTarget;
+        CheckBoxTreeItem<LibraryItem> targetFolder = importTarget;
 
-        if (!(targetFolder.getValue() instanceof Folder)) {
+        if (!(targetFolder.getValue().getApplication() instanceof Folder)) {
             // make the target the parent folder if the current target is a game
-            targetFolder = targetFolder.getParent();
+            targetFolder = (CheckBoxTreeItem) targetFolder.getParent();
         }
 
         LOG.info(String.format("Attempting to import new files to '%s'. Number of files: %d",
-                targetFolder.getValue().getApplicationName(), files.size()));
+                targetFolder.getValue().getApplication().getApplicationName(), files.size()));
 
         // testing
         this.importFilesAsNewApp(files, targetFolder);
@@ -99,7 +99,7 @@ public class AppImporter {
          */
     }
 
-    public void importFilesAsNewApp(final List<File> files, final TreeItem<Application> importFolder) throws IOException {
+    public void importFilesAsNewApp(final List<File> files, final CheckBoxTreeItem<LibraryItem> importFolder) throws IOException {
         // first, generate a new ID for the app
         final String newAppId = generateRandomAppId();
         LOG.info(String.format("Creating new app with ID '%s'", newAppId));
@@ -132,12 +132,22 @@ public class AppImporter {
         final LibraryItem newLibraryItem = new LibraryItem()
                 .setLibrary(this.libraryManager.getCurrentLibrary())
                 .setApplication(newApp)
-                .setFolder((Folder) importFolder.getValue())
+                .setFolder((Folder) importFolder.getValue().getApplication())
                 .setSelected(true);
         this.hibernateManager.saveEntity(newLibraryItem);
 
-        // create the new TreeItem and insert it
-        final TreeItem<Application> newItem = new TreeItem<>(newApp);
+        // create the new CheckBoxTreeItem and insert it
+        final CheckBoxTreeItem<LibraryItem> newItem = new CheckBoxTreeItem<>(newLibraryItem, null, true, true);
+        newItem.selectedProperty().addListener(((observable, oldValue, newValue) -> {
+            final LibraryItem item = newItem.getValue();
+            boolean old = item.isSelected();
+
+            if (newValue != old) {
+                item.setSelected(newValue);
+                this.hibernateManager.updateEntity(item);
+            }
+        }));
+
         importFolder.getChildren().add(newItem);
     }
 

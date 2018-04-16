@@ -1,12 +1,13 @@
 package com.fuckmyclassic.ui.component;
 
 import com.fuckmyclassic.management.AppImporter;
-import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
+import com.fuckmyclassic.model.LibraryItem;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.TreeCell;
-import javafx.scene.control.TreeItem;
+import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
@@ -22,7 +23,7 @@ import java.io.IOException;
  * that shows the folders and applications.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
-public class ApplicationTreeCell extends TreeCell<Application> {
+public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
 
     static Logger LOG = LogManager.getLogger(ApplicationTreeCell.class.getName());
 
@@ -63,7 +64,7 @@ public class ApplicationTreeCell extends TreeCell<Application> {
      * @param empty Whether the cell is empty
      */
     @Override
-    protected void updateItem(final Application item, final boolean empty) {
+    public void updateItem(final LibraryItem item, final boolean empty) {
         super.updateItem(item, empty);
 
         // handle the display
@@ -71,7 +72,7 @@ public class ApplicationTreeCell extends TreeCell<Application> {
             setText(null);
             setGraphic(null);
         } else {
-            setText(item.getApplicationName());
+            setText(item.getApplication().getApplicationName());
         }
     }
 
@@ -101,7 +102,7 @@ public class ApplicationTreeCell extends TreeCell<Application> {
             success = true;
 
             try {
-                this.appImporter.handleFileImportAttempt(db.getFiles(), getTreeItem());
+                this.appImporter.handleFileImportAttempt(db.getFiles(), (CheckBoxTreeItem) getTreeItem());
             } catch (IOException e) {
                 LOG.error("Error in importing new app", e);
             }
@@ -118,11 +119,11 @@ public class ApplicationTreeCell extends TreeCell<Application> {
      * @param event
      */
     private void onDragEntered(final DragEvent event) {
-        final TreeItem<Application> item = getTreeItem();
-        final Application app = getItem();
+        final CheckBoxTreeItem<LibraryItem> item = (CheckBoxTreeItem) getTreeItem();
+        final LibraryItem app = getItem();
 
         if (app != null) {
-            if (app instanceof Folder) {
+            if (app.getApplication() instanceof Folder) {
                 this.getStyleClass().add(SELECTED_CELL_STYLE_CLASS);
             } else {
                 // style the parent folder
@@ -138,11 +139,11 @@ public class ApplicationTreeCell extends TreeCell<Application> {
      * @param event
      */
     private void onDragExited(final DragEvent event) {
-        final TreeItem<Application> item = getTreeItem();
-        final Application app = getItem();
+        final CheckBoxTreeItem<LibraryItem> item = (CheckBoxTreeItem) getTreeItem();
+        final LibraryItem app = getItem();
 
         if (app != null) {
-            if (app instanceof Folder) {
+            if (app.getApplication() instanceof Folder) {
                 this.getStyleClass().removeAll(SELECTED_CELL_STYLE_CLASS);
             } else {
                 // style the parent folder
@@ -155,20 +156,20 @@ public class ApplicationTreeCell extends TreeCell<Application> {
 
     /**
      * Returns the TreeCell that represents the folder that the given app is inside of.
-     * @param application The application to find the parent folder TreeCell for
+     * @param item The application to find the parent folder TreeCell for
      * @return The TreeCell for the folder the given application is inside of
      */
-    private TreeCell<Application> getCellForParentFolder(final TreeItem<Application> application) {
+    private TreeCell<LibraryItem> getCellForParentFolder(final CheckBoxTreeItem<LibraryItem> item) {
         // we'll need to iterate through the children of the parent
         // node. fortunately, since TreeCells are recycled, there
         // should only be about 30 items to iterate through in
         // the worst case
-        final Application parentFolder = application.getParent().getValue();
+        final LibraryItem parentFolder = item.getParent().getValue();
         final Group cellGroup = (Group) getStyleableParent();
 
         for (Node node : cellGroup.getChildren()) {
-            if (((TreeCell<Application>) node).getTreeItem().getValue().equals(parentFolder)) {
-                return (TreeCell<Application>) node;
+            if (((TreeCell<LibraryItem>) node).getTreeItem().getValue().equals(parentFolder)) {
+                return (TreeCell<LibraryItem>) node;
             }
         }
 

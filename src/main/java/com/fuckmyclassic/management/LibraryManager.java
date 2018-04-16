@@ -1,5 +1,6 @@
 package com.fuckmyclassic.management;
 
+import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
@@ -12,6 +13,7 @@ import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.image.Image;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,6 +73,11 @@ public class LibraryManager {
      */
     private Library currentLibrary;
 
+    /**
+     * A reference to the current library's actual tree structure data.
+     */
+    private CheckBoxTreeItem<LibraryItem> currentLibraryTree;
+
     @Autowired
     public LibraryManager(final HibernateManager hibernateManager, final ApplicationDAO applicationDAO,
                           final LibraryDAO libraryDAO, final ImageResizer imageResizer) {
@@ -103,13 +110,14 @@ public class LibraryManager {
         LOG.debug("Initializing the tree view for games");
 
         // initialize the cell factory so we can control theming, drag and drop, etc.
-        mainWindow.treeViewGames.setCellFactory(param -> new ApplicationTreeCell(new AppImporter(this.hibernateManager, this)));
+        mainWindow.treeViewGames.setCellFactory(param ->
+                new ApplicationTreeCell(new AppImporter(this.hibernateManager, this)));
 
         // whenever an item is selected, we'll bind the data to the UI and save whatever app
         // was being viewed previously to the database
         mainWindow.treeViewGames.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            final Application app = newValue.getValue();
-            final Application oldApp = oldValue == null ? null : oldValue.getValue();
+            final Application app = newValue.getValue().getApplication();
+            final Application oldApp = oldValue == null ? null : oldValue.getValue().getApplication();
             this.currentApp = app;
 
             BindingHelper.bindProperty(app.applicationIdProperty(), mainWindow.lblApplicationId.textProperty());
@@ -148,7 +156,8 @@ public class LibraryManager {
 
         // load the library items for the current console and library
         LOG.info(String.format("Loading library for console %s from the database", this.currentConsoleSid));
-        mainWindow.treeViewGames.setRoot(this.applicationDAO.loadApplicationTreeForLibrary(this.currentLibrary));
+        this.currentLibraryTree = this.applicationDAO.loadApplicationTreeForLibrary(this.currentLibrary);
+        mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
         mainWindow.treeViewGames.getSelectionModel().selectFirst();
     }
 
@@ -215,5 +224,9 @@ public class LibraryManager {
     public LibraryManager setCurrentLibrary(Library currentLibrary) {
         this.currentLibrary = currentLibrary;
         return this;
+    }
+
+    public CheckBoxTreeItem<LibraryItem> getCurrentLibraryTree() {
+        return currentLibraryTree;
     }
 }

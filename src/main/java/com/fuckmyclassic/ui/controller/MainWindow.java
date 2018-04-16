@@ -5,8 +5,8 @@ import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Library;
+import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.util.BindingHelper;
@@ -55,7 +55,7 @@ public class MainWindow {
 
     // References to all of the UI objects that we need to manipulate
     public ComboBox<Library> cmbCurrentCollection;
-    public TreeView<Application> treeViewGames;
+    public TreeView<LibraryItem> treeViewGames;
     public Label lblApplicationId;
     public Label lblGameSize;
     public CheckBox chkCompressed;
