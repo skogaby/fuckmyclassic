@@ -4,7 +4,9 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -58,7 +60,7 @@ public class NetworkConnection {
      * An FXML property that exposes whether the console is connected so we can
      * bind it to the UI.
      */
-    private boolean connected;
+    private BooleanProperty disconnected;
 
     /**
      * An FXML property that displays the localized connection status so
@@ -85,7 +87,7 @@ public class NetworkConnection {
     public NetworkConnection(final JSch jSch) throws JSchException {
         this.jSch = jSch;
         this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
-        this.connected = false;
+        this.disconnected = new SimpleBooleanProperty(true);
         this.connectionStatus = new SimpleStringProperty(resourceBundle.getString(DISCONNECTED_STATUS_KEY));
         this.connectionStatusColor = new SimpleObjectProperty<>(Paint.valueOf(DISCONNECTED_CIRCLE_COLOR));
 
@@ -94,7 +96,6 @@ public class NetworkConnection {
         pollingService.setNetworkConnection(this);
         pollingService.setPeriod(Duration.seconds(3));
         pollingService.setOnSucceeded(t -> setConnected((boolean)t.getSource().getValue()));
-
         pollingService.start();
     }
 
@@ -246,6 +247,7 @@ public class NetworkConnection {
                 connected ? CONNECTED_STATUS_KEY : DISCONNECTED_STATUS_KEY));
         setConnectionStatusColor(Paint.valueOf(
                 connected ? CONNECTED_CIRCLE_COLOR : DISCONNECTED_CIRCLE_COLOR));
+        this.disconnected.setValue(!connected);
     }
 
     public String getConnectionStatus() {
@@ -270,5 +272,9 @@ public class NetworkConnection {
 
     public void setConnectionStatusColor(Paint connectionStatusColor) {
         this.connectionStatusColor.set(connectionStatusColor);
+    }
+
+    public BooleanProperty disconnectedProperty() {
+        return disconnected;
     }
 }

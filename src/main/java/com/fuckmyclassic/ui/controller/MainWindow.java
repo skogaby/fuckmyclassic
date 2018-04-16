@@ -12,6 +12,7 @@ import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -72,6 +73,7 @@ public class MainWindow {
     public ImageView imgBoxArtPreview;
     public Circle shpConnectionStatus;
     public Label lblConnectionStatus;
+    public Button btnSyncGames;
 
     /**
      * Hibernate manager, for interacting with the database.
@@ -132,12 +134,13 @@ public class MainWindow {
     public void initialize() {
         LOG.info("Main window initializing");
 
-        initializeSaveCountSpinner();
-        initializeBoxartImageView();
+        this.initializeSaveCountSpinner();
+        this.initializeBoxartImageView();
         this.libraryManager.initializeLibrarySelection(this);
         this.libraryManager.initializeApplicationTreeView(this);
-        initializePlayerCountSelection();
-        initializeConnectionStatus();
+        this.initializePlayerCountSelection();
+        this.initializeConnectionStatus();
+        this.initializeConnectionBoundProperties();
     }
 
     /**
@@ -235,6 +238,14 @@ public class MainWindow {
                 this.shpConnectionStatus.fillProperty());
         BindingHelper.bindProperty(this.networkConnection.connectionStatusProperty(),
                 this.lblConnectionStatus.textProperty());
+    }
+
+    /**
+     * Bind all the properties that are disabled/enabled depending on the presence on a console
+     */
+    private void initializeConnectionBoundProperties() {
+        BindingHelper.bindProperty(this.networkConnection.disconnectedProperty(),
+                this.btnSyncGames.disableProperty());
     }
 
     /**
