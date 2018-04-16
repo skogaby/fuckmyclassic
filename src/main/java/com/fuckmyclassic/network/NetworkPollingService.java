@@ -6,7 +6,6 @@ import javafx.concurrent.Task;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 /**
  * Simple scheduled service to poll the console for a connection and set the

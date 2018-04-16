@@ -52,7 +52,7 @@ public class NetworkConnection {
     /**
      * The actual SSH connection to the console.
      */
-    private final Session connection;
+    public Session connection;
 
     /**
      * An FXML property that exposes whether the console is connected so we can
@@ -83,13 +83,7 @@ public class NetworkConnection {
      */
     @Autowired
     public NetworkConnection(final JSch jSch) throws JSchException {
-        Properties config = new java.util.Properties();
-        config.put("StrictHostKeyChecking", "no");
-
         this.jSch = jSch;
-        this.connection = this.jSch.getSession(USER_NAME, CONSOLE_IP, CONSOLE_PORT);
-        this.connection.setConfig(config);
-        this.connection.setServerAliveInterval(500);
         this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
         this.connected = false;
         this.connectionStatus = new SimpleStringProperty(resourceBundle.getString(DISCONNECTED_STATUS_KEY));
@@ -99,9 +93,7 @@ public class NetworkConnection {
         final NetworkPollingService pollingService = new NetworkPollingService();
         pollingService.setNetworkConnection(this);
         pollingService.setPeriod(Duration.seconds(3));
-        pollingService.setOnSucceeded(t -> {
-            setConnected((boolean)t.getSource().getValue());
-        });
+        pollingService.setOnSucceeded(t -> setConnected((boolean)t.getSource().getValue()));
 
         pollingService.start();
     }
@@ -111,9 +103,18 @@ public class NetworkConnection {
      * @throws JSchException
      */
     public void connect() throws JSchException {
-        if (this.connection != null && !this.connection.isConnected()) {
-            this.connection.connect(CONNECTION_TIMEOUT);
+        if (this.connection != null) {
+            this.connection.disconnect();
+            this.connection = null;
         }
+
+        Properties config = new java.util.Properties();
+        config.put("StrictHostKeyChecking", "no");
+
+        this.connection = this.jSch.getSession(USER_NAME, CONSOLE_IP, CONSOLE_PORT);
+        this.connection.setConfig(config);
+        this.connection.setServerAliveInterval(5000);
+        this.connection.connect(CONNECTION_TIMEOUT);
     }
 
     /**
@@ -122,6 +123,7 @@ public class NetworkConnection {
     public void disconnect() {
         if (this.isConnected()) {
             this.connection.disconnect();
+            this.connection = null;
         }
     }
 
@@ -130,7 +132,8 @@ public class NetworkConnection {
      * @return
      */
     public boolean isConnected() {
-        return (this.connection != null && this.connection.isConnected());
+        return (this.connection != null &&
+                this.connection.isConnected());
     }
 
     /**
@@ -183,7 +186,7 @@ public class NetworkConnection {
                 channel.disconnect();
             }
         } else {
-            return new SshCommandResult(-1, "[ERROR] Cannot run SSH command, connection is null or disconnected.");
+            throw new RuntimeException("Cannot execute SSH command, the connection is null or terminated");
         }
     }
 
@@ -233,7 +236,7 @@ public class NetworkConnection {
                 channel.disconnect();
             }
         } else {
-            return -1;
+            throw new RuntimeException("Cannot execute SSH command, the connection is null or terminated");
         }
     }
 
