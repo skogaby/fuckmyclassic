@@ -39,12 +39,9 @@ public class NetworkPollingService extends ScheduledService<Boolean> {
                         if (InetAddress.getByName(NetworkConstants.CONSOLE_IP).isReachable(500)) {
                             try {
                                 networkConnection.connect();
-                                Thread.sleep(1000);
                                 connected = true;
                             } catch (JSchException e) {
                                 connected = false;
-                            } catch (InterruptedException e) {
-
                             }
                         }
                     }

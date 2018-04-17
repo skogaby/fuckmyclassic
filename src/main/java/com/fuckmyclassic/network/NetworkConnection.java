@@ -107,7 +107,7 @@ public class NetworkConnection {
         // set a background service that polls for a connection periodically
         this.pollingService = new NetworkPollingService();
         pollingService.setNetworkConnection(this);
-        pollingService.setPeriod(Duration.seconds(3));
+        pollingService.setPeriod(Duration.seconds(1));
         pollingService.setOnSucceeded(t -> setConnected((boolean)t.getSource().getValue()));
     }
 
