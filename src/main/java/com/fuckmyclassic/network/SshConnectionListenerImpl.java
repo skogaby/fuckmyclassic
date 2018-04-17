@@ -27,4 +27,12 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
     public void onSshConnected() {
         LOG.info("New console connected");
     }
+
+    /**
+     * Handler for when the console disconnects.
+     */
+    @Override
+    public void onSshDisconnected() {
+        LOG.info("Console disconnected");
+    }
 }

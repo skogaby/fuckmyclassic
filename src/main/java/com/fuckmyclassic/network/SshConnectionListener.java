@@ -6,5 +6,13 @@ package com.fuckmyclassic.network;
  */
 public interface SshConnectionListener {
 
+    /**
+     * Callback for when a new console is connected.
+     */
     void onSshConnected();
+
+    /**
+     * Callback for when a console disconnects.
+     */
+    void onSshDisconnected();
 }

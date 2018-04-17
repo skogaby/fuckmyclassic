@@ -128,9 +128,6 @@ public class NetworkConnection {
         this.connection.setConfig(config);
         this.connection.setServerAliveInterval(5000);
         this.connection.connect(CONNECTION_TIMEOUT);
-
-        // alert the connection listeners
-        this.connectionListeners.forEach(l -> l.onSshConnected());
     }
 
     /**
@@ -296,6 +293,16 @@ public class NetworkConnection {
                 connected ? CONNECTED_STATUS_KEY : DISCONNECTED_STATUS_KEY));
         setConnectionStatusColor(Paint.valueOf(
                 connected ? CONNECTED_CIRCLE_COLOR : DISCONNECTED_CIRCLE_COLOR));
+
+        // notify the listeners if this is a new connect or disconnect
+        if (this.disconnected.getValue() == connected) {
+            if (connected) {
+                this.connectionListeners.forEach(l -> l.onSshConnected());
+            } else {
+                this.connectionListeners.forEach(l -> l.onSshDisconnected());
+            }
+        }
+
         this.disconnected.setValue(!connected);
     }
 
