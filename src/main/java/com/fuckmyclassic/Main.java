@@ -1,6 +1,7 @@
 package com.fuckmyclassic;
 
 import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.network.SshConnectionListener;
 import com.fuckmyclassic.spring.configuration.ApplicationConfiguration;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.userconfig.UserConfiguration;
@@ -20,6 +21,9 @@ import java.util.ResourceBundle;
  */
 public class Main extends Application {
 
+    /**
+     * Spring context that we can load beans from manually.
+     */
     private AnnotationConfigApplicationContext applicationContext;
 
     @Override
@@ -33,6 +37,12 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle(String.format("%s v%s", SharedConstants.APP_NAME, SharedConstants.APP_VERSION));
         primaryStage.show();
+
+        // start polling for a network connection once the main window is initialized
+        final NetworkConnection networkConnection = applicationContext.getBean(NetworkConnection.class);
+        final SshConnectionListener connectionListener = applicationContext.getBean(SshConnectionListener.class);
+        networkConnection.addConnectionListener(connectionListener);
+        networkConnection.beginPolling();
     }
 
     @Override
@@ -49,6 +59,7 @@ public class Main extends Application {
             final NetworkConnection networkConnection = applicationContext.getBean(NetworkConnection.class);
 
             if (networkConnection != null) {
+                networkConnection.endPolling();
                 networkConnection.disconnect();
             }
 

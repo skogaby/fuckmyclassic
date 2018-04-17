@@ -121,7 +121,7 @@ public class NetworkConnection {
             this.connection = null;
         }
 
-        Properties config = new java.util.Properties();
+        final Properties config = new Properties();
         config.put("StrictHostKeyChecking", "no");
 
         this.connection = this.jSch.getSession(USER_NAME, CONSOLE_IP, CONSOLE_PORT);

@@ -1,6 +1,8 @@
 package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.network.SshConnectionListener;
+import com.fuckmyclassic.network.SshConnectionListenerImpl;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +21,7 @@ import static com.fuckmyclassic.network.NetworkConstants.SSH_PRIVATE_KEY;
 public class NetworkConfiguration {
 
     @Bean
-    public JSch getJschInstance() throws URISyntaxException, JSchException {
+    public JSch jSch() throws URISyntaxException, JSchException {
         final JSch jSch = new JSch();
         jSch.addIdentity(Paths.get(ClassLoader.getSystemResource(SSH_PRIVATE_KEY).toURI()).toString());
 
@@ -27,7 +29,12 @@ public class NetworkConfiguration {
     }
 
     @Bean
-    public NetworkConnection getSshConnection(JSch jSch) throws JSchException {
+    public NetworkConnection networkConnection(JSch jSch) throws JSchException {
         return new NetworkConnection(jSch);
+    }
+
+    @Bean
+    public SshConnectionListener sshConnectionListener() {
+        return new SshConnectionListenerImpl();
     }
 }

@@ -5,7 +5,6 @@ import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.ui.controller.MainWindow;
-import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.LibraryDAO;
 import com.fuckmyclassic.ui.util.ImageResizer;
@@ -23,14 +22,14 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationConfiguration {
 
     @Bean
-    public MainWindow getMainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
+    public MainWindow mainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
                                     LibraryManager libraryManager, NetworkConnection networkConnection) {
         return new MainWindow(userConfiguration, membootHelper, kernelFlasher,
                 libraryManager, networkConnection);
     }
 
     @Bean
-    public LibraryManager libraryManager(UserConfiguration userConfiguration, HibernateManager hibernateManager, ApplicationDAO applicationDAO,
+    public LibraryManager libraryManager(UserConfiguration userConfiguration, HibernateManager hibernateManager,
                                          LibraryDAO libraryDAO, ImageResizer imageResizer) {
         return new LibraryManager(userConfiguration, hibernateManager, libraryDAO, imageResizer);
     }

@@ -62,7 +62,7 @@ public class HibernateConfiguration {
     }
 
     @Bean
-    public Session getSession(LocalSessionFactoryBean sessionFactory) {
+    public Session session(LocalSessionFactoryBean sessionFactory) {
         return sessionFactory.getObject().openSession();
     }
 

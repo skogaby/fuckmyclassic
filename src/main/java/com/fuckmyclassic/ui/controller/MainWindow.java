@@ -3,8 +3,6 @@ package com.fuckmyclassic.ui.controller;
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.management.LibraryManager;
-import com.fuckmyclassic.hibernate.ApplicationDAO;
-import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.network.NetworkConnection;
@@ -119,8 +117,6 @@ public class MainWindow {
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
         this.networkConnection = networkConnection;
-        this.networkConnection.addConnectionListener(() -> LOG.info("Console connected"));
-        this.networkConnection.beginPolling();
     }
 
     /**
