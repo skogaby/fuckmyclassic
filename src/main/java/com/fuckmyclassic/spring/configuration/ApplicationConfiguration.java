@@ -9,6 +9,7 @@ import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.LibraryDAO;
 import com.fuckmyclassic.ui.util.ImageResizer;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -22,20 +23,25 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationConfiguration {
 
     @Bean
-    public MainWindow getMainWindow(HibernateManager hibernateManager, ApplicationDAO applicationDAO,
-                                    MembootHelper membootHelper, KernelFlasher kernelFlasher,
+    public MainWindow getMainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
                                     LibraryManager libraryManager, NetworkConnection networkConnection) {
-        return new MainWindow(hibernateManager, applicationDAO, membootHelper, kernelFlasher, libraryManager, networkConnection);
+        return new MainWindow(userConfiguration, membootHelper, kernelFlasher,
+                libraryManager, networkConnection);
     }
 
     @Bean
-    public LibraryManager libraryManager(HibernateManager hibernateManager, ApplicationDAO applicationDAO,
+    public LibraryManager libraryManager(UserConfiguration userConfiguration, HibernateManager hibernateManager, ApplicationDAO applicationDAO,
                                          LibraryDAO libraryDAO, ImageResizer imageResizer) {
-        return new LibraryManager(hibernateManager, applicationDAO, libraryDAO, imageResizer);
+        return new LibraryManager(userConfiguration, hibernateManager, libraryDAO, imageResizer);
     }
 
     @Bean
     public ImageResizer imageResizer() {
         return new ImageResizer();
+    }
+
+    @Bean
+    public UserConfiguration userConfiguration() {
+        return UserConfiguration.loadFromTomlFile();
     }
 }

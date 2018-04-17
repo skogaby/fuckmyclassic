@@ -88,7 +88,7 @@ public class HibernateConfiguration {
     }
 
     @Bean
-    public LibraryDAO libraryDAO(HibernateManager hibernateManager, Session session) {
-        return new LibraryDAOImpl(hibernateManager, session);
+    public LibraryDAO libraryDAO(HibernateManager hibernateManager, Session session, ApplicationDAO applicationDAO) {
+        return new LibraryDAOImpl(hibernateManager, session, applicationDAO);
     }
 }

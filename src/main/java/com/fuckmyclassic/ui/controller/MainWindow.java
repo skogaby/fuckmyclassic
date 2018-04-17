@@ -11,12 +11,14 @@ import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -74,16 +76,12 @@ public class MainWindow {
     public Circle shpConnectionStatus;
     public Label lblConnectionStatus;
     public Button btnSyncGames;
+    public MenuBar mainMenu;
 
     /**
-     * Hibernate manager, for interacting with the database.
+     * The configuration object for user options and session settings.
      */
-    private final HibernateManager hibernateManager;
-
-    /**
-     * DAO for handling Applications.
-     */
-    private final ApplicationDAO applicationDAO;
+    private final UserConfiguration userConfiguration;
 
     /**
      * Helper instance for membooting consoles.
@@ -107,20 +105,16 @@ public class MainWindow {
 
     /**
      * Constructor.
-     * @param hibernateManager
-     * @param applicationDAO
      * @param membootHelper
      * @param kernelFlasher
      */
     @Autowired
-    public MainWindow(final HibernateManager hibernateManager,
-                      final ApplicationDAO applicationDAO,
+    public MainWindow(final UserConfiguration userConfiguration,
                       final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher,
                       final LibraryManager libraryManager,
                       final NetworkConnection networkConnection) {
-        this.hibernateManager = hibernateManager;
-        this.applicationDAO = applicationDAO;
+        this.userConfiguration = userConfiguration;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
@@ -141,6 +135,7 @@ public class MainWindow {
         this.initializePlayerCountSelection();
         this.initializeConnectionStatus();
         this.initializeConnectionBoundProperties();
+        this.initializeMenuBar();
     }
 
     /**
@@ -261,6 +256,15 @@ public class MainWindow {
             final Image previewImage = this.libraryManager.importBoxartForCurrentApp(
                     fileChooser.showOpenDialog(this.treeViewGames.getScene().getWindow()));
             this.imgBoxArtPreview.setImage(previewImage);
+        }
+    }
+
+    /**
+     * Initializes the main menu bar.
+     */
+    private void initializeMenuBar() {
+        if (System.getProperty("os.name", "UNKNOWN").equals("Mac OS X")) {
+            this.mainMenu.setUseSystemMenuBar(true);
         }
     }
 

@@ -11,6 +11,7 @@ import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.component.ApplicationTreeCell;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBoxTreeItem;
@@ -27,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Class to manage libraries. This includes keeping track of what the current console and library
@@ -39,14 +41,14 @@ public class LibraryManager {
     static Logger LOG = LogManager.getLogger(LibraryManager.class.getName());
 
     /**
+     * User configuration object.
+     */
+    private final UserConfiguration userConfiguration;
+
+    /**
      * Manager for interacting with the Hibernate session
      */
     private final HibernateManager hibernateManager;
-
-    /**
-     * DAO for application metadata
-     */
-    private final ApplicationDAO applicationDAO;
 
     /**
      * DAO for library metadata
@@ -64,11 +66,6 @@ public class LibraryManager {
     private Application currentApp;
 
     /**
-     * The SID for the console whose collection we're viewing
-     */
-    private String currentConsoleSid;
-
-    /**
      * The current library we're viewing
      */
     private Library currentLibrary;
@@ -79,14 +76,13 @@ public class LibraryManager {
     private CheckBoxTreeItem<LibraryItem> currentLibraryTree;
 
     @Autowired
-    public LibraryManager(final HibernateManager hibernateManager, final ApplicationDAO applicationDAO,
+    public LibraryManager(final UserConfiguration userConfiguration, final HibernateManager hibernateManager,
                           final LibraryDAO libraryDAO, final ImageResizer imageResizer) {
+        this.userConfiguration = userConfiguration;
         this.hibernateManager = hibernateManager;
-        this.applicationDAO = applicationDAO;
         this.libraryDAO = libraryDAO;
         this.imageResizer = imageResizer;
         this.currentApp = null;
-        this.currentConsoleSid = SharedConstants.DEFAULT_CONSOLE_SID;
         this.currentLibrary = null;
     }
 
@@ -96,11 +92,29 @@ public class LibraryManager {
     public void initializeLibrarySelection(final MainWindow mainWindow) {
         LOG.debug("Initializing the dropdown box for library selection");
 
-        final List<Library> libraries = libraryDAO.getLibrariesForConsole(this.currentConsoleSid);
+        final List<Library> libraries = libraryDAO.getLibrariesForConsole(this.userConfiguration.getLastConsoleSID());
         final ObservableList<Library> items = FXCollections.observableArrayList(libraries);
         mainWindow.cmbCurrentCollection.setItems(items);
-        mainWindow.cmbCurrentCollection.getSelectionModel().selectFirst();
-        this.currentLibrary = items.get(0);
+        final Library library;
+
+        // load the last used library, or the first one if there's no config value yet
+        if (this.userConfiguration.getLastLibraryID() == -1L) {
+            library = items.get(0);
+        } else {
+            library = items.stream().filter(l -> l.getId() == this.userConfiguration.getLastLibraryID())
+                    .collect(Collectors.toList()).get(0);
+        }
+
+        mainWindow.cmbCurrentCollection.getSelectionModel().select(library);
+        mainWindow.cmbCurrentCollection.valueProperty().addListener(((observable, oldValue, newValue) -> {
+            this.currentLibrary = newValue;
+            this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary);
+            mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
+            mainWindow.treeViewGames.getSelectionModel().selectFirst();
+            this.userConfiguration.setLastLibraryID(this.currentLibrary.getId());
+        }));
+
+        this.currentLibrary = library;
     }
 
     /**
@@ -155,8 +169,8 @@ public class LibraryManager {
         });
 
         // load the library items for the current console and library
-        LOG.info(String.format("Loading library for console %s from the database", this.currentConsoleSid));
-        this.currentLibraryTree = this.applicationDAO.loadApplicationTreeForLibrary(this.currentLibrary);
+        LOG.info(String.format("Loading library for console %s from the database", this.userConfiguration.getLastConsoleSID()));
+        this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary);
         mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
         mainWindow.treeViewGames.getSelectionModel().selectFirst();
     }
@@ -205,15 +219,6 @@ public class LibraryManager {
 
     public LibraryManager setCurrentApp(Application currentApp) {
         this.currentApp = currentApp;
-        return this;
-    }
-
-    public String getCurrentConsoleSid() {
-        return currentConsoleSid;
-    }
-
-    public LibraryManager setCurrentConsoleSid(String currentConsoleSid) {
-        this.currentConsoleSid = currentConsoleSid;
         return this;
     }
 

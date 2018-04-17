@@ -1,6 +1,7 @@
 *.iml
 *.class
 *.sqlite
+*.toml
 .gradle
 /local.properties
 /.idea

@@ -3,6 +3,7 @@ package com.fuckmyclassic;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.spring.configuration.ApplicationConfiguration;
 import com.fuckmyclassic.shared.SharedConstants;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -10,6 +11,7 @@ import javafx.stage.Stage;
 import org.hibernate.Session;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.io.IOException;
 import java.util.ResourceBundle;
 
 /**
@@ -34,7 +36,7 @@ public class Main extends Application {
     }
 
     @Override
-    public void stop() {
+    public void stop() throws IOException {
         if (applicationContext != null) {
             // shut down the Hibernate session if one exists
             final Session session = applicationContext.getBean(Session.class);
@@ -48,6 +50,13 @@ public class Main extends Application {
 
             if (networkConnection != null) {
                 networkConnection.disconnect();
+            }
+
+            // save the config file to disk
+            final UserConfiguration userConfiguration = applicationContext.getBean(UserConfiguration.class);
+
+            if (userConfiguration != null) {
+                UserConfiguration.saveTomlFile(userConfiguration);
             }
 
             applicationContext.close();
