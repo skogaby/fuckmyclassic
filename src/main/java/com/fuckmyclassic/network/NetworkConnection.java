@@ -20,8 +20,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.fuckmyclassic.network.NetworkConstants.CONNECTION_TIMEOUT;
@@ -57,6 +59,16 @@ public class NetworkConnection {
     public Session connection;
 
     /**
+     * Background service to poll for connections.
+     */
+    private final NetworkPollingService pollingService;
+
+    /**
+     * List of listeners to alert when a new connection is made.
+     */
+    private Set<SshConnectionListener> connectionListeners;
+
+    /**
      * An FXML property that exposes whether the console is connected so we can
      * bind it to the UI.
      */
@@ -84,19 +96,19 @@ public class NetworkConnection {
 
      */
     @Autowired
-    public NetworkConnection(final JSch jSch) throws JSchException {
+    public NetworkConnection(final JSch jSch) {
         this.jSch = jSch;
+        this.connectionListeners = new HashSet<>();
         this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
         this.disconnected = new SimpleBooleanProperty(true);
         this.connectionStatus = new SimpleStringProperty(resourceBundle.getString(DISCONNECTED_STATUS_KEY));
         this.connectionStatusColor = new SimpleObjectProperty<>(Paint.valueOf(DISCONNECTED_CIRCLE_COLOR));
 
         // set a background service that polls for a connection periodically
-        final NetworkPollingService pollingService = new NetworkPollingService();
+        this.pollingService = new NetworkPollingService();
         pollingService.setNetworkConnection(this);
         pollingService.setPeriod(Duration.seconds(3));
         pollingService.setOnSucceeded(t -> setConnected((boolean)t.getSource().getValue()));
-        pollingService.start();
     }
 
     /**
@@ -116,6 +128,9 @@ public class NetworkConnection {
         this.connection.setConfig(config);
         this.connection.setServerAliveInterval(5000);
         this.connection.connect(CONNECTION_TIMEOUT);
+
+        // alert the connection listeners
+        this.connectionListeners.forEach(l -> l.onSshConnected());
     }
 
     /**
@@ -135,6 +150,40 @@ public class NetworkConnection {
     public boolean isConnected() {
         return (this.connection != null &&
                 this.connection.isConnected());
+    }
+
+    /**
+     * Starts polling for new connections.
+     */
+    public void beginPolling() {
+        if (!this.pollingService.isRunning()) {
+            this.pollingService.start();
+        }
+    }
+
+    /**
+     * Stops polling for new connections.
+     */
+    public void endPolling() {
+        if (this.pollingService.isRunning()) {
+            this.pollingService.cancel();
+        }
+    }
+
+    /**
+     * Add a new connection listener.
+     * @param connectionListener
+     */
+    public void addConnectionListener(final SshConnectionListener connectionListener) {
+        this.connectionListeners.add(connectionListener);
+    }
+
+    /**
+     * Removes a connection listener.
+     * @param connectionListener
+     */
+    public void removeConnectionListener(final SshConnectionListener connectionListener) {
+        this.connectionListeners.remove(connectionListener);
     }
 
     /**

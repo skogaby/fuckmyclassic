@@ -119,6 +119,8 @@ public class MainWindow {
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
         this.networkConnection = networkConnection;
+        this.networkConnection.addConnectionListener(() -> LOG.info("Console connected"));
+        this.networkConnection.beginPolling();
     }
 
     /**
