@@ -16,7 +16,7 @@ import java.util.ResourceBundle;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Component
-public class GetConsoleSidTaskCreator implements TaskCreator<String> {
+public class GetConsoleSidTaskCreator extends AbstractTaskCreator<String> {
 
     static Logger LOG = LogManager.getLogger(GetConsoleSidTaskCreator.class.getName());
 

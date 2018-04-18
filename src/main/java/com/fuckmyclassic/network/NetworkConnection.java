@@ -337,7 +337,7 @@ public class NetworkConnection {
                         listener.onSshDisconnected();
                     }
                 }
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 LOG.error(e);
             }
         }

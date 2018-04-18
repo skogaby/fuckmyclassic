@@ -86,7 +86,7 @@ public class SequentialTaskRunner extends Task<Void> {
      * waits for the thread to finish.
      * @param taskCreators The TaskCreators to execute.
      */
-    public static void createAndRunTaskRunner(TaskCreator... taskCreators) throws InterruptedException {
+    public static void createAndRunTaskCreators(TaskCreator... taskCreators) throws InterruptedException {
         final SequentialTaskRunner taskRunner = new SequentialTaskRunner();
         taskRunner.setServicesToExecute(taskCreators);
 
