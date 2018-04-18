@@ -184,13 +184,41 @@ public class NetworkConnection {
     }
 
     /**
+     * Runs a command on the console, throwing an exception if the exit code was non-zero.
+     * @param command The command to execute
+     * @return The output of the command
+     * @throws IOException
+     * @throws JSchException
+     */
+    public String runCommand(final String command) throws IOException, JSchException {
+        return runCommand(command, true);
+    }
+
+    /**
+     * Runs a command on the console, optionally throwing an exception if the exit code was non-zero.
+     * @param command The command to execute
+     * @param throwOnNonZero Whether or not to throw an exception if the exit code was non-zero
+     * @return The output of the command
+     * @throws IOException
+     * @throws JSchException
+     */
+    public String runCommand(final String command, boolean throwOnNonZero) throws IOException, JSchException {
+        final SshCommandResult result = getRunCommandResult(command);
+
+        if (throwOnNonZero && result.getExitCode() != 0) {
+            throw new SshNonZeroExitCodeException();
+        }
+
+        return result.getOutput();
+    }
+
+    /**
      * Runs a command through SSH on the console.
      * @param command The command to be run remotely.
      * @return The output and exit status of the command.
      */
-    public SshCommandResult runCommand(final String command) throws JSchException, IOException {
-        if (this.connection != null &&
-                this.connection.isConnected()) {
+    public SshCommandResult getRunCommandResult(final String command) throws JSchException, IOException {
+        if (this.isConnected()) {
             final ChannelExec channel = (ChannelExec)this.connection.openChannel("exec");
 
             try {
@@ -249,8 +277,7 @@ public class NetworkConnection {
      */
     public int runCommandWithStreams(final String command, final InputStream stdin, final OutputStream stdout,
                                      final OutputStream stderr) throws JSchException, IOException {
-        if (this.connection != null &&
-                this.connection.isConnected()) {
+        if (this.isConnected()) {
             final ChannelExec channel = (ChannelExec)this.connection.openChannel("exec");
 
             try {
@@ -287,6 +314,10 @@ public class NetworkConnection {
         }
     }
 
+    /**
+     * Sets the connection related FXML properties, and notifies connection listeners if the status changes.
+     * @param connected
+     */
     public void setConnected(boolean connected) {
         // set the connection status properties
         setConnectionStatus(resourceBundle.getString(
@@ -296,10 +327,18 @@ public class NetworkConnection {
 
         // notify the listeners if this is a new connect or disconnect
         if (this.disconnected.getValue() == connected) {
-            if (connected) {
-                this.connectionListeners.forEach(l -> l.onSshConnected());
-            } else {
-                this.connectionListeners.forEach(l -> l.onSshDisconnected());
+            try {
+                if (connected) {
+                    for (SshConnectionListener listener : this.connectionListeners) {
+                        listener.onSshConnected();
+                    }
+                } else {
+                    for (SshConnectionListener listener : this.connectionListeners) {
+                        listener.onSshDisconnected();
+                    }
+                }
+            } catch (InterruptedException e) {
+                LOG.error(e);
             }
         }
 

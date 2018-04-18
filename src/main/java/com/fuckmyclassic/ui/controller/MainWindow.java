@@ -10,6 +10,7 @@ import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import javafx.beans.property.ReadOnlyProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -227,9 +228,9 @@ public class MainWindow {
      * Bind the connection status display to the real connection object.
      */
     private void initializeConnectionStatus() {
-        BindingHelper.bindProperty(this.networkConnection.connectionStatusColorProperty(),
+        BindingHelper.bindProperty((ReadOnlyProperty<?>) this.networkConnection.connectionStatusColorProperty(),
                 this.shpConnectionStatus.fillProperty());
-        BindingHelper.bindProperty(this.networkConnection.connectionStatusProperty(),
+        BindingHelper.bindProperty((ReadOnlyProperty<?>) this.networkConnection.connectionStatusProperty(),
                 this.lblConnectionStatus.textProperty());
     }
 
@@ -237,7 +238,7 @@ public class MainWindow {
      * Bind all the properties that are disabled/enabled depending on the presence on a console
      */
     private void initializeConnectionBoundProperties() {
-        BindingHelper.bindProperty(this.networkConnection.disconnectedProperty(),
+        BindingHelper.bindProperty((ReadOnlyProperty<?>) this.networkConnection.disconnectedProperty(),
                 this.btnSyncGames.disableProperty());
     }
 

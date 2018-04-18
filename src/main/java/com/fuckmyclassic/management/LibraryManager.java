@@ -2,7 +2,6 @@ package com.fuckmyclassic.management;
 
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.ui.controller.MainWindow;
-import com.fuckmyclassic.hibernate.ApplicationDAO;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.LibraryDAO;
 import com.fuckmyclassic.model.Application;
@@ -12,6 +11,7 @@ import com.fuckmyclassic.ui.component.ApplicationTreeCell;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBoxTreeItem;
@@ -134,7 +134,7 @@ public class LibraryManager {
             final Application oldApp = oldValue == null ? null : oldValue.getValue().getApplication();
             this.currentApp = app;
 
-            BindingHelper.bindProperty(app.applicationIdProperty(), mainWindow.lblApplicationId.textProperty());
+            BindingHelper.bindProperty((ReadOnlyProperty<?>) app.applicationIdProperty(), mainWindow.lblApplicationId.textProperty());
             BindingHelper.bindProperty(app.applicationSizeProperty().asString(), mainWindow.lblGameSize.textProperty());
             BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.compressedProperty(),
                     app.compressedProperty(), mainWindow.chkCompressed.selectedProperty());

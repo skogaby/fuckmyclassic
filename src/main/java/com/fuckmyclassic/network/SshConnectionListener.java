@@ -9,7 +9,7 @@ public interface SshConnectionListener {
     /**
      * Callback for when a new console is connected.
      */
-    void onSshConnected();
+    void onSshConnected() throws InterruptedException;
 
     /**
      * Callback for when a console disconnects.

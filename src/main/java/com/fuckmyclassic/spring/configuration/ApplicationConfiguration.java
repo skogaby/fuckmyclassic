@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ResourceBundle;
+
 /**
  * Bean config class for the top-level application.
  * @author skogaby (skogabyskogaby@gmail.com)
@@ -42,5 +44,10 @@ public class ApplicationConfiguration {
     @Bean
     public UserConfiguration userConfiguration() {
         return UserConfiguration.loadFromTomlFile();
+    }
+
+    @Bean
+    public ResourceBundle tasksResourceBundle() {
+        return ResourceBundle.getBundle("i18n/Tasks");
     }
 }
