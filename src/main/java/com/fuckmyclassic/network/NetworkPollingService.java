@@ -47,6 +47,7 @@ public class NetworkPollingService extends ScheduledService<Boolean> {
                     }
                 }
 
+                networkConnection.notifyConnectionHandlers(connected);
                 return connected;
             }
         };

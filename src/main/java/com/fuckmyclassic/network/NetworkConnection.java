@@ -108,7 +108,7 @@ public class NetworkConnection {
         this.pollingService = new NetworkPollingService();
         pollingService.setNetworkConnection(this);
         pollingService.setPeriod(Duration.seconds(1));
-        pollingService.setOnSucceeded(t -> setConnected((boolean)t.getSource().getValue()));
+        pollingService.setOnSucceeded(t -> setConnectedProperties((boolean)t.getSource().getValue()));
     }
 
     /**
@@ -318,13 +318,19 @@ public class NetworkConnection {
      * Sets the connection related FXML properties, and notifies connection listeners if the status changes.
      * @param connected
      */
-    public void setConnected(boolean connected) {
+    public void setConnectedProperties(boolean connected) {
         // set the connection status properties
         setConnectionStatus(resourceBundle.getString(
                 connected ? CONNECTED_STATUS_KEY : DISCONNECTED_STATUS_KEY));
         setConnectionStatusColor(Paint.valueOf(
                 connected ? CONNECTED_CIRCLE_COLOR : DISCONNECTED_CIRCLE_COLOR));
+    }
 
+    /**
+     * Notify the connection handlers of the current status if it's changed.
+     * @param connected
+     */
+    public void notifyConnectionHandlers(boolean connected) {
         // notify the listeners if this is a new connect or disconnect
         if (this.disconnected.getValue() == connected) {
             try {
