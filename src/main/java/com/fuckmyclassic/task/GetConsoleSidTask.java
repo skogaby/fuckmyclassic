@@ -16,9 +16,9 @@ import java.util.ResourceBundle;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Component
-public class GetConsoleSidTaskCreator extends AbstractTaskCreator<String> {
+public class GetConsoleSidTask extends AbstractTaskCreator<String> {
 
-    static Logger LOG = LogManager.getLogger(GetConsoleSidTaskCreator.class.getName());
+    static Logger LOG = LogManager.getLogger(GetConsoleSidTask.class.getName());
 
     private final String IN_PROGRESS_MESSAGE_KEY = "GetConsoleSidTask.inProgressMessage";
     private final String COMPLETE_MESSAGE_KEY = "GetConsoleSidTask.completeMessage";
@@ -34,7 +34,7 @@ public class GetConsoleSidTaskCreator extends AbstractTaskCreator<String> {
     private final ResourceBundle resourceBundle;
 
     @Autowired
-    public GetConsoleSidTaskCreator(final ResourceBundle resourceBundle, final NetworkConnection networkConnection) {
+    public GetConsoleSidTask(final ResourceBundle resourceBundle, final NetworkConnection networkConnection) {
         this.resourceBundle = resourceBundle;
         this.networkConnection = networkConnection;
     }

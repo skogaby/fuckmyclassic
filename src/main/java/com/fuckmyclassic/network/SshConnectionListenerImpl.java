@@ -1,6 +1,6 @@
 package com.fuckmyclassic.network;
 
-import com.fuckmyclassic.task.GetConsoleSidTaskCreator;
+import com.fuckmyclassic.task.GetConsoleSidTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +21,11 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
     /**
      * Task to get the console's SID.
      */
-    private final GetConsoleSidTaskCreator getConsoleSidTaskCreator;
+    private final GetConsoleSidTask getConsoleSidTask;
 
     @Autowired
-    public SshConnectionListenerImpl(final GetConsoleSidTaskCreator getConsoleSidTaskCreator) {
-        this.getConsoleSidTaskCreator = getConsoleSidTaskCreator;
+    public SshConnectionListenerImpl(final GetConsoleSidTask getConsoleSidTask) {
+        this.getConsoleSidTask = getConsoleSidTask;
     }
 
     /**
@@ -35,8 +35,7 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
     public void onSshConnected() throws InterruptedException, ExecutionException {
         LOG.info("New console connected");
 
-        // TESTING, REMOVE LATER
-        final String consoleSid = this.getConsoleSidTaskCreator.runAndGetResult();
+        final String consoleSid = this.getConsoleSidTask.runAndGetResult();
         LOG.info(String.format("Fetched the console SID: %s", consoleSid));
     }
 

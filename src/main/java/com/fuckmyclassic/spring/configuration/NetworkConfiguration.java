@@ -3,7 +3,7 @@ package com.fuckmyclassic.spring.configuration;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.network.SshConnectionListener;
 import com.fuckmyclassic.network.SshConnectionListenerImpl;
-import com.fuckmyclassic.task.GetConsoleSidTaskCreator;
+import com.fuckmyclassic.task.GetConsoleSidTask;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import org.springframework.context.annotation.Bean;
@@ -37,7 +37,7 @@ public class NetworkConfiguration {
     }
 
     @Bean
-    public SshConnectionListener sshConnectionListener(GetConsoleSidTaskCreator getConsoleSidTaskCreator) {
-        return new SshConnectionListenerImpl(getConsoleSidTaskCreator);
+    public SshConnectionListener sshConnectionListener(GetConsoleSidTask getConsoleSidTask) {
+        return new SshConnectionListenerImpl(getConsoleSidTask);
     }
 }
