@@ -108,6 +108,7 @@ public class NetworkConnection {
         this.disconnected = new SimpleBooleanProperty(true);
         this.connectionStatus = new SimpleStringProperty(resourceBundle.getString(DISCONNECTED_STATUS_KEY));
         this.connectionStatusColor = new SimpleObjectProperty<>(Paint.valueOf(DISCONNECTED_CIRCLE_COLOR));
+        this.connectedConsoleSid = null;
 
         // set a background service that polls for a connection periodically
         this.pollingService = new NetworkPollingService();

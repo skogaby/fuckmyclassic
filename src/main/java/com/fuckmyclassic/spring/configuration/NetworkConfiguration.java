@@ -4,6 +4,7 @@ import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.network.SshConnectionListener;
 import com.fuckmyclassic.network.SshConnectionListenerImpl;
 import com.fuckmyclassic.task.GetConsoleSidTask;
+import com.fuckmyclassic.task.UpdateUnknownLibrariesTask;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -39,7 +40,7 @@ public class NetworkConfiguration {
 
     @Bean
     public SshConnectionListener sshConnectionListener(SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
-                                                       GetConsoleSidTask getConsoleSidTask) {
-        return new SshConnectionListenerImpl(sequentialTaskRunnerDialog, getConsoleSidTask);
+                                                       GetConsoleSidTask getConsoleSidTask, UpdateUnknownLibrariesTask updateUnknownLibrariesTask) {
+        return new SshConnectionListenerImpl(sequentialTaskRunnerDialog, getConsoleSidTask, updateUnknownLibrariesTask);
     }
 }

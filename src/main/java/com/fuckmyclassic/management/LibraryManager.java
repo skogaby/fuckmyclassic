@@ -106,6 +106,8 @@ public class LibraryManager {
         }
 
         mainWindow.cmbCurrentCollection.getSelectionModel().select(library);
+        this.userConfiguration.setLastLibraryID(library.getId());
+
         mainWindow.cmbCurrentCollection.valueProperty().addListener(((observable, oldValue, newValue) -> {
             this.currentLibrary = newValue;
             this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary);

@@ -117,6 +117,7 @@ public class SequentialTaskRunner extends Task<Void> {
         return mainTaskMessage;
     }
 
+
     public SequentialTaskRunner setMainTaskMessage(String mainTaskMessage) {
         this.mainTaskMessage.set(mainTaskMessage);
         return this;

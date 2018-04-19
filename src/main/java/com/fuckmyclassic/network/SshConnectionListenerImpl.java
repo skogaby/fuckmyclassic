@@ -1,6 +1,7 @@
 package com.fuckmyclassic.network;
 
 import com.fuckmyclassic.task.GetConsoleSidTask;
+import com.fuckmyclassic.task.UpdateUnknownLibrariesTask;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import javafx.application.Platform;
 import org.apache.logging.log4j.LogManager;
@@ -9,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Default listener for new console connections to the app that gets
@@ -31,11 +31,18 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
      */
     private final GetConsoleSidTask getConsoleSidTask;
 
+    /**
+     * Task to update unowned libraries to be owned by the newly connected console.
+     */
+    private final UpdateUnknownLibrariesTask updateUnknownLibrariesTask;
+
     @Autowired
     public SshConnectionListenerImpl(final SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
-                                     final GetConsoleSidTask getConsoleSidTask) {
+                                     final GetConsoleSidTask getConsoleSidTask,
+                                     final UpdateUnknownLibrariesTask updateUnknownLibrariesTask) {
         this.sequentialTaskRunnerDialog = sequentialTaskRunnerDialog;
         this.getConsoleSidTask = getConsoleSidTask;
+        this.updateUnknownLibrariesTask = updateUnknownLibrariesTask;
     }
 
     /**
@@ -49,7 +56,7 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
         Platform.runLater(() -> {
             try {
                 sequentialTaskRunnerDialog.setMainTaskMessage("TESTING");
-                sequentialTaskRunnerDialog.setTaskCreators(getConsoleSidTask, getConsoleSidTask, getConsoleSidTask);
+                sequentialTaskRunnerDialog.setTaskCreators(getConsoleSidTask, updateUnknownLibrariesTask);
                 sequentialTaskRunnerDialog.showDialog();
             } catch (IOException e) {
                 e.printStackTrace();
