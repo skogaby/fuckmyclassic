@@ -3,14 +3,17 @@ package com.fuckmyclassic.task;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Class that handles running a set of Tasks sequentially in a single thread.
@@ -30,6 +33,16 @@ public class SequentialTaskRunner extends Task<Void> {
     private final DoubleProperty subTaskProgress;
 
     /**
+     * The message we should set for the top-level parent task.
+     */
+    private final StringProperty mainTaskMessage;
+
+    /**
+     * The current message of the subtask.
+     */
+    private final StringProperty subTaskMessage;
+
+    /**
      * The list of TaskCreators to execute in a sequence.
      */
     private TaskCreator[] taskCreators;
@@ -37,6 +50,8 @@ public class SequentialTaskRunner extends Task<Void> {
     @Autowired
     public SequentialTaskRunner() {
         this.subTaskProgress = new SimpleDoubleProperty(0.0);
+        this.subTaskMessage = new SimpleStringProperty("");
+        this.mainTaskMessage = new SimpleStringProperty("");
     }
 
     /**
@@ -46,39 +61,30 @@ public class SequentialTaskRunner extends Task<Void> {
      * @throws InterruptedException
      */
     @Override
-    protected Void call() throws InterruptedException {
-        final AtomicBoolean exceptionThrown = new AtomicBoolean(false);
-        final Thread.UncaughtExceptionHandler exceptionHandler = ((t, e) -> exceptionThrown.set(true));
+    protected Void call() throws ExecutionException, InterruptedException {
+        updateMessage(mainTaskMessage.get());
+        updateProgress(0, taskCreators.length);
+
+        final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         // now, actually execute the tasks
-        for (AtomicInteger i = new AtomicInteger(0); i.get() < taskCreators.length; i.incrementAndGet()) {
-            TaskCreator service = taskCreators[i.get()];
-            Task task = service.createTask();
+        for (int i = 0; i < taskCreators.length; i++) {
+            final TaskCreator service = taskCreators[i];
+            final Task task = service.createTask();
 
             // bind the message and subtask progress to the task runner
             BindingHelper.bindProperty(task.progressProperty(), subTaskProgress);
-            task.messageProperty().addListener(((observable, oldValue, newValue) -> updateMessage(newValue)));
+            BindingHelper.bindProperty(task.messageProperty(), subTaskMessage);
 
             // execute each task sequentially. if there's an exception then don't execute the rest, otherwise
             // update the message and progress
-            Thread thread = new Thread(task);
-            thread.setDaemon(true);
-            thread.setUncaughtExceptionHandler(exceptionHandler);
-            thread.start();
-            thread.join();
+            executorService.submit(task);
+            task.get();
 
-            // if the last task threw an exception, stop here and throw our own exception
-            if (exceptionThrown.get()) {
-                throw new InterruptedException();
-            }
+            updateProgress(i + 1, taskCreators.length);
         }
 
         return null;
-    }
-
-    public SequentialTaskRunner setServicesToExecute(TaskCreator... taskCreators) {
-        this.taskCreators = taskCreators;
-        return this;
     }
 
     /**
@@ -86,9 +92,10 @@ public class SequentialTaskRunner extends Task<Void> {
      * waits for the thread to finish.
      * @param taskCreators The TaskCreators to execute.
      */
-    public static void createAndRunTaskCreators(TaskCreator... taskCreators) throws InterruptedException {
+    public static void createAndRunTaskCreators(final String mainTaskMessage, final TaskCreator... taskCreators) throws InterruptedException {
         final SequentialTaskRunner taskRunner = new SequentialTaskRunner();
-        taskRunner.setServicesToExecute(taskCreators);
+        taskRunner.setTaskCreators(taskCreators);
+        taskRunner.setMainTaskMessage(mainTaskMessage);
 
         final Thread thread = new Thread(taskRunner);
         thread.setDaemon(true);
@@ -100,5 +107,51 @@ public class SequentialTaskRunner extends Task<Void> {
             LOG.error("Error executing sequential tasks", e);
             throw e;
         }
+    }
+
+    public String getMainTaskMessage() {
+        return mainTaskMessage.get();
+    }
+
+    public StringProperty mainTaskMessageProperty() {
+        return mainTaskMessage;
+    }
+
+    public SequentialTaskRunner setMainTaskMessage(String mainTaskMessage) {
+        this.mainTaskMessage.set(mainTaskMessage);
+        return this;
+    }
+
+    public TaskCreator[] getTaskCreators() {
+        return taskCreators;
+    }
+
+    public SequentialTaskRunner setTaskCreators(TaskCreator[] taskCreators) {
+        this.taskCreators = taskCreators;
+        return this;
+    }
+
+    public double getSubTaskProgress() {
+        return subTaskProgress.get();
+    }
+
+    public DoubleProperty subTaskProgressProperty() {
+        return subTaskProgress;
+    }
+
+    public void setSubTaskProgress(double subTaskProgress) {
+        this.subTaskProgress.set(subTaskProgress);
+    }
+
+    public String getSubTaskMessage() {
+        return subTaskMessage.get();
+    }
+
+    public StringProperty subTaskMessageProperty() {
+        return subTaskMessage;
+    }
+
+    public void setSubTaskMessage(String subTaskMessage) {
+        this.subTaskMessage.set(subTaskMessage);
     }
 }

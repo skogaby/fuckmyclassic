@@ -50,7 +50,8 @@ public class GetConsoleSidTask extends AbstractTaskCreator<String> {
                 final String consoleSid = networkConnection.runCommand(
                         "echo \"`devmem 0x01C23800``devmem 0x01C23804``devmem 0x01C23808``devmem 0x01C2380C`\"")
                         .trim().replace("0x", "");
-                LOG.info(String.format("Detected console SID: %s", consoleSid));
+                LOG.debug(String.format("Detected console SID: %s", consoleSid));
+                networkConnection.setConnectedConsoleSid(consoleSid);
 
                 updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));
                 updateProgress(1, 1);

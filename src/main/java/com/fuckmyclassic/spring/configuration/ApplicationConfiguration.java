@@ -7,6 +7,7 @@ import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.LibraryDAO;
+import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,11 @@ public class ApplicationConfiguration {
                                     LibraryManager libraryManager, NetworkConnection networkConnection) {
         return new MainWindow(userConfiguration, membootHelper, kernelFlasher,
                 libraryManager, networkConnection);
+    }
+
+    @Bean
+    public SequentialTaskRunnerDialog sequentialTaskRunnerDialog() {
+        return new SequentialTaskRunnerDialog();
     }
 
     @Bean

@@ -91,6 +91,11 @@ public class NetworkConnection {
     private ResourceBundle resourceBundle;
 
     /**
+     * The SID of the currently connected console.
+     */
+    private String connectedConsoleSid;
+
+    /**
      * Constructor.
      * @throws JSchException
 
@@ -377,5 +382,14 @@ public class NetworkConnection {
 
     public BooleanProperty disconnectedProperty() {
         return disconnected;
+    }
+
+    public String getConnectedConsoleSid() {
+        return connectedConsoleSid;
+    }
+
+    public NetworkConnection setConnectedConsoleSid(String connectedConsoleSid) {
+        this.connectedConsoleSid = connectedConsoleSid;
+        return this;
     }
 }
