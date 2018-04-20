@@ -8,16 +8,16 @@
 <?import javafx.scene.layout.RowConstraints?>
 
 <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-          prefHeight="200.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.121"
+          prefHeight="120.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.121"
           xmlns:fx="http://javafx.com/fxml/1">
   <columnConstraints>
     <ColumnConstraints hgrow="ALWAYS" />
   </columnConstraints>
   <rowConstraints>
-    <RowConstraints prefHeight="50.0" vgrow="SOMETIMES" />
-    <RowConstraints prefHeight="50.0" vgrow="SOMETIMES" />
-    <RowConstraints prefHeight="50.0" vgrow="SOMETIMES" />
-    <RowConstraints prefHeight="50.0" vgrow="SOMETIMES" />
+    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
    <children>
       <Label fx:id="lblMainMessage" text="Label" GridPane.hgrow="ALWAYS" />

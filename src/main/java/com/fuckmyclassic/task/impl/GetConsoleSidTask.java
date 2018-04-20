@@ -1,6 +1,7 @@
-package com.fuckmyclassic.task;
+package com.fuckmyclassic.task.impl;
 
 import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.jcraft.jsch.JSchException;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;

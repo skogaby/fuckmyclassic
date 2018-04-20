@@ -3,7 +3,7 @@ package com.fuckmyclassic.management;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.shared.SharedConstants;
@@ -235,5 +235,10 @@ public class LibraryManager {
 
     public CheckBoxTreeItem<LibraryItem> getCurrentLibraryTree() {
         return currentLibraryTree;
+    }
+
+    public LibraryManager setCurrentLibraryTree(CheckBoxTreeItem<LibraryItem> currentLibraryTree) {
+        this.currentLibraryTree = currentLibraryTree;
+        return this;
     }
 }

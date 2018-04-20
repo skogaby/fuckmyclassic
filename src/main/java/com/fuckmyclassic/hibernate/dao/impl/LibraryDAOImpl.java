@@ -1,5 +1,8 @@
-package com.fuckmyclassic.hibernate;
+package com.fuckmyclassic.hibernate.dao.impl;
 
+import com.fuckmyclassic.hibernate.HibernateManager;
+import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
+import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.Library;

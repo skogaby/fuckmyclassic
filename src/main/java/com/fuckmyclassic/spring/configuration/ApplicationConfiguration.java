@@ -6,7 +6,7 @@ import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.UserConfiguration;

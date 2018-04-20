@@ -1,7 +1,8 @@
 package com.fuckmyclassic.network;
 
-import com.fuckmyclassic.task.GetConsoleSidTask;
-import com.fuckmyclassic.task.UpdateUnknownLibrariesTask;
+import com.fuckmyclassic.task.impl.GetConsoleSidTask;
+import com.fuckmyclassic.task.impl.LoadLibrariesTask;
+import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import javafx.application.Platform;
 import org.apache.logging.log4j.LogManager;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 /**
  * Default listener for new console connections to the app that gets
@@ -21,28 +23,34 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
 
     static Logger LOG = LogManager.getLogger(SshConnectionListenerImpl.class.getName());
 
+    private static final String ON_CONNECT_TASK_MESSAGE_KEY = "NewConnectionTaskLabel";
+
+    /**
+     * Resource bundle for internationalized task strings.
+     */
+    private final ResourceBundle tasksResourceBundle;
+
     /**
      * The dialog to run sequential tasks.
      */
     private final SequentialTaskRunnerDialog sequentialTaskRunnerDialog;
 
-    /**
-     * Task to get the console's SID.
-     */
+    // Tasks that we run on detection of a new console connection
     private final GetConsoleSidTask getConsoleSidTask;
-
-    /**
-     * Task to update unowned libraries to be owned by the newly connected console.
-     */
     private final UpdateUnknownLibrariesTask updateUnknownLibrariesTask;
+    private final LoadLibrariesTask loadLibrariesTask;
 
     @Autowired
-    public SshConnectionListenerImpl(final SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
+    public SshConnectionListenerImpl(final ResourceBundle resourceBundle,
+                                     final SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
                                      final GetConsoleSidTask getConsoleSidTask,
-                                     final UpdateUnknownLibrariesTask updateUnknownLibrariesTask) {
+                                     final UpdateUnknownLibrariesTask updateUnknownLibrariesTask,
+                                     final LoadLibrariesTask loadLibrariesTask) {
+        this.tasksResourceBundle = resourceBundle;
         this.sequentialTaskRunnerDialog = sequentialTaskRunnerDialog;
         this.getConsoleSidTask = getConsoleSidTask;
         this.updateUnknownLibrariesTask = updateUnknownLibrariesTask;
+        this.loadLibrariesTask = loadLibrariesTask;
     }
 
     /**
@@ -52,11 +60,10 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
     public void onSshConnected() {
         LOG.info("New console connected");
 
-        // TESTING, REMOVE LATER
         Platform.runLater(() -> {
             try {
-                sequentialTaskRunnerDialog.setMainTaskMessage("TESTING");
-                sequentialTaskRunnerDialog.setTaskCreators(getConsoleSidTask, updateUnknownLibrariesTask);
+                sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONNECT_TASK_MESSAGE_KEY));
+                sequentialTaskRunnerDialog.setTaskCreators(getConsoleSidTask, updateUnknownLibrariesTask, loadLibrariesTask);
                 sequentialTaskRunnerDialog.showDialog();
             } catch (IOException e) {
                 e.printStackTrace();

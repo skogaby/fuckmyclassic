@@ -1,4 +1,4 @@
-package com.fuckmyclassic.hibernate;
+package com.fuckmyclassic.hibernate.dao;
 
 import com.fuckmyclassic.model.Application;
 

@@ -1,10 +1,11 @@
-package com.fuckmyclassic.task;
+package com.fuckmyclassic.task.impl;
 
 import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.shared.SharedConstants;
+import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +19,7 @@ import java.util.ResourceBundle;
 /**
  * Task to update any libraries in the database whose console SID is "UNKNOWN"
  * to belong to the currently connected console.
+ * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Component
 public class UpdateUnknownLibrariesTask extends AbstractTaskCreator<Void> {

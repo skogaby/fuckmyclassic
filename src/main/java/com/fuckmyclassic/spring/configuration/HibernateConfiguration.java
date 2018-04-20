@@ -1,10 +1,10 @@
 package com.fuckmyclassic.spring.configuration;
 
-import com.fuckmyclassic.hibernate.ApplicationDAO;
-import com.fuckmyclassic.hibernate.ApplicationDAOImpl;
+import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAOImpl;
 import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.LibraryDAO;
-import com.fuckmyclassic.hibernate.LibraryDAOImpl;
+import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryDAOImpl;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

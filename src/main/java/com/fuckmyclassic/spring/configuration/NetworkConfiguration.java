@@ -3,8 +3,9 @@ package com.fuckmyclassic.spring.configuration;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.network.SshConnectionListener;
 import com.fuckmyclassic.network.SshConnectionListenerImpl;
-import com.fuckmyclassic.task.GetConsoleSidTask;
-import com.fuckmyclassic.task.UpdateUnknownLibrariesTask;
+import com.fuckmyclassic.task.impl.GetConsoleSidTask;
+import com.fuckmyclassic.task.impl.LoadLibrariesTask;
+import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.ResourceBundle;
 
 import static com.fuckmyclassic.network.NetworkConstants.SSH_PRIVATE_KEY;
 
@@ -39,8 +41,10 @@ public class NetworkConfiguration {
     }
 
     @Bean
-    public SshConnectionListener sshConnectionListener(SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
-                                                       GetConsoleSidTask getConsoleSidTask, UpdateUnknownLibrariesTask updateUnknownLibrariesTask) {
-        return new SshConnectionListenerImpl(sequentialTaskRunnerDialog, getConsoleSidTask, updateUnknownLibrariesTask);
+    public SshConnectionListener sshConnectionListener(ResourceBundle resourceBundle, SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
+                                                       GetConsoleSidTask getConsoleSidTask, UpdateUnknownLibrariesTask updateUnknownLibrariesTask,
+                                                       LoadLibrariesTask loadLibrariesTask) {
+        return new SshConnectionListenerImpl(resourceBundle, sequentialTaskRunnerDialog, getConsoleSidTask,
+                updateUnknownLibrariesTask, loadLibrariesTask);
     }
 }
