@@ -6,9 +6,12 @@ import com.fuckmyclassic.spring.configuration.ApplicationConfiguration;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.hibernate.Session;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -36,6 +39,13 @@ public class Main extends Application {
         Scene scene = new Scene(loader.load());
         primaryStage.setScene(scene);
         primaryStage.setTitle(String.format("%s v%s", SharedConstants.APP_NAME, SharedConstants.APP_VERSION));
+
+        // fix for the process not fully ending when you click 'X'
+        primaryStage.setOnCloseRequest(t -> {
+            Platform.exit();
+            System.exit(0);
+        });
+
         primaryStage.show();
 
         // start polling for a network connection once the main window is initialized
