@@ -158,7 +158,8 @@ public class LibraryDAOImpl implements LibraryDAO {
         }
 
         // now select all items in the home folder and recurse down for any folders
-        final CheckBoxTreeItem<LibraryItem> homeItem = new CheckBoxTreeItem<>(homeFolderItem, null, true, true);
+        final CheckBoxTreeItem<LibraryItem> homeItem = new CheckBoxTreeItem<>(homeFolderItem, null,
+                homeFolderItem.isSelected(), true);
         homeItem.setExpanded(true);
         loadApplicationsForFolder(homeItem, library);
 
