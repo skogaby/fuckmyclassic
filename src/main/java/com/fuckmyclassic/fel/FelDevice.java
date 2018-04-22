@@ -32,28 +32,20 @@ public class FelDevice {
 
     /** The path to the fes1.bin file */
     public static final String FES1_PATH = String.format("%s%c%s", "uboot", File.separatorChar, "fes1.bin");
-
     /** The path to the uboot.bin file */
     public static final String UBOOT_PATH = String.format("%s%c%s", "uboot", File.separatorChar, "ubootSD.bin");
-
     /** The claimed USB FEL interface */
     private final UsbInterface iface;
-
     /** The pipe to read from the USB device */
     private final UsbPipe inPipe;
-
     /** The pipe to write to the USB device */
     private final UsbPipe outPipe;
-
     /** The binary for fes1.bin */
     private byte[] fes1Bin;
-
     /** The binary for uboot.bin */
     private byte[] ubootBin;
-
     /** Says whether or not the DRAM is initialized */
     private boolean dramInitialized;
-
     /** Uboot command offset */
     private int commandOffset;
 

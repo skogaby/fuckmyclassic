@@ -24,14 +24,9 @@ public class GetConsoleSidTask extends AbstractTaskCreator<String> {
     private final String IN_PROGRESS_MESSAGE_KEY = "GetConsoleSidTask.inProgressMessage";
     private final String COMPLETE_MESSAGE_KEY = "GetConsoleSidTask.completeMessage";
 
-    /**
-     * The connection used for SSH commands.
-     */
+    /** The connection used for SSH commands. */
     private final NetworkConnection networkConnection;
-
-    /**
-     * Bundle for getting localized strings.
-     */
+    /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
 
     @Autowired

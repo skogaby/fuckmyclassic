@@ -16,11 +16,11 @@ import org.springframework.context.annotation.Configuration;
 public class BootConfiguration {
 
     @Bean
-    public KernelFlasher getKernelFlasher(NetworkConnection networkConnection, MembootHelper membootHelper) {
+    public KernelFlasher kernelFlasher(NetworkConnection networkConnection, MembootHelper membootHelper) {
         return new KernelFlasher(networkConnection, membootHelper);
     }
 
-    @Bean MembootHelper getMembootHelper() {
+    @Bean MembootHelper membootHelper() {
         return new MembootHelper();
     }
 }

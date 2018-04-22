@@ -27,19 +27,12 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
 
     static Logger LOG = LogManager.getLogger(ApplicationTreeCell.class.getName());
 
-    /**
-     * The path to the stylesheet for this cell
-     */
+    /** The path to the stylesheet for this cell */
     private static final String styleSheetPath = String.format("%s%c%s", "css", File.separatorChar, "MainWindow.css");
-
-    /**
-     * CSS style class for a cell in the TreeView that's selected
-     */
+    /** CSS style class for a cell in the TreeView that's selected */
     private static final String SELECTED_CELL_STYLE_CLASS = "selected-cell";
 
-    /**
-     * Helper class to import new games to the current library
-     */
+    /** Helper class to import new games to the current library */
     private final AppImporter appImporter;
 
     /**

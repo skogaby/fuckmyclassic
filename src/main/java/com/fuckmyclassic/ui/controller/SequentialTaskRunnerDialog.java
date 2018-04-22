@@ -1,7 +1,6 @@
 package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.shared.SharedConstants;
-import com.fuckmyclassic.spring.configuration.ApplicationConfiguration;
 import com.fuckmyclassic.task.SequentialTaskRunner;
 import com.fuckmyclassic.task.TaskCreator;
 import com.fuckmyclassic.ui.util.BindingHelper;
@@ -16,11 +15,9 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
 
 @Component
 public class SequentialTaskRunnerDialog {
@@ -33,14 +30,9 @@ public class SequentialTaskRunnerDialog {
     public ProgressBar prgMainTaskProgress;
     public ProgressBar prgSubTaskProgress;
 
-    /**
-     * The list of TaskCreators that should be run on the next invocation.
-     */
+    /** The list of TaskCreators that should be run on the next invocation. */
     private TaskCreator[] taskCreators;
-
-    /**
-     * The message to set for the main task.
-     */
+    /** The message to set for the main task. */
     private String mainTaskMessage;
 
     @Autowired

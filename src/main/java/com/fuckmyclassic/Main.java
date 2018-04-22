@@ -7,11 +7,9 @@ import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.hibernate.Session;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 

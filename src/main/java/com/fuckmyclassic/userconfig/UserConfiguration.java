@@ -15,19 +15,11 @@ import java.io.IOException;
 @Component
 public class UserConfiguration {
 
-    /**
-     * The name of the configuration file on-disk.
-     */
+    /** The name of the configuration file on-disk. */
     public static final String CONFIG_FILE = "config.toml";
-
-    /**
-     * The SID of the last console that was connected to.
-     */
+    /** The SID of the last console that was connected to. */
     private String lastConsoleSID;
-
-    /**
-     * The ID of the last library that was loaded for the console.
-     */
+    /** The ID of the last library that was loaded for the console. */
     private long lastLibraryID;
 
     public UserConfiguration() {

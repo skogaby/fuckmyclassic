@@ -16,14 +16,9 @@ import java.util.List;
 @Repository
 public class ApplicationDAOImpl implements ApplicationDAO {
 
-    /**
-     * Hibernate manager for higher level interactions.
-     */
+    /** Hibernate manager for higher level interactions. */
     private final HibernateManager hibernateManager;
-
-    /**
-     * Hibernate session for database interaction at a low level.
-     */
+    /** Hibernate session for database interaction at a low level. */
     private final Session session;
 
     @Autowired

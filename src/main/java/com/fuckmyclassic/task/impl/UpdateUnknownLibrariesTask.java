@@ -29,29 +29,15 @@ public class UpdateUnknownLibrariesTask extends AbstractTaskCreator<Void> {
     private final String IN_PROGRESS_MESSAGE_KEY = "UpdateUnknownLibrariesTask.inProgressMessage";
     private final String COMPLETE_MESSAGE_KEY = "UpdateUnknownLibrariesTask.completeMessage";
 
-    /**
-     * Current user configuration
-     */
+    /** Current user configuration */
     private final UserConfiguration userConfiguration;
-
-    /**
-     * Current handle to the console's network
-     */
+    /** Current handle to the console's network */
     private final NetworkConnection networkConnection;
-
-    /**
-     * Hibernate manager to update libraries
-     */
+    /** Hibernate manager to update libraries */
     private final HibernateManager hibernateManager;
-
-    /**
-     * DAO for querying for libraries
-     */
+    /** DAO for querying for libraries */
     private final LibraryDAO libraryDAO;
-
-    /**
-     * Bundle for getting localized strings.
-     */
+    /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
 
     @Autowired

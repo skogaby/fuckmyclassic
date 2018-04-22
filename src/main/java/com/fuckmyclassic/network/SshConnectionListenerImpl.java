@@ -25,14 +25,9 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
 
     private static final String ON_CONNECT_TASK_MESSAGE_KEY = "NewConnectionTaskLabel";
 
-    /**
-     * Resource bundle for internationalized task strings.
-     */
+    /** Resource bundle for internationalized task strings. */
     private final ResourceBundle tasksResourceBundle;
-
-    /**
-     * The dialog to run sequential tasks.
-     */
+    /** The dialog to run sequential tasks. */
     private final SequentialTaskRunnerDialog sequentialTaskRunnerDialog;
 
     // Tasks that we run on detection of a new console connection

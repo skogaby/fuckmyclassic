@@ -27,24 +27,13 @@ public class SequentialTaskRunner extends Task<Void> {
 
     static Logger LOG = LogManager.getLogger(SequentialTaskRunner.class.getName());
 
-    /**
-     * This progress of the currently-executing subtask.
-     */
+    /** This progress of the currently-executing subtask. */
     private final DoubleProperty subTaskProgress;
-
-    /**
-     * The message we should set for the top-level parent task.
-     */
+    /** The message we should set for the top-level parent task. */
     private final StringProperty mainTaskMessage;
-
-    /**
-     * The current message of the subtask.
-     */
+    /** The current message of the subtask. */
     private final StringProperty subTaskMessage;
-
-    /**
-     * The list of TaskCreators to execute in a sequence.
-     */
+    /** The list of TaskCreators to execute in a sequence. */
     private TaskCreator[] taskCreators;
 
     @Autowired

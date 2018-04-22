@@ -13,9 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class HibernateManager {
 
-    /**
-     * The actual session handle to the database.
-     */
+    /** The actual session handle to the database. */
     private final Session hibernateSession;
 
     @Autowired

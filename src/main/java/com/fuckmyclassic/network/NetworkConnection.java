@@ -48,51 +48,23 @@ public class NetworkConnection {
     private static final String DISCONNECTED_CIRCLE_COLOR = "CRIMSON";
     private static final String CONNECTED_CIRCLE_COLOR = "LIMEGREEN";
 
-    /**
-     * Private instance of the JSch structure.
-     */
+    /** Private instance of the JSch structure. */
     private final JSch jSch;
-
-    /**
-     * The actual SSH connection to the console.
-     */
+    /** The actual SSH connection to the console. */
     public Session connection;
-
-    /**
-     * Background service to poll for connections.
-     */
+    /** Background service to poll for connections. */
     private final NetworkPollingService pollingService;
-
-    /**
-     * List of listeners to alert when a new connection is made.
-     */
+    /** List of listeners to alert when a new connection is made. */
     private Set<SshConnectionListener> connectionListeners;
-
-    /**
-     * An FXML property that exposes whether the console is connected so we can
-     * bind it to the UI.
-     */
+    /** An FXML property that exposes whether the console is connected so we can bind it to the UI. */
     private BooleanProperty disconnected;
-
-    /**
-     * An FXML property that displays the localized connection status so
-     * we can bind it to the UI.
-     */
+    /** An FXML property that displays the localized connection status so we can bind it to the UI. */
     private StringProperty connectionStatus;
-
-    /**
-     * An FXML property that displays the color representing the connection status.
-     */
+    /** An FXML property that displays the color representing the connection status. */
     private ObjectProperty<Paint> connectionStatusColor;
-
-    /**
-     * ResourceBundle for getting localized connection status strings.
-     */
+    /** ResourceBundle for getting localized connection status strings. */
     private ResourceBundle resourceBundle;
-
-    /**
-     * The SID of the currently connected console.
-     */
+    /** The SID of the currently connected console. */
     private String connectedConsoleSid;
 
     /**

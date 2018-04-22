@@ -7,14 +7,9 @@ package com.fuckmyclassic.network;
  */
 public class SshCommandResult {
 
-    /**
-     * The exit code for the SSH command.
-     */
+    /** The exit code for the SSH command. */
     private int exitCode;
-
-    /**
-     * The output for the SSH command.
-     */
+    /** The output for the SSH command. */
     private String output;
 
     /**

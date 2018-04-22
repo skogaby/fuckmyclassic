@@ -25,14 +25,9 @@ public class KernelFlasher {
     /** The path to the memboot.img prebaked kernel we memboot into for flashing */
     public static final String BOOT_IMG_PATH = String.format("%s%c%s", "uboot", File.separatorChar, "memboot.img");
 
-    /**
-     * The SSH connection to the console.
-     */
+    /** The SSH connection to the console. */
     private final NetworkConnection networkConnection;
-
-    /**
-     * The helper for memboot operations.
-     */
+    /** he helper for memboot operations. */
     private final MembootHelper membootHelper;
 
     /**
