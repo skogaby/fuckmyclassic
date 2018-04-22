@@ -27,14 +27,9 @@ public class AppImporter {
 
     static Logger LOG = LogManager.getLogger(AppImporter.class.getName());
 
-    /**
-     * Instance to help with persisting new apps and library items to the database.
-     */
+    /** Instance to help with persisting new apps and library items to the database. */
     private final HibernateManager hibernateManager;
-
-    /**
-     * Instance to help with creating new library items.
-     */
+    /** Instance to help with creating new library items. */
     private final LibraryManager libraryManager;
 
     public AppImporter(final HibernateManager hibernateManager, final LibraryManager libraryManager) {

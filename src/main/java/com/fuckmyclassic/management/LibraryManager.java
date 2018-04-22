@@ -40,39 +40,19 @@ public class LibraryManager {
 
     static Logger LOG = LogManager.getLogger(LibraryManager.class.getName());
 
-    /**
-     * User configuration object.
-     */
+    /** User configuration object. */
     private final UserConfiguration userConfiguration;
-
-    /**
-     * Manager for interacting with the Hibernate session
-     */
+    /** Manager for interacting with the Hibernate session */
     private final HibernateManager hibernateManager;
-
-    /**
-     * DAO for library metadata
-     */
+    /** DAO for library metadata */
     private final LibraryDAO libraryDAO;
-
-    /**
-     * For resizing boxart images we import.
-     */
+    /** For resizing boxart images we import. */
     private final ImageResizer imageResizer;
-
-    /**
-     * The currently selected application in the TreeView
-     */
+    /** The currently selected application in the TreeView */
     private Application currentApp;
-
-    /**
-     * The current library we're viewing
-     */
+    /** The current library we're viewing */
     private Library currentLibrary;
-
-    /**
-     * A reference to the current library's actual tree structure data.
-     */
+    /** A reference to the current library's actual tree structure data. */
     private CheckBoxTreeItem<LibraryItem> currentLibraryTree;
 
     @Autowired

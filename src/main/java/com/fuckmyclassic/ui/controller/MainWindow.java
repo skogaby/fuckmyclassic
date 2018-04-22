@@ -2,6 +2,7 @@ package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
+import com.fuckmyclassic.management.AppExporter;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
@@ -77,30 +78,18 @@ public class MainWindow {
     public Button btnSyncGames;
     public MenuBar mainMenu;
 
-    /**
-     * The configuration object for user options and session settings.
-     */
+    /** The configuration object for user options and session settings.*/
     private final UserConfiguration userConfiguration;
-
-    /**
-     * Helper instance for membooting consoles.
-     */
+    /** Helper instance for membooting consoles.*/
     private final MembootHelper membootHelper;
-
-    /**
-     * Helper instance for kernel flashing operations.
-     */
+    /** Helper instance for kernel flashing operations. */
     private final KernelFlasher kernelFlasher;
-
-    /**
-     * Helper instance for managing the library loading and view.
-     */
+    /** Helper instance for managing the library loading and view */
     private final LibraryManager libraryManager;
-
-    /**
-     * Manager for SSH operations and network connections.
-     */
+    /** Manager for SSH operations and network connections. */
     private final NetworkConnection networkConnection;
+    /** The app exporter for creating the data and syncing it to consoles */
+    private final AppExporter appExporter;
 
     /**
      * Constructor.
@@ -112,12 +101,14 @@ public class MainWindow {
                       final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher,
                       final LibraryManager libraryManager,
-                      final NetworkConnection networkConnection) {
+                      final NetworkConnection networkConnection,
+                      final AppExporter appExporter) {
         this.userConfiguration = userConfiguration;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
         this.networkConnection = networkConnection;
+        this.appExporter = appExporter;
     }
 
     /**
@@ -267,7 +258,10 @@ public class MainWindow {
         }
     }
 
-    // Stubbed out methods for testing FEL functionality
+    //////////////////////////////////////////////////////////////////////
+    //     Stubbed out methods for testing half-baked functionality     //
+    //////////////////////////////////////////////////////////////////////
+
     @FXML
     private void onMembootCustomKernelClicked() throws UsbException, URISyntaxException {
         LOG.debug("Memboot button clicked");
@@ -279,5 +273,10 @@ public class MainWindow {
     private void onFlashCustomKernelClicked() throws UsbException, URISyntaxException, InterruptedException {
         LOG.debug("Custom kernel flash button clicked");
         this.kernelFlasher.flashCustomKernel();
+    }
+
+    @FXML
+    private void onSyncGamesClicked() throws IOException {
+        this.appExporter.prepareTempData();
     }
 }

@@ -20,19 +20,11 @@ import java.util.stream.Collectors;
 @Repository
 public class LibraryDAOImpl implements LibraryDAO {
 
-    /**
-     * Hibernate manager for higher level interactions.
-     */
+    /** Hibernate manager for higher level interactions. */
     private final HibernateManager hibernateManager;
-
-    /**
-     * Hibernate session for database interaction at a low level.
-     */
+    /** Hibernate session for database interaction at a low level. */
     private final Session session;
-
-    /**
-     * DAO to load application data.
-     */
+    /** DAO to load application data. */
     private final ApplicationDAO applicationDAO;
 
     @Autowired

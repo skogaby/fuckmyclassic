@@ -43,4 +43,8 @@ dependencies {
     // Import for TOML support
     // https://mvnrepository.com/artifact/com.moandjiezana.toml/toml4j
     compile group: 'com.moandjiezana.toml', name: 'toml4j', version: '0.7.2'
+
+    // Miscellaneous operations
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
 }

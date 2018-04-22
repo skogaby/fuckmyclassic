@@ -34,34 +34,17 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
     private final String IN_PROGRESS_MESSAGE_KEY = "LoadLibrariesTask.inProgressMessage";
     private final String COMPLETE_MESSAGE_KEY = "LoadLibrariesTask.completeMessage";
 
-    /**
-     * Current user configuration
-     */
+    /** Current user configuration*/
     private final UserConfiguration userConfiguration;
-
-    /**
-     * Current handle to the console's network
-     */
+    /** Current handle to the console's network */
     private final NetworkConnection networkConnection;
-
-    /**
-     * DAO for querying for libraries
-     */
+    /** DAO for querying for libraries */
     private final LibraryDAO libraryDAO;
-
-    /**
-     * Bundle for getting localized strings.
-     */
+    /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
-
-    /**
-     * The main window, so we can refresh the views
-     */
+    /** The main window, so we can refresh the views */
     private final MainWindow mainWindow;
-
-    /**
-     * Library manager so we can set the current library data.
-     */
+    /** Library manager so we can set the current library data. */
     private final LibraryManager libraryManager;
 
     @Autowired

@@ -301,7 +301,7 @@
                      <font>
                         <Font size="12.0" />
                      </font></TitledPane>
-                  <Button fx:id="btnSyncGames" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefHeight="50.0" text="%MainWindow.btnSynchronizeGames">
+                  <Button fx:id="btnSyncGames" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onSyncGamesClicked" prefHeight="50.0" text="%MainWindow.btnSynchronizeGames">
                      <VBox.margin>
                         <Insets top="10.0" />
                      </VBox.margin>
