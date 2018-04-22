@@ -1,5 +1,6 @@
 package com.fuckmyclassic.model;
 
+import com.fuckmyclassic.shared.SharedConstants;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
@@ -10,6 +11,7 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.apache.commons.lang3.text.StrBuilder;
 import org.hibernate.annotations.NaturalId;
 
 import javax.persistence.Column;
@@ -20,6 +22,7 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -144,6 +147,38 @@ public class Application implements Externalizable {
         setCopyright(in.readUTF());
         setApplicationSize(in.readLong());
         setCompressed(in.readBoolean());
+    }
+
+    /**
+     * Returns a string that represents the desktop file for this application.
+     * @return
+     */
+    @Transient
+    public String getDesktopFile() {
+        // TODO: make this a little more robust and handle the SNES-specific fields correctly,
+        // also add a real copyright field
+        final StrBuilder sb = new StrBuilder();
+        sb.appendln("[Desktop Entry]");
+        sb.appendln("Type=Application");
+        sb.appendln(String.format("Exec=%s", getCommandLine()));
+        sb.appendln(String.format("Path=%s//%s", SharedConstants.CONSOLE_SAVES_DIR, getApplicationId()));
+        sb.appendln(String.format("Name=%s", getApplicationName()));
+        sb.appendln(String.format("Icon=%s/%s/%s%n", SharedConstants.CONSOLE_GAMES_DIR, getApplicationId(), getBoxArtPath()));
+        sb.appendln("[X-CLOVER Game]");
+        sb.appendln(String.format("Code=%s", getApplicationId()));
+        sb.appendln(String.format("TestID=%d", getTestId()));
+        sb.appendln("Status=Completing-3"); // TODO: handle correctly
+        sb.appendln(String.format("ID=%d", getCanoeId()));
+        sb.appendln(String.format("Players=%d", isSinglePlayer() ? 1 : 2));
+        sb.appendln(String.format("Simultaneous=%d", isSimultaneousMultiplayer() ? 1 : 0));
+        sb.appendln(String.format("ReleaseDate=%s", getReleaseDate().toString()));
+        sb.appendln(String.format("SaveCount=%d", getSaveCount()));
+        sb.appendln(String.format("SortRawTitle=%s", getSortName()));
+        sb.appendln(String.format("SortRawPublisher=%s", getPublisher()));
+        sb.appendln("Copyright=fuckmyclassic 2018"); // TODO: handle correctly
+        sb.appendln("MyPlayDemoTime=45"); // TODO: handle correctly
+
+        return sb.toString();
     }
 
     public String toString() {

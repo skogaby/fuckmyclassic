@@ -9,8 +9,13 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,10 +52,14 @@ public class AppExporter {
         // traverse the current library tree and create the temp data appropriately
         final List<TreeItem<LibraryItem>> nodesToVisit = new ArrayList<>();
         nodesToVisit.add(this.libraryManager.getCurrentLibraryTree());
+
+        // temp variables we need while traversing and creating the data
         TreeItem<LibraryItem> currentNode;
         Application currentApp;
         boolean shouldCreateApp;
         File newAppDirectory;
+        String desktopFileContents;
+        BufferedWriter desktopFileWriter;
 
         while (!nodesToVisit.isEmpty()) {
             shouldCreateApp = true;
@@ -74,8 +83,52 @@ public class AppExporter {
                 newAppDirectory.mkdirs();
 
                 // create the desktop file for this app
+                desktopFileContents = currentApp.getDesktopFile();
+                desktopFileWriter = new BufferedWriter(new FileWriter(Paths.get(newAppDirectory.toString(),
+                        String.format("%s.desktop", currentApp.getApplicationId())).toString()));
+                desktopFileWriter.write(desktopFileContents);
+                desktopFileWriter.close();
 
                 // symlink the actual contents of the app itself
+                if (!(currentApp instanceof Folder)) {
+                    this.symlinkContentsOfDirectory(
+                            Paths.get(SharedConstants.GAMES_DIRECTORY, currentApp.getApplicationId()),
+                            newAppDirectory.toPath());
+                }
+
+                // symlink the boxart
+                final String boxart = currentApp.getBoxArtPath();
+                final String thumbnail = boxart.replace(".png", "_small.png");
+
+                Files.createSymbolicLink(
+                        Paths.get(newAppDirectory.toString(), boxart).toAbsolutePath(),
+                        Paths.get(SharedConstants.BOXART_DIRECTORY, boxart).toAbsolutePath());
+                Files.createSymbolicLink(
+                        Paths.get(newAppDirectory.toString(), thumbnail).toAbsolutePath(),
+                        Paths.get(SharedConstants.BOXART_DIRECTORY, thumbnail).toAbsolutePath());
+            }
+        }
+    }
+
+    /**
+     * Creates symlinks of all the contents in the src folder inside the dst folder.
+     * @param src
+     * @param dst
+     * @throws IOException
+     */
+    private void symlinkContentsOfDirectory(final Path src, final Path dst) throws IOException {
+        final DirectoryStream<Path> directoryStream = Files.newDirectoryStream(src);
+
+        for (final Path path : directoryStream) {
+            final File dstFile = new File(Paths.get(dst.toString(), path.getFileName().toString()).toUri());
+
+            if (path.toFile().isDirectory()) {
+                // if it's a folder, create the folder and symlink the contents
+                dstFile.mkdirs();
+                symlinkContentsOfDirectory(path, dstFile.toPath());
+            } else {
+                // if it's not a folder, just symlink it
+                Files.createSymbolicLink(dstFile.toPath().toAbsolutePath(), path.toAbsolutePath());
             }
         }
     }

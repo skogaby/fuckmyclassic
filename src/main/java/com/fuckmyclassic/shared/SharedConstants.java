@@ -30,4 +30,8 @@ public class SharedConstants {
     public static int BOXART_SIZE = 228;
     /** The size of each dimension for the game thumbnails */
     public static int THUMBNAIL_SIZE = 40;
+    /** The path to use in the desktop files for the games directory */
+    public static String CONSOLE_GAMES_DIR = "/var/games";
+    /** The path to use in the desktop files for the saves directory */
+    public static String CONSOLE_SAVES_DIR = "/var/saves";
 }
