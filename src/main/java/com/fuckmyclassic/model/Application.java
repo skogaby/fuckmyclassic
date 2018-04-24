@@ -169,25 +169,25 @@ public class Application implements Externalizable {
         // TODO: make this a little more robust and handle the SNES-specific fields correctly,
         // also add a real copyright field
         final StrBuilder sb = new StrBuilder();
-        sb.appendln("[Desktop Entry]");
-        sb.appendln("Type=Application");
-        sb.appendln(String.format("Exec=%s", execLine));
-        sb.appendln(String.format("Path=%s//%s", SharedConstants.CONSOLE_SAVES_DIR, getApplicationId()));
-        sb.appendln(String.format("Name=%s", getApplicationName()));
-        sb.appendln(String.format("Icon=%s", iconPath));
-        sb.appendln(String.format("%n[X-CLOVER Game]"));
-        sb.appendln(String.format("Code=%s", getApplicationId()));
-        sb.appendln(String.format("TestID=%d", getTestId()));
-        sb.appendln("Status=Completing-3"); // TODO: handle correctly
-        sb.appendln(String.format("ID=%d", getCanoeId()));
-        sb.appendln(String.format("Players=%d", isSinglePlayer() ? 1 : 2));
-        sb.appendln(String.format("Simultaneous=%d", isSimultaneousMultiplayer() ? 1 : 0));
-        sb.appendln(String.format("ReleaseDate=%s", getReleaseDate().toString()));
-        sb.appendln(String.format("SaveCount=%d", getSaveCount()));
-        sb.appendln(String.format("SortRawTitle=%s", getSortName()));
-        sb.appendln(String.format("SortRawPublisher=%s", getPublisher()));
-        sb.appendln("Copyright=fuckmyclassic 2018"); // TODO: handle correctly
-        sb.appendln("MyPlayDemoTime=45"); // TODO: handle correctly
+        sb.append("[Desktop Entry]\n");
+        sb.append("Type=Application\n");
+        sb.append(String.format("Exec=%s\n", execLine));
+        sb.append(String.format("Path=%s//%s\n", SharedConstants.CONSOLE_SAVES_DIR, getApplicationId()));
+        sb.append(String.format("Name=%s\n", getApplicationName()));
+        sb.append(String.format("Icon=%s\n\n", iconPath));
+        sb.append(String.format("[X-CLOVER Game]\n"));
+        sb.append(String.format("Code=%s\n", getApplicationId()));
+        sb.append(String.format("TestID=%d\n", getTestId()));
+        sb.append("Status=Completing-3\n"); // TODO: handle correctly
+        sb.append(String.format("ID=%d\n", getCanoeId()));
+        sb.append(String.format("Players=%d\n", isSinglePlayer() ? 1 : 2));
+        sb.append(String.format("Simultaneous=%d\n", isSimultaneousMultiplayer() ? 1 : 0));
+        sb.append(String.format("ReleaseDate=%s\n", getReleaseDate().toString()));
+        sb.append(String.format("SaveCount=%d\n", getSaveCount()));
+        sb.append(String.format("SortRawTitle=%s\n", getSortName()));
+        sb.append(String.format("SortRawPublisher=%s\n", getPublisher()));
+        sb.append("Copyright=fuckmyclassic 2018\n"); // TODO: handle correctly
+        sb.append("MyPlayDemoTime=45\n"); // TODO: handle correctly
 
         return sb.toString();
     }

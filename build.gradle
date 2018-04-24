@@ -44,6 +44,10 @@ dependencies {
     // https://mvnrepository.com/artifact/com.moandjiezana.toml/toml4j
     compile group: 'com.moandjiezana.toml', name: 'toml4j', version: '0.7.2'
 
+    // Import for rsync support
+    // https://mvnrepository.com/artifact/com.github.fracpete/rsync4j
+    compile group: 'com.github.fracpete', name: 'rsync4j', version: '3.1.2-8'
+    
     // Miscellaneous operations
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
