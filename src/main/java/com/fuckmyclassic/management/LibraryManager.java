@@ -26,6 +26,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -139,8 +140,12 @@ public class LibraryManager {
 
             // set the box art if there is any
             if (!StringUtils.isEmpty(app.getBoxArtPath())) {
-                mainWindow.imgBoxArtPreview.setImage(new Image(
-                        Paths.get("file:" + SharedConstants.BOXART_DIRECTORY, app.getBoxArtPath()).toString()));
+                try {
+                    mainWindow.imgBoxArtPreview.setImage(new Image(
+                            Paths.get(SharedConstants.BOXART_DIRECTORY, app.getBoxArtPath()).toUri().toURL().toExternalForm()));
+                } catch (MalformedURLException e) {
+                    LOG.error(e);
+                }
             } else {
                 mainWindow.imgBoxArtPreview.setImage(new Image(Paths.get(
                         SharedConstants.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString()));
@@ -190,7 +195,7 @@ public class LibraryManager {
             this.currentApp.setBoxArtPath(newBoxartFile);
             this.hibernateManager.updateEntity(currentApp);
 
-            return new Image(Paths.get("file:" + SharedConstants.BOXART_DIRECTORY, newBoxartFile).toString());
+            return new Image(Paths.get(SharedConstants.BOXART_DIRECTORY, newBoxartFile).toUri().toURL().toExternalForm());
         } else {
             return null;
         }

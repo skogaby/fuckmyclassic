@@ -14,9 +14,7 @@ import javafx.scene.input.TransferMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
-
 
 /**
  * Class to encapsulate the logic for each cell in the TreeView
@@ -28,7 +26,7 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
     static Logger LOG = LogManager.getLogger(ApplicationTreeCell.class.getName());
 
     /** The path to the stylesheet for this cell */
-    private static final String styleSheetPath = String.format("%s%c%s", "css", File.separatorChar, "MainWindow.css");
+    private static final String STYLESHEET_PATH = "css/MainWindow.css";
     /** CSS style class for a cell in the TreeView that's selected */
     private static final String SELECTED_CELL_STYLE_CLASS = "selected-cell";
 
@@ -48,7 +46,7 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
         setOnDragExited(event -> onDragExited(event));
 
         // styling
-        getStylesheets().add(styleSheetPath);
+        getStylesheets().add(ApplicationTreeCell.class.getClassLoader().getResource(STYLESHEET_PATH).toExternalForm());
     }
 
     /**
