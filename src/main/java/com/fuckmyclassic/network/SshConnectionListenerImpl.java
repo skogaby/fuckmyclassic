@@ -1,8 +1,6 @@
 package com.fuckmyclassic.network;
 
-import com.fuckmyclassic.task.impl.GetConsoleSidTask;
-import com.fuckmyclassic.task.impl.LoadLibrariesTask;
-import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
+import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import javafx.application.Platform;
 import org.apache.logging.log4j.LogManager;
@@ -29,23 +27,16 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
     private final ResourceBundle tasksResourceBundle;
     /** The dialog to run sequential tasks. */
     private final SequentialTaskRunnerDialog sequentialTaskRunnerDialog;
-
-    // Tasks that we run on detection of a new console connection
-    private final GetConsoleSidTask getConsoleSidTask;
-    private final UpdateUnknownLibrariesTask updateUnknownLibrariesTask;
-    private final LoadLibrariesTask loadLibrariesTask;
+    /** Provider for the Tasks we need on new connection */
+    private final TaskProvider taskProvider;
 
     @Autowired
     public SshConnectionListenerImpl(final ResourceBundle resourceBundle,
                                      final SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
-                                     final GetConsoleSidTask getConsoleSidTask,
-                                     final UpdateUnknownLibrariesTask updateUnknownLibrariesTask,
-                                     final LoadLibrariesTask loadLibrariesTask) {
+                                     final TaskProvider taskProvider) {
         this.tasksResourceBundle = resourceBundle;
         this.sequentialTaskRunnerDialog = sequentialTaskRunnerDialog;
-        this.getConsoleSidTask = getConsoleSidTask;
-        this.updateUnknownLibrariesTask = updateUnknownLibrariesTask;
-        this.loadLibrariesTask = loadLibrariesTask;
+        this.taskProvider = taskProvider;
     }
 
     /**
@@ -58,10 +49,11 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
         Platform.runLater(() -> {
             try {
                 sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONNECT_TASK_MESSAGE_KEY));
-                sequentialTaskRunnerDialog.setTaskCreators(getConsoleSidTask, updateUnknownLibrariesTask, loadLibrariesTask);
+                sequentialTaskRunnerDialog.setTaskCreators(taskProvider.getConsoleIdsAndPathsTask,
+                        taskProvider.updateUnknownLibrariesTask, taskProvider.loadLibrariesTask);
                 sequentialTaskRunnerDialog.showDialog();
             } catch (IOException e) {
-                e.printStackTrace();
+                LOG.error(e);
             }
         });
     }

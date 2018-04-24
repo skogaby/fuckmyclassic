@@ -43,24 +43,24 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
     /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
     /** The main window, so we can refresh the views */
-    private final MainWindow mainWindow;
-    /** Library manager so we can set the current library data. */
-    private final LibraryManager libraryManager;
+    private MainWindow mainWindow;
 
     @Autowired
     public LoadLibrariesTask(final UserConfiguration userConfiguration, final NetworkConnection networkConnection,
-                             final LibraryDAO libraryDAO, final ResourceBundle resourceBundle, final MainWindow mainWindow,
-                             final LibraryManager libraryManager) {
+                             final LibraryDAO libraryDAO, final ResourceBundle resourceBundle) {
         this.userConfiguration = userConfiguration;
         this.networkConnection = networkConnection;
         this.libraryDAO = libraryDAO;
         this.resourceBundle = resourceBundle;
-        this.mainWindow = mainWindow;
-        this.libraryManager = libraryManager;
     }
 
     @Override
     public Task<Void> createTask() {
+        if (this.mainWindow == null) {
+            LOG.error("Called the LoadLibrariesTask before assigning the MainWindow");
+            throw new RuntimeException();
+        }
+
         return new Task<Void>() {
             @Override
             protected Void call() {
@@ -100,5 +100,10 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
                 return null;
             }
         };
+    }
+
+    public LoadLibrariesTask setMainWindow(MainWindow mainWindow) {
+        this.mainWindow = mainWindow;
+        return this;
     }
 }

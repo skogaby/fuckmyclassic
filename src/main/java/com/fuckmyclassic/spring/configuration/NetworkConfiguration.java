@@ -3,9 +3,7 @@ package com.fuckmyclassic.spring.configuration;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.network.SshConnectionListener;
 import com.fuckmyclassic.network.SshConnectionListenerImpl;
-import com.fuckmyclassic.task.impl.GetConsoleSidTask;
-import com.fuckmyclassic.task.impl.LoadLibrariesTask;
-import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
+import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -36,15 +34,13 @@ public class NetworkConfiguration {
     }
 
     @Bean
-    public NetworkConnection networkConnection(JSch jSch) throws JSchException {
+    public NetworkConnection networkConnection(JSch jSch) {
         return new NetworkConnection(jSch);
     }
 
     @Bean
     public SshConnectionListener sshConnectionListener(ResourceBundle resourceBundle, SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
-                                                       GetConsoleSidTask getConsoleSidTask, UpdateUnknownLibrariesTask updateUnknownLibrariesTask,
-                                                       LoadLibrariesTask loadLibrariesTask) {
-        return new SshConnectionListenerImpl(resourceBundle, sequentialTaskRunnerDialog, getConsoleSidTask,
-                updateUnknownLibrariesTask, loadLibrariesTask);
+                                                       TaskProvider taskProvider) {
+        return new SshConnectionListenerImpl(resourceBundle, sequentialTaskRunnerDialog, taskProvider);
     }
 }

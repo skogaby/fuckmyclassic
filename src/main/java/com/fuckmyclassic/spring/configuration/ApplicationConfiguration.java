@@ -2,9 +2,9 @@ package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.management.AppExporter;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
@@ -27,9 +27,10 @@ public class ApplicationConfiguration {
 
     @Bean
     public MainWindow mainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
-                                    LibraryManager libraryManager, NetworkConnection networkConnection, AppExporter appExporter) {
-        return new MainWindow(userConfiguration, membootHelper, kernelFlasher,
-                libraryManager, networkConnection, appExporter);
+                                 LibraryManager libraryManager, NetworkConnection networkConnection, ResourceBundle tasksResourceBundle,
+                                 SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider) {
+        return new MainWindow(userConfiguration, membootHelper, kernelFlasher, libraryManager, networkConnection, tasksResourceBundle,
+                sequentialTaskRunnerDialog, taskProvider);
     }
 
     @Bean
@@ -56,10 +57,5 @@ public class ApplicationConfiguration {
     @Bean
     public ResourceBundle tasksResourceBundle() {
         return ResourceBundle.getBundle("i18n/Tasks");
-    }
-
-    @Bean
-    public AppExporter appExporter(LibraryManager libraryManager) {
-        return new AppExporter(libraryManager);
     }
 }

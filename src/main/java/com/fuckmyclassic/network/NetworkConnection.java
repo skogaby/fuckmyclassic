@@ -66,6 +66,10 @@ public class NetworkConnection {
     private ResourceBundle resourceBundle;
     /** The SID of the currently connected console. */
     private String connectedConsoleSid;
+    /** The system type of the currently connected console. */
+    private String systemType;
+    /** The sync path for the currently connected console. */
+    private String systemSyncPath;
 
     /**
      * Constructor.
@@ -363,6 +367,24 @@ public class NetworkConnection {
 
     public NetworkConnection setConnectedConsoleSid(String connectedConsoleSid) {
         this.connectedConsoleSid = connectedConsoleSid;
+        return this;
+    }
+
+    public String getSystemType() {
+        return systemType;
+    }
+
+    public NetworkConnection setSystemType(String systemType) {
+        this.systemType = systemType;
+        return this;
+    }
+
+    public String getSystemSyncPath() {
+        return systemSyncPath;
+    }
+
+    public NetworkConnection setSystemSyncPath(String systemSyncPath) {
+        this.systemSyncPath = systemSyncPath;
         return this;
     }
 }

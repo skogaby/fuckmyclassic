@@ -4,10 +4,11 @@ import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.network.NetworkConnection;
-import com.fuckmyclassic.task.impl.GetConsoleSidTask;
+import com.fuckmyclassic.task.TaskProvider;
+import com.fuckmyclassic.task.impl.CreateTempDataTask;
+import com.fuckmyclassic.task.impl.GetConsoleIdsAndPathsTask;
 import com.fuckmyclassic.task.impl.LoadLibrariesTask;
 import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
-import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -24,8 +25,14 @@ import java.util.ResourceBundle;
 public class TaskConfiguration {
 
     @Bean
-    public GetConsoleSidTask getConsoleSidService(ResourceBundle resourceBundle, NetworkConnection networkConnection) {
-        return new GetConsoleSidTask(resourceBundle, networkConnection);
+    public TaskProvider taskProvider(GetConsoleIdsAndPathsTask getConsoleIdsAndPathsTask, UpdateUnknownLibrariesTask updateUnknownLibrariesTask,
+                                     LoadLibrariesTask loadLibrariesTask, CreateTempDataTask createTempDataTask) {
+        return new TaskProvider(createTempDataTask, getConsoleIdsAndPathsTask, loadLibrariesTask, updateUnknownLibrariesTask);
+    }
+
+    @Bean
+    public GetConsoleIdsAndPathsTask getConsoleSidService(ResourceBundle resourceBundle, NetworkConnection networkConnection) {
+        return new GetConsoleIdsAndPathsTask(resourceBundle, networkConnection);
     }
 
     @Bean
@@ -36,8 +43,12 @@ public class TaskConfiguration {
 
     @Bean
     public LoadLibrariesTask loadLibrariesTask(UserConfiguration userConfiguration, NetworkConnection networkConnection,
-                                               LibraryDAO libraryDAO, ResourceBundle resourceBundle, MainWindow mainWindow,
-                                               LibraryManager libraryManager) {
-        return new LoadLibrariesTask(userConfiguration, networkConnection, libraryDAO, resourceBundle, mainWindow, libraryManager);
+                                               LibraryDAO libraryDAO, ResourceBundle resourceBundle) {
+        return new LoadLibrariesTask(userConfiguration, networkConnection, libraryDAO, resourceBundle);
+    }
+
+    @Bean
+    public CreateTempDataTask createTempDataTask(LibraryManager libraryManager, ResourceBundle resourceBundle) {
+        return new CreateTempDataTask(libraryManager, resourceBundle);
     }
 }

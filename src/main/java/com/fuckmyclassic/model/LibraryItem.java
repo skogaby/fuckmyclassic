@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -34,10 +35,12 @@ public class LibraryItem implements Externalizable {
     private Application application;
     private Folder folder;
     private BooleanProperty selected;
+    private int numNodes;
 
     public LibraryItem() {
         this.id = new SimpleLongProperty(this, "id");
         this.selected = new SimpleBooleanProperty(true);
+        this.numNodes = 0;
     }
 
     public LibraryItem(final Library library, final Application application, final Folder folder, final boolean selected) {
@@ -46,6 +49,8 @@ public class LibraryItem implements Externalizable {
         this.application = application;
         this.folder = folder;
         this.selected = new SimpleBooleanProperty(selected);
+        this.numNodes = 0;
+
     }
 
     @Override
@@ -126,6 +131,16 @@ public class LibraryItem implements Externalizable {
 
     public LibraryItem setSelected(boolean selected) {
         this.selected.set(selected);
+        return this;
+    }
+
+    @Transient
+    public int getNumNodes() {
+        return numNodes;
+    }
+
+    public LibraryItem setNumNodes(int numNodes) {
+        this.numNodes = numNodes;
         return this;
     }
 }

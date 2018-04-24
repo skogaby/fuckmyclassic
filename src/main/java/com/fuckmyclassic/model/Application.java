@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrBuilder;
 import org.hibernate.annotations.NaturalId;
 
@@ -150,21 +151,31 @@ public class Application implements Externalizable {
     }
 
     /**
-     * Returns a string that represents the desktop file for this application.
+     * Return a string representing the .desktop file for this game.
+     * @param gameStoragePath The path to replace instances of `/var/games` with, in the
+     *                        case that we're doing a linked export.
      * @return
      */
     @Transient
-    public String getDesktopFile() {
+    public String getDesktopFile(final String gameStoragePath) {
+        String execLine = getCommandLine();
+        String iconPath = String.format("%s/%s/%s", SharedConstants.CONSOLE_GAMES_DIR, getApplicationId(), getBoxArtPath());
+
+        if (!StringUtils.isBlank(gameStoragePath)) {
+            execLine = execLine.replace(SharedConstants.CONSOLE_GAMES_DIR, gameStoragePath);
+            iconPath = iconPath.replace(SharedConstants.CONSOLE_GAMES_DIR, gameStoragePath);
+        }
+
         // TODO: make this a little more robust and handle the SNES-specific fields correctly,
         // also add a real copyright field
         final StrBuilder sb = new StrBuilder();
         sb.appendln("[Desktop Entry]");
         sb.appendln("Type=Application");
-        sb.appendln(String.format("Exec=%s", getCommandLine()));
+        sb.appendln(String.format("Exec=%s", execLine));
         sb.appendln(String.format("Path=%s//%s", SharedConstants.CONSOLE_SAVES_DIR, getApplicationId()));
         sb.appendln(String.format("Name=%s", getApplicationName()));
-        sb.appendln(String.format("Icon=%s/%s/%s%n", SharedConstants.CONSOLE_GAMES_DIR, getApplicationId(), getBoxArtPath()));
-        sb.appendln("[X-CLOVER Game]");
+        sb.appendln(String.format("Icon=%s", iconPath));
+        sb.appendln(String.format("%n[X-CLOVER Game]"));
         sb.appendln(String.format("Code=%s", getApplicationId()));
         sb.appendln(String.format("TestID=%d", getTestId()));
         sb.appendln("Status=Completing-3"); // TODO: handle correctly

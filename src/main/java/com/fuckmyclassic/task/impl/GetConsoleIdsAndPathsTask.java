@@ -17,12 +17,12 @@ import java.util.ResourceBundle;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Component
-public class GetConsoleSidTask extends AbstractTaskCreator<String> {
+public class GetConsoleIdsAndPathsTask extends AbstractTaskCreator<String> {
 
-    static Logger LOG = LogManager.getLogger(GetConsoleSidTask.class.getName());
+    static Logger LOG = LogManager.getLogger(GetConsoleIdsAndPathsTask.class.getName());
 
-    private final String IN_PROGRESS_MESSAGE_KEY = "GetConsoleSidTask.inProgressMessage";
-    private final String COMPLETE_MESSAGE_KEY = "GetConsoleSidTask.completeMessage";
+    private final String IN_PROGRESS_MESSAGE_KEY = "GetConsoleIdsAndPathsTask.inProgressMessage";
+    private final String COMPLETE_MESSAGE_KEY = "GetConsoleIdsAndPathsTask.completeMessage";
 
     /** The connection used for SSH commands. */
     private final NetworkConnection networkConnection;
@@ -30,7 +30,7 @@ public class GetConsoleSidTask extends AbstractTaskCreator<String> {
     private final ResourceBundle resourceBundle;
 
     @Autowired
-    public GetConsoleSidTask(final ResourceBundle resourceBundle, final NetworkConnection networkConnection) {
+    public GetConsoleIdsAndPathsTask(final ResourceBundle resourceBundle, final NetworkConnection networkConnection) {
         this.resourceBundle = resourceBundle;
         this.networkConnection = networkConnection;
     }
@@ -46,8 +46,16 @@ public class GetConsoleSidTask extends AbstractTaskCreator<String> {
                 final String consoleSid = networkConnection.runCommand(
                         "echo \"`devmem 0x01C23800``devmem 0x01C23804``devmem 0x01C23808``devmem 0x01C2380C`\"")
                         .trim().replace("0x", "");
-                LOG.debug(String.format("Detected console SID: %s", consoleSid));
+                final String consoleType = networkConnection.runCommand("hakchi eval 'echo \"$sftype-$sfregion\"'").trim();
+                final String syncPath = networkConnection.runCommand("hakchi findGameSyncStorage").trim();
+
+                LOG.info(String.format("Detected console SID: %s", consoleSid));
+                LOG.info(String.format("Detected console type: %s", consoleType));
+                LOG.info(String.format("Detected console sync path: %s", syncPath));
+
                 networkConnection.setConnectedConsoleSid(consoleSid);
+                networkConnection.setSystemType(consoleType);
+                networkConnection.setSystemSyncPath(syncPath);
 
                 updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));
                 updateProgress(1, 1);

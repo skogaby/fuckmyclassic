@@ -42,7 +42,7 @@ public class LibraryDAOImpl implements LibraryDAO {
      */
     @Override
     public List<Library> getLibrariesForConsole(String consoleSid) {
-        final Query<Library > query = session.createQuery("from Library where console_sid = :console_sid");
+        final Query<Library> query = session.createQuery("from Library where console_sid = :console_sid");
         query.setParameter("console_sid", consoleSid);
         List<Library> results = query.getResultList();
 
@@ -85,7 +85,7 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param library The metadata for the library that needs to be loaded.
      */
     @Override
-    public void loadApplicationsForFolder(CheckBoxTreeItem<LibraryItem> parentFolder, Library library) {
+    public int loadApplicationsForFolder(CheckBoxTreeItem<LibraryItem> parentFolder, Library library) {
         // get all the applications in the top-level folder
         final Query<LibraryItem> query = session.createQuery(
                 "from LibraryItem l where l.library = :library and l.folder = :folder");
@@ -112,12 +112,17 @@ public class LibraryDAOImpl implements LibraryDAO {
         parentFolder.getChildren().addAll(itemResults);
 
         // iterate through the results and recurse down for any folders that are inside this one
+        int sum = 0;
         for (CheckBoxTreeItem<LibraryItem> itemResult : itemResults) {
             if (itemResult.getValue().getApplication() instanceof Folder) {
                 itemResult.setExpanded(true);
-                loadApplicationsForFolder(itemResult, library);
+                sum += 1 + loadApplicationsForFolder(itemResult, library);
+            } else {
+                sum++;
             }
         }
+
+        return sum;
     }
 
     /**
@@ -153,7 +158,7 @@ public class LibraryDAOImpl implements LibraryDAO {
         final CheckBoxTreeItem<LibraryItem> homeItem = new CheckBoxTreeItem<>(homeFolderItem, null,
                 homeFolderItem.isSelected(), true);
         homeItem.setExpanded(true);
-        loadApplicationsForFolder(homeItem, library);
+        homeItem.getValue().setNumNodes(loadApplicationsForFolder(homeItem, library) + 1);
 
         return homeItem;
     }

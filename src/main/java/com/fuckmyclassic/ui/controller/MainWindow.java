@@ -2,12 +2,12 @@ package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.management.AppExporter;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.shared.SharedConstants;
+import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.UserConfiguration;
@@ -43,6 +43,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
 
@@ -54,6 +55,8 @@ import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
 public class MainWindow {
 
     static Logger LOG = LogManager.getLogger(MainWindow.class.getName());
+
+    private static final String SYNC_TASK_TITLE_KEY = "SyncOrExportTaskLabel";
 
     // References to all of the UI objects that we need to manipulate
     public ComboBox<Library> cmbCurrentCollection;
@@ -88,13 +91,15 @@ public class MainWindow {
     private final LibraryManager libraryManager;
     /** Manager for SSH operations and network connections. */
     private final NetworkConnection networkConnection;
-    /** The app exporter for creating the data and syncing it to consoles */
-    private final AppExporter appExporter;
+    /** Resource bundle for internationalized task strings. */
+    private final ResourceBundle tasksResourceBundle;
+    /** The dialog to run sequential tasks. */
+    private final SequentialTaskRunnerDialog sequentialTaskRunnerDialog;
+    /** Provider for the Tasks we need during runtime for miscellaneous operations */
+    private final TaskProvider taskProvider;
 
     /**
      * Constructor.
-     * @param membootHelper
-     * @param kernelFlasher
      */
     @Autowired
     public MainWindow(final UserConfiguration userConfiguration,
@@ -102,13 +107,17 @@ public class MainWindow {
                       final KernelFlasher kernelFlasher,
                       final LibraryManager libraryManager,
                       final NetworkConnection networkConnection,
-                      final AppExporter appExporter) {
+                      final ResourceBundle tasksResourceBundle,
+                      final SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
+                      final TaskProvider taskProvider) {
         this.userConfiguration = userConfiguration;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
         this.networkConnection = networkConnection;
-        this.appExporter = appExporter;
+        this.tasksResourceBundle = tasksResourceBundle;
+        this.sequentialTaskRunnerDialog = sequentialTaskRunnerDialog;
+        this.taskProvider = taskProvider;
     }
 
     /**
@@ -126,6 +135,9 @@ public class MainWindow {
         this.initializeConnectionStatus();
         this.initializeConnectionBoundProperties();
         this.initializeMenuBar();
+
+        // small hack to remove a circular dependency in the Spring dependency graph
+        this.taskProvider.loadLibrariesTask.setMainWindow(this);
     }
 
     /**
@@ -277,6 +289,13 @@ public class MainWindow {
 
     @FXML
     private void onSyncGamesClicked() throws IOException {
-        this.appExporter.prepareTempData();
+        LOG.info("Attempting to sync games to the console");
+
+        final String syncPath = String.format("%s/%s/%s", this.networkConnection.getSystemSyncPath(),
+                this.networkConnection.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
+        this.taskProvider.createTempDataTask.setNewGamePath(syncPath);
+        sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
+        sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask);
+        sequentialTaskRunnerDialog.showDialog();
     }
 }

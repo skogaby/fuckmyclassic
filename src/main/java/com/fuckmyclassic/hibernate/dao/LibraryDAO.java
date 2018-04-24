@@ -33,7 +33,7 @@ public interface LibraryDAO {
      * @param parentFolder The folder to load the applications from
      * @param library The metadata for the library that needs to be loaded.
      */
-    void loadApplicationsForFolder(CheckBoxTreeItem<LibraryItem> parentFolder, Library library);
+    int loadApplicationsForFolder(CheckBoxTreeItem<LibraryItem> parentFolder, Library library);
 
     /**
      * Loads a library from the database, given the library's metadata.
