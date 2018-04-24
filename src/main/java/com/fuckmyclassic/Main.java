@@ -13,7 +13,13 @@ import javafx.stage.Stage;
 import org.hibernate.Session;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ResourceBundle;
 
 /**
@@ -29,6 +35,10 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        // do a little pre-setup
+        setupRuntimeDirectories();
+
+        // load the controller and show the window
         applicationContext = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
         ResourceBundle resources = ResourceBundle.getBundle("i18n/MainWindow");
         FXMLLoader loader = new FXMLLoader(Main.class.getClassLoader().getResource("fxml/MainWindow.fxml"), resources);
@@ -80,6 +90,33 @@ public class Main extends Application {
 
             applicationContext.close();
         }
+    }
+
+    /**
+     * Create the directories we need for runtime such as boxart, games, etc.
+     * and also pre-populate any static content we need.
+     */
+    public static void setupRuntimeDirectories() throws URISyntaxException, IOException {
+        // create the directories
+        final File gamesDir = new File(SharedConstants.GAMES_DIRECTORY);
+        final File boxartDir = new File(SharedConstants.BOXART_DIRECTORY);
+        gamesDir.mkdirs();
+        boxartDir.mkdirs();
+
+        // prepopulate static assets
+        URL warningResource = ClassLoader.getSystemResource(
+                Paths.get(SharedConstants.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString());
+        Files.copy(
+                Paths.get(warningResource.toURI()).toFile().toPath(),
+                Paths.get(SharedConstants.BOXART_DIRECTORY, SharedConstants.WARNING_IMAGE),
+                StandardCopyOption.REPLACE_EXISTING);
+
+        warningResource = ClassLoader.getSystemResource(
+                Paths.get(SharedConstants.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL).toString());
+        Files.copy(
+                Paths.get(warningResource.toURI()).toFile().toPath(),
+                Paths.get(SharedConstants.BOXART_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL),
+                StandardCopyOption.REPLACE_EXISTING);
     }
 
     public static void main(String[] args) {

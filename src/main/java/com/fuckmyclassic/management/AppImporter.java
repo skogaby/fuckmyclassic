@@ -35,12 +35,6 @@ public class AppImporter {
     public AppImporter(final HibernateManager hibernateManager, final LibraryManager libraryManager) {
         this.hibernateManager = hibernateManager;
         this.libraryManager = libraryManager;
-
-        // ensure that the games and boxart directories exists
-        final File gamesDir = new File(SharedConstants.GAMES_DIRECTORY);
-        final File boxartDir = new File(SharedConstants.BOXART_DIRECTORY);
-        gamesDir.mkdirs();
-        boxartDir.mkdirs();
     }
 
     /**

@@ -24,8 +24,12 @@ public class SharedConstants {
     public static String BOXART_DIRECTORY = "boxart";
     /** Temp directory where we create the game structure and symlink the data to. */
     public static String TEMP_DIRECTORY = "temp";
+    /** Directory where resource images are stored. */
+    public static String IMAGES_DIRECTORY = "images";
     /** Resource path for the warning icon. */
-    public static String WARNING_IMAGE = "images/warning.png";
+    public static String WARNING_IMAGE = "warning.png";
+    /** Resource path for the thumbnail version of the warning icon */
+    public static String WARNING_IMAGE_THUMBNAIL = "warning_small.png";
     /** The size of each dimension for the game boxarts */
     public static int BOXART_SIZE = 228;
     /** The size of each dimension for the game thumbnails */

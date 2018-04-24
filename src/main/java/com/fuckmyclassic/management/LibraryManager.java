@@ -142,7 +142,8 @@ public class LibraryManager {
                 mainWindow.imgBoxArtPreview.setImage(new Image(
                         Paths.get("file:" + SharedConstants.BOXART_DIRECTORY, app.getBoxArtPath()).toString()));
             } else {
-                mainWindow.imgBoxArtPreview.setImage(new Image(SharedConstants.WARNING_IMAGE));
+                mainWindow.imgBoxArtPreview.setImage(new Image(Paths.get(
+                        SharedConstants.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString()));
             }
 
             // persist the item to the database and refresh the application view

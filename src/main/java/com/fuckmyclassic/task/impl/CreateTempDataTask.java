@@ -9,6 +9,7 @@ import com.fuckmyclassic.task.AbstractTaskCreator;
 import javafx.concurrent.Task;
 import javafx.scene.control.TreeItem;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +45,6 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
     private final ResourceBundle resourceBundle;
     /** The path to replace the default directory with in the desktop files (for linked sync/export) */
     private String syncPath;
-    /** The path to replace the default directory with in the desktop files (for linked sync/export) */
-    private String systemType;
 
     @Autowired
     public CreateTempDataTask(final LibraryManager libraryManager,
@@ -53,16 +52,10 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
         this.libraryManager = libraryManager;
         this.resourceBundle = resourceBundle;
         this.syncPath = null;
-        this.systemType = null;
     }
 
     @Override
     public Task<Void> createTask() {
-        if (systemType == null) {
-            LOG.error("Tried to process temp data before setting the system type");
-            throw new RuntimeException();
-        }
-
         return new Task<Void>() {
             @Override
             protected Void call() throws IOException {
@@ -108,7 +101,6 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                         newAppDirectoryStorage.mkdirs();
                         // create the folder for this app in the parent folder's directory
                         newAppDirectoryTemp = new File(Paths.get(SharedConstants.TEMP_DIRECTORY,
-                                systemType,
                                 currentNode.getParent().getValue().getApplication().getApplicationId(),
                                 currentApp.getApplicationId()).toUri());
                         newAppDirectoryTemp.mkdirs();
@@ -128,15 +120,26 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                         }
 
                         // symlink the boxart
-                        final String boxart = currentApp.getBoxArtPath();
-                        final String thumbnail = boxart.replace(".png", "_small.png");
+                        final String boxartName = currentApp.getBoxArtPath();
+                        final String thumbnailName = boxartName.replace(".png", "_small.png");
+                        final String desiredBoxartName = String.format("%s.png", currentApp.getApplicationId());
+                        final String desiredThumbnailName = String.format("%s_small.png", currentApp.getApplicationId());
+                        final File sourceBoxart = Paths.get(SharedConstants.BOXART_DIRECTORY, boxartName)
+                                .toAbsolutePath().toFile();
+                        final File sourceThumbnail = Paths.get(SharedConstants.BOXART_DIRECTORY, thumbnailName)
+                                .toAbsolutePath().toFile();
 
+                        // if the boxart for the game isn't set or doesn't exist, just copy the warning image in its place
                         Files.createSymbolicLink(
-                                Paths.get(newAppDirectoryStorage.toString(), boxart).toAbsolutePath(),
-                                Paths.get(SharedConstants.BOXART_DIRECTORY, boxart).toAbsolutePath());
+                                Paths.get(newAppDirectoryStorage.toString(), desiredBoxartName).toAbsolutePath(),
+                                (!StringUtils.isBlank(boxartName) && sourceBoxart.exists()) ?
+                                        Paths.get(SharedConstants.BOXART_DIRECTORY, boxartName).toAbsolutePath() :
+                                        Paths.get(SharedConstants.BOXART_DIRECTORY, SharedConstants.WARNING_IMAGE).toAbsolutePath());
                         Files.createSymbolicLink(
-                                Paths.get(newAppDirectoryStorage.toString(), thumbnail).toAbsolutePath(),
-                                Paths.get(SharedConstants.BOXART_DIRECTORY, thumbnail).toAbsolutePath());
+                                Paths.get(newAppDirectoryStorage.toString(), desiredThumbnailName).toAbsolutePath(),
+                                (!StringUtils.isBlank(thumbnailName) && sourceThumbnail.exists()) ?
+                                        Paths.get(SharedConstants.BOXART_DIRECTORY, thumbnailName).toAbsolutePath() :
+                                        Paths.get(SharedConstants.BOXART_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL).toAbsolutePath());
                     }
                 }
 
@@ -188,11 +191,6 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
 
     public CreateTempDataTask setSyncPath(String syncPath) {
         this.syncPath = syncPath;
-        return this;
-    }
-
-    public CreateTempDataTask setSystemType(String systemType) {
-        this.systemType = systemType;
         return this;
     }
 }

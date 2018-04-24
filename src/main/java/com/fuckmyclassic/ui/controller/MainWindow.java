@@ -132,7 +132,6 @@ public class MainWindow {
         this.libraryManager.initializeLibrarySelection(this);
         this.libraryManager.initializeApplicationTreeView(this);
         this.initializePlayerCountSelection();
-        this.initializeConnectionStatus();
         this.initializeConnectionBoundProperties();
         this.initializeMenuBar();
 
@@ -228,19 +227,13 @@ public class MainWindow {
     }
 
     /**
-     * Bind the connection status display to the real connection object.
+     * Bind all the properties that are disabled/enabled depending on the presence on a console
      */
-    private void initializeConnectionStatus() {
+    private void initializeConnectionBoundProperties() {
         BindingHelper.bindProperty((ReadOnlyProperty<?>) this.networkConnection.connectionStatusColorProperty(),
                 this.shpConnectionStatus.fillProperty());
         BindingHelper.bindProperty((ReadOnlyProperty<?>) this.networkConnection.connectionStatusProperty(),
                 this.lblConnectionStatus.textProperty());
-    }
-
-    /**
-     * Bind all the properties that are disabled/enabled depending on the presence on a console
-     */
-    private void initializeConnectionBoundProperties() {
         BindingHelper.bindProperty((ReadOnlyProperty<?>) this.networkConnection.disconnectedProperty(),
                 this.btnSyncGames.disableProperty());
     }
@@ -291,10 +284,9 @@ public class MainWindow {
     private void onSyncGamesClicked() throws IOException {
         LOG.info("Attempting to sync games to the console");
 
-        final String syncPath = String.format("%s/%s", this.networkConnection.getSystemSyncPath(),
-                SharedConstants.CONSOLE_STORAGE_DIR);
+        final String syncPath = String.format("%s/%s/%s", this.networkConnection.getSystemSyncPath(),
+                this.networkConnection.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
         this.taskProvider.createTempDataTask.setSyncPath(syncPath);
-        this.taskProvider.createTempDataTask.setSystemType(this.networkConnection.getSystemType());
         sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
         sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask);
         sequentialTaskRunnerDialog.showDialog();

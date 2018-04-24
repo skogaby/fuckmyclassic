@@ -158,8 +158,8 @@ public class Application implements Externalizable {
      */
     @Transient
     public String getDesktopFile(final String gameStoragePath) {
-        String execLine = getCommandLine();
-        String iconPath = String.format("%s/%s/%s", SharedConstants.CONSOLE_GAMES_DIR, getApplicationId(), getBoxArtPath());
+        String execLine = StringUtils.isBlank(getCommandLine()) ? "" : getCommandLine();
+        String iconPath = String.format("%s/%s/%s.png", SharedConstants.CONSOLE_GAMES_DIR, getApplicationId(), getApplicationId());
 
         if (!StringUtils.isBlank(gameStoragePath)) {
             execLine = execLine.replace(SharedConstants.CONSOLE_GAMES_DIR, gameStoragePath);
@@ -270,7 +270,7 @@ public class Application implements Externalizable {
 
     @Column(name = "boxart_path")
     public String getBoxArtPath() {
-        return boxArtPath.get();
+        return boxArtPath.get() == null ? "" : boxArtPath.get();
     }
 
     public StringProperty boxArtPathProperty() {
