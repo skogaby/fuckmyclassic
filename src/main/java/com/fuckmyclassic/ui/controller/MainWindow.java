@@ -291,9 +291,10 @@ public class MainWindow {
     private void onSyncGamesClicked() throws IOException {
         LOG.info("Attempting to sync games to the console");
 
-        final String syncPath = String.format("%s/%s/%s", this.networkConnection.getSystemSyncPath(),
-                this.networkConnection.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
-        this.taskProvider.createTempDataTask.setNewGamePath(syncPath);
+        final String syncPath = String.format("%s/%s", this.networkConnection.getSystemSyncPath(),
+                SharedConstants.CONSOLE_STORAGE_DIR);
+        this.taskProvider.createTempDataTask.setSyncPath(syncPath);
+        this.taskProvider.createTempDataTask.setSystemType(this.networkConnection.getSystemType());
         sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
         sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask);
         sequentialTaskRunnerDialog.showDialog();

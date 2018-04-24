@@ -43,18 +43,26 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
     /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
     /** The path to replace the default directory with in the desktop files (for linked sync/export) */
-    private String newGamePath;
+    private String syncPath;
+    /** The path to replace the default directory with in the desktop files (for linked sync/export) */
+    private String systemType;
 
     @Autowired
     public CreateTempDataTask(final LibraryManager libraryManager,
                               final ResourceBundle resourceBundle) {
         this.libraryManager = libraryManager;
         this.resourceBundle = resourceBundle;
-        this.newGamePath = null;
+        this.syncPath = null;
+        this.systemType = null;
     }
 
     @Override
     public Task<Void> createTask() {
+        if (systemType == null) {
+            LOG.error("Tried to process temp data before setting the system type");
+            throw new RuntimeException();
+        }
+
         return new Task<Void>() {
             @Override
             protected Void call() throws IOException {
@@ -81,7 +89,6 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
 
                 while (!nodesToVisit.isEmpty()) {
                     visitedNodes++;
-                    shouldCreateApp = true;
                     currentNode = nodesToVisit.remove(0);
                     nodesToVisit.addAll(currentNode.getChildren());
 
@@ -92,11 +99,7 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                     updateMessage(String.format(resourceBundle.getString(IN_PROGRESS_MESSAGE_KEY),
                             currentApp.getApplicationName()));
                     updateProgress(visitedNodes, maxItems);
-
-                    if (currentApp instanceof Folder) {
-                        new File(Paths.get(SharedConstants.TEMP_DIRECTORY, currentApp.getApplicationId()).toUri()).mkdirs();
-                        shouldCreateApp = (currentNode.getParent() != null);
-                    }
+                    shouldCreateApp = (currentNode.getParent() != null);
 
                     if (shouldCreateApp) {
                         // create the folder in .storage
@@ -105,12 +108,13 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                         newAppDirectoryStorage.mkdirs();
                         // create the folder for this app in the parent folder's directory
                         newAppDirectoryTemp = new File(Paths.get(SharedConstants.TEMP_DIRECTORY,
+                                systemType,
                                 currentNode.getParent().getValue().getApplication().getApplicationId(),
                                 currentApp.getApplicationId()).toUri());
                         newAppDirectoryTemp.mkdirs();
 
                         // create the desktop file for this app
-                        desktopFileContents = currentApp.getDesktopFile(newGamePath);
+                        desktopFileContents = currentApp.getDesktopFile(syncPath);
                         desktopFileWriter = new BufferedWriter(new FileWriter(Paths.get(newAppDirectoryTemp.toString(),
                                 String.format("%s.desktop", currentApp.getApplicationId())).toString()));
                         desktopFileWriter.write(desktopFileContents);
@@ -182,12 +186,13 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
         }
     }
 
-    public String getNewGamePath() {
-        return newGamePath;
+    public CreateTempDataTask setSyncPath(String syncPath) {
+        this.syncPath = syncPath;
+        return this;
     }
 
-    public CreateTempDataTask setNewGamePath(String newGamePath) {
-        this.newGamePath = newGamePath;
+    public CreateTempDataTask setSystemType(String systemType) {
+        this.systemType = systemType;
         return this;
     }
 }
