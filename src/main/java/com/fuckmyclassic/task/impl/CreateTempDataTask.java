@@ -76,6 +76,7 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                 Application currentApp;
                 boolean shouldCreateApp;
                 File newAppDirectoryTemp, newAppDirectoryStorage;
+                Path originalGamePath;
                 String desktopFileContents;
                 BufferedWriter desktopFileWriter;
                 int visitedNodes = 0;
@@ -95,6 +96,8 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                     shouldCreateApp = (currentNode.getParent() != null);
 
                     if (shouldCreateApp) {
+                        originalGamePath = Paths.get(SharedConstants.GAMES_DIRECTORY, currentApp.getApplicationId());
+
                         // create the folder in .storage
                         newAppDirectoryStorage = new File(Paths.get(storageDir,
                                 currentApp.getApplicationId()).toUri());
@@ -105,21 +108,20 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                                 currentApp.getApplicationId()).toUri());
                         newAppDirectoryTemp.mkdirs();
 
-                        // create the desktop file for this app
+                        // create the desktop file for this app in the "real" folder
                         desktopFileContents = currentApp.getDesktopFile(syncPath);
                         desktopFileWriter = new BufferedWriter(new FileWriter(Paths.get(newAppDirectoryTemp.toString(),
                                 String.format("%s.desktop", currentApp.getApplicationId())).toString()));
                         desktopFileWriter.write(desktopFileContents);
                         desktopFileWriter.close();
 
-                        // symlink the actual contents of the app itself
+                        // symlink the actual contents of the app itself in the "storage" folder, minus the autoplay
+                        // and pixelart folders
                         if (!(currentApp instanceof Folder)) {
-                            symlinkContentsOfDirectory(
-                                    Paths.get(SharedConstants.GAMES_DIRECTORY, currentApp.getApplicationId()),
-                                    newAppDirectoryStorage.toPath());
+                            symlinkContentsOfDirectory(originalGamePath, newAppDirectoryStorage.toPath());
                         }
 
-                        // symlink the boxart
+                        // symlink the boxart into the "storage" folder
                         final String boxartName = currentApp.getBoxArtPath();
                         final String thumbnailName = boxartName.replace(".png", "_small.png");
                         final String desiredBoxartName = String.format("%s.png", currentApp.getApplicationId());
@@ -140,6 +142,26 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                                 (!StringUtils.isBlank(thumbnailName) && sourceThumbnail.exists()) ?
                                         Paths.get(SharedConstants.BOXART_DIRECTORY, thumbnailName).toAbsolutePath() :
                                         Paths.get(SharedConstants.BOXART_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL).toAbsolutePath());
+
+                        // if they exist in the original game, create a pixelart and autoplay
+                        // folder in the temp folder for the game and symlink back to the originals
+                        final File srcPixelartFolder = new File(
+                                Paths.get(originalGamePath.toString(), SharedConstants.PIXELART_DIR).toUri());
+                        if (srcPixelartFolder.exists() && srcPixelartFolder.isDirectory()) {
+                            final File dstPixelArtFolder = new File(
+                                    Paths.get(newAppDirectoryTemp.toString(), SharedConstants.PIXELART_DIR).toUri());
+                            dstPixelArtFolder.mkdirs();
+                            symlinkContentsOfDirectory(srcPixelartFolder.toPath(), dstPixelArtFolder.toPath());
+                        }
+
+                        final File srcAutoplayFolder = new File(
+                                Paths.get(originalGamePath.toString(), SharedConstants.AUTOPLAY_DIR).toUri());
+                        if (srcAutoplayFolder.exists() && srcAutoplayFolder.isDirectory()) {
+                            final File dstAutoplayFolder = new File(
+                                    Paths.get(newAppDirectoryTemp.toString(), SharedConstants.AUTOPLAY_DIR).toUri());
+                            dstAutoplayFolder.mkdirs();
+                            symlinkContentsOfDirectory(srcAutoplayFolder.toPath(), dstAutoplayFolder.toPath());
+                        }
                     }
                 }
 
@@ -152,7 +174,8 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
     }
 
     /**
-     * Creates symlinks of all the contents in the src folder inside the dst folder.
+     * Creates symlinks of all the contents in the src folder inside the dst folder (minus
+     * the autoplay and pixelart folders)
      * @param src
      * @param dst
      * @throws IOException
@@ -164,11 +187,14 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
             final File dstFile = new File(Paths.get(dst.toString(), path.getFileName().toString()).toUri());
 
             if (path.toFile().isDirectory()) {
-                // if it's a folder, create the folder and symlink the contents
-                dstFile.mkdirs();
-                symlinkContentsOfDirectory(path, dstFile.toPath());
+                if (!path.toFile().getName().equals(SharedConstants.AUTOPLAY_DIR) &&
+                        !path.toFile().getName().equals(SharedConstants.PIXELART_DIR)) {
+                    // if it's a folder, create the folder and symlink the contents
+                    dstFile.mkdirs();
+                    symlinkContentsOfDirectory(path, dstFile.toPath());
+                }
             } else {
-                // if it's not a folder, just symlink it
+                // if it's not a folder, just symlink it (relative link)
                 Files.createSymbolicLink(dstFile.toPath().toAbsolutePath(), path.toAbsolutePath());
             }
         }

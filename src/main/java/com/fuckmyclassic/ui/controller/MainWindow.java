@@ -286,6 +286,8 @@ public class MainWindow {
 
         final String syncPath = String.format("%s/%s/%s", this.networkConnection.getSystemSyncPath(),
                 this.networkConnection.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
+        //final String syncPath = String.format("%s/%s/%s", "/hakchi/media/games",
+        //        "snes-jpn", SharedConstants.CONSOLE_STORAGE_DIR);
         this.taskProvider.createTempDataTask.setSyncPath(syncPath);
         sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
         sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask);

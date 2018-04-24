@@ -40,4 +40,8 @@ public class SharedConstants {
     public static String CONSOLE_SAVES_DIR = "/var/saves";
     /** The name of the folder within CONSOLE_GAMES_DIR where the real game data is stored */
     public static String CONSOLE_STORAGE_DIR = "storage";
+    /** The name of the autoplay folder for a game */
+    public static String AUTOPLAY_DIR = "autoplay";
+    /** The name of the pixelart folder for a game */
+    public static String PIXELART_DIR = "pixelart";
 }
