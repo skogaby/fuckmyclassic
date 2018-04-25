@@ -1,6 +1,6 @@
 package com.fuckmyclassic.ui.util;
 
-import javafx.beans.binding.Binding;
+import javafx.beans.binding.StringExpression;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
 
@@ -16,27 +16,17 @@ public class BindingHelper {
      * @param src
      * @param dst
      */
-    public static void bindProperty(final Property src, final Property dst) {
-        dst.unbind();
-        dst.bind(src);
-    }
-
-    /**
-     * Bind a property unidirectionally.
-     * @param src
-     * @param dst
-     */
-    public static void bindProperty(final Binding src, final Property dst) {
-        dst.unbind();
-        dst.bind(src);
-    }
-
-    /**
-     * Bind a property unidirectionally.
-     * @param src
-     * @param dst
-     */
     public static void bindProperty(final ReadOnlyProperty<?> src, final Property dst) {
+        dst.unbind();
+        dst.bind(src);
+    }
+
+    /**
+     * Bind a property unidirectionally.
+     * @param src
+     * @param dst
+     */
+    public static void bindProperty(final StringExpression src, final Property dst) {
         dst.unbind();
         dst.bind(src);
     }

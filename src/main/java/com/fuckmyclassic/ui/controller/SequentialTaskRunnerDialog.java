@@ -4,6 +4,7 @@ import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.SequentialTaskRunner;
 import com.fuckmyclassic.task.TaskCreator;
 import com.fuckmyclassic.ui.util.BindingHelper;
+import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -52,10 +53,10 @@ public class SequentialTaskRunnerDialog {
             taskRunner.setMainTaskMessage(mainTaskMessage);
 
             // bind our properties and start the task runner
-            BindingHelper.bindProperty(taskRunner.messageProperty(), lblMainMessage.textProperty());
+            BindingHelper.bindProperty((StringExpression) taskRunner.messageProperty(), lblMainMessage.textProperty());
             BindingHelper.bindProperty((ReadOnlyProperty<?>) taskRunner.subTaskMessageProperty(), lblSubTaskMessage.textProperty());
             BindingHelper.bindProperty(taskRunner.progressProperty(), prgMainTaskProgress.progressProperty());
-            BindingHelper.bindProperty((ReadOnlyProperty<?>) taskRunner.subTaskProgressProperty(), prgSubTaskProgress.progressProperty());
+            BindingHelper.bindProperty(taskRunner.subTaskProgressProperty(), prgSubTaskProgress.progressProperty());
 
             // close this window after everything is done
             taskRunner.setOnSucceeded(event -> {

@@ -343,7 +343,7 @@
             </ProgressBar>
          </center>
          <right>
-            <Label text="%MainWindow.lblNumGameSelected" BorderPane.alignment="CENTER">
+            <Label fx:id="lblNumGamesSelected" text="%MainWindow.lblNumGamesSelected" BorderPane.alignment="CENTER">
                <font>
                   <Font size="12.0" />
                </font></Label>

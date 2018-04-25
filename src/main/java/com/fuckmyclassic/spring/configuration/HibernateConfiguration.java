@@ -5,9 +5,12 @@ import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAOImpl;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.hibernate.dao.impl.LibraryDAOImpl;
+import com.fuckmyclassic.management.LibraryManager;
+import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -21,6 +24,7 @@ import java.util.Properties;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Configuration
+@ComponentScan({"com.fuckmyclassic.spring.configuration"})
 @PropertySource("classpath:hibernate.properties")
 @EnableTransactionManagement
 public class HibernateConfiguration {
@@ -88,7 +92,8 @@ public class HibernateConfiguration {
     }
 
     @Bean
-    public LibraryDAO libraryDAO(HibernateManager hibernateManager, Session session, ApplicationDAO applicationDAO) {
-        return new LibraryDAOImpl(hibernateManager, session, applicationDAO);
+    public LibraryDAO libraryDAO(HibernateManager hibernateManager, Session session, ApplicationDAO applicationDAO,
+                                 UiPropertyContainer uiPropertyContainer) {
+        return new LibraryDAOImpl(hibernateManager, session, applicationDAO, uiPropertyContainer);
     }
 }

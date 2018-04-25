@@ -1,6 +1,7 @@
 package com.fuckmyclassic.management;
 
 import com.fuckmyclassic.model.LibraryItem;
+import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
@@ -55,16 +56,19 @@ public class LibraryManager {
     private Library currentLibrary;
     /** A reference to the current library's actual tree structure data. */
     private CheckBoxTreeItem<LibraryItem> currentLibraryTree;
+    /** Container for UI properties we need to update */
+    private final UiPropertyContainer uiPropertyContainer;
 
     @Autowired
     public LibraryManager(final UserConfiguration userConfiguration, final HibernateManager hibernateManager,
-                          final LibraryDAO libraryDAO, final ImageResizer imageResizer) {
+                          final LibraryDAO libraryDAO, final ImageResizer imageResizer, final UiPropertyContainer uiPropertyContainer) {
         this.userConfiguration = userConfiguration;
         this.hibernateManager = hibernateManager;
         this.libraryDAO = libraryDAO;
         this.imageResizer = imageResizer;
         this.currentApp = null;
         this.currentLibrary = null;
+        this.uiPropertyContainer = uiPropertyContainer;
     }
 
     /**
@@ -108,7 +112,7 @@ public class LibraryManager {
 
         // initialize the cell factory so we can control theming, drag and drop, etc.
         mainWindow.treeViewGames.setCellFactory(param ->
-                new ApplicationTreeCell(new AppImporter(this.hibernateManager, this)));
+                new ApplicationTreeCell(new AppImporter(this.hibernateManager, this, this.uiPropertyContainer)));
 
         // whenever an item is selected, we'll bind the data to the UI and save whatever app
         // was being viewed previously to the database

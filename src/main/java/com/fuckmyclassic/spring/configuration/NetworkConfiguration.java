@@ -4,6 +4,7 @@ import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.network.SshConnectionListener;
 import com.fuckmyclassic.network.SshConnectionListenerImpl;
 import com.fuckmyclassic.task.TaskProvider;
+import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -34,8 +35,8 @@ public class NetworkConfiguration {
     }
 
     @Bean
-    public NetworkConnection networkConnection(JSch jSch) {
-        return new NetworkConnection(jSch);
+    public NetworkConnection networkConnection(JSch jSch, UiPropertyContainer uiPropertyContainer) {
+        return new NetworkConnection(jSch, uiPropertyContainer);
     }
 
     @Bean

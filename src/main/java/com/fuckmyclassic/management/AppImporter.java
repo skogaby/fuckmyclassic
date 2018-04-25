@@ -5,6 +5,8 @@ import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.shared.SharedConstants;
+import com.fuckmyclassic.ui.component.UiPropertyContainer;
+import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
 import javafx.scene.control.CheckBoxTreeItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,10 +33,15 @@ public class AppImporter {
     private final HibernateManager hibernateManager;
     /** Instance to help with creating new library items. */
     private final LibraryManager libraryManager;
+    /** Container for UI properties we need to update */
+    private final UiPropertyContainer uiPropertyContainer;
 
-    public AppImporter(final HibernateManager hibernateManager, final LibraryManager libraryManager) {
+    public AppImporter(final HibernateManager hibernateManager,
+                       final LibraryManager libraryManager,
+                       final UiPropertyContainer uiPropertyContainer) {
         this.hibernateManager = hibernateManager;
         this.libraryManager = libraryManager;
+        this.uiPropertyContainer = uiPropertyContainer;
     }
 
     /**
@@ -126,16 +133,8 @@ public class AppImporter {
         this.hibernateManager.saveEntity(newLibraryItem);
 
         // create the new CheckBoxTreeItem and insert it
-        final CheckBoxTreeItem<LibraryItem> newItem = new CheckBoxTreeItem<>(newLibraryItem, null, true, true);
-        newItem.selectedProperty().addListener(((observable, oldValue, newValue) -> {
-            final LibraryItem item = newItem.getValue();
-            boolean old = item.isSelected();
-
-            if (newValue != old) {
-                item.setSelected(newValue);
-                this.hibernateManager.updateEntity(item);
-            }
-        }));
+        final CheckBoxTreeItem<LibraryItem> newItem = new CheckBoxTreeItem<>(newLibraryItem, null, true, false);
+        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem(newItem, this.hibernateManager, this.uiPropertyContainer);
 
         importFolder.getChildren().add(newItem);
     }

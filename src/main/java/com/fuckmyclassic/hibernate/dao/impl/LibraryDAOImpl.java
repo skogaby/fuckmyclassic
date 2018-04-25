@@ -3,11 +3,14 @@ package com.fuckmyclassic.hibernate.dao.impl;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.shared.SharedConstants;
+import com.fuckmyclassic.ui.component.UiPropertyContainer;
+import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
 import javafx.scene.control.CheckBoxTreeItem;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -26,13 +29,16 @@ public class LibraryDAOImpl implements LibraryDAO {
     private final Session session;
     /** DAO to load application data. */
     private final ApplicationDAO applicationDAO;
+    /** Container for UI properties we need to update */
+    private final UiPropertyContainer uiPropertyContainer;
 
     @Autowired
     public LibraryDAOImpl(final HibernateManager hibernateManager, final Session session,
-                          final ApplicationDAO applicationDAO) {
+                          final ApplicationDAO applicationDAO, final UiPropertyContainer uiPropertyContainer) {
         this.hibernateManager = hibernateManager;
         this.session = session;
         this.applicationDAO = applicationDAO;
+        this.uiPropertyContainer = uiPropertyContainer;
     }
 
     /**
@@ -94,35 +100,42 @@ public class LibraryDAOImpl implements LibraryDAO {
 
         final List<CheckBoxTreeItem<LibraryItem>> itemResults = query.getResultStream()
                 .map(r -> {
-                    final CheckBoxTreeItem<LibraryItem> item = new CheckBoxTreeItem<>(r, null, r.isSelected(), true);
-
-                    item.selectedProperty().addListener(((observable, oldValue, newValue) -> {
-                        final LibraryItem libraryItem = item.getValue();
-                        boolean old = libraryItem.isSelected();
-
-                        if (newValue != old) {
-                            libraryItem.setSelected(newValue);
-                            this.hibernateManager.updateEntity(libraryItem);
-                        }
-                    }));
-
+                    final CheckBoxTreeItem<LibraryItem> item = new CheckBoxTreeItem<>(r, null, r.isSelected(), false);
+                    CheckBoxTreeItemUtils.setCheckListenerOnTreeItem(item, this.hibernateManager, this.uiPropertyContainer);
                     return item;
                 })
                 .collect(Collectors.toList());
         parentFolder.getChildren().addAll(itemResults);
 
         // iterate through the results and recurse down for any folders that are inside this one
-        int sum = 0;
+        int numNodes = 0;
+        int numSelected = 0;
+
         for (CheckBoxTreeItem<LibraryItem> itemResult : itemResults) {
             if (itemResult.getValue().getApplication() instanceof Folder) {
                 itemResult.setExpanded(true);
-                sum += 1 + loadApplicationsForFolder(itemResult, library);
+                numNodes += 1 + loadApplicationsForFolder(itemResult, library);
             } else {
-                sum++;
+                numNodes++;
+            }
+
+            // set indeterminate values for checkboxes properly
+            if (itemResult.isSelected()) {
+                numSelected++;
             }
         }
 
-        return sum;
+        // if less than all the items were selected, the parent is indeterminant
+        if (numSelected > 0 &&
+                numSelected < itemResults.size()) {
+            // small hack to change the value of the parent without altering
+            // the values of what's below it
+            parentFolder.setIndependent(true);
+            parentFolder.setIndeterminate(true);
+            parentFolder.setIndependent(false);
+        }
+
+        return numNodes;
     }
 
     /**
@@ -156,10 +169,24 @@ public class LibraryDAOImpl implements LibraryDAO {
 
         // now select all items in the home folder and recurse down for any folders
         final CheckBoxTreeItem<LibraryItem> homeItem = new CheckBoxTreeItem<>(homeFolderItem, null,
-                homeFolderItem.isSelected(), true);
+                homeFolderItem.isSelected(), false);
+        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem(homeItem, this.hibernateManager, this.uiPropertyContainer);
         homeItem.setExpanded(true);
         homeItem.getValue().setNumNodes(loadApplicationsForFolder(homeItem, library) + 1);
+        this.uiPropertyContainer.numSelected.set(getNumSelectedForLibrary(library));
 
         return homeItem;
+    }
+
+    /**
+     * Gets the number of selected items for a given library.
+     * @param library The library to query for.
+     * @return The number of selected items in the library.
+     */
+    public long getNumSelectedForLibrary(Library library) {
+        final Query query = session.createQuery(
+                "select count(*) from LibraryItem l where l.library = :library and l.selected = true");
+        query.setParameter("library", library);
+        return (Long) query.uniqueResult();
     }
 }

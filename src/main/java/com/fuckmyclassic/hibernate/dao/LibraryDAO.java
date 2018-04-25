@@ -41,4 +41,11 @@ public interface LibraryDAO {
      * @return A tree representing the requested library.
      */
     CheckBoxTreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library);
+
+    /**
+     * Gets the number of selected items for a given library.
+     * @param library The library to query for.
+     * @return The number of selected items in the library.
+     */
+    long getNumSelectedForLibrary(Library library);
 }

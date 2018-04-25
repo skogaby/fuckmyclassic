@@ -8,9 +8,11 @@ import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.TaskProvider;
+import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -56,7 +58,9 @@ public class MainWindow {
 
     static Logger LOG = LogManager.getLogger(MainWindow.class.getName());
 
+    private static final String RESOURCE_BUNDLE_PATH = "i18n/MainWindow";
     private static final String SYNC_TASK_TITLE_KEY = "SyncOrExportTaskLabel";
+    private static final String CONNECTED_GAMES_LABEL_KEY = "MainWindow.lblNumGamesSelected";
 
     // References to all of the UI objects that we need to manipulate
     public ComboBox<Library> cmbCurrentCollection;
@@ -80,6 +84,7 @@ public class MainWindow {
     public Label lblConnectionStatus;
     public Button btnSyncGames;
     public MenuBar mainMenu;
+    public Label lblNumGamesSelected;
 
     /** The configuration object for user options and session settings.*/
     private final UserConfiguration userConfiguration;
@@ -97,6 +102,8 @@ public class MainWindow {
     private final SequentialTaskRunnerDialog sequentialTaskRunnerDialog;
     /** Provider for the Tasks we need during runtime for miscellaneous operations */
     private final TaskProvider taskProvider;
+    /** Container for UI properties we need to update */
+    private final UiPropertyContainer uiPropertyContainer;
 
     /**
      * Constructor.
@@ -109,7 +116,8 @@ public class MainWindow {
                       final NetworkConnection networkConnection,
                       final ResourceBundle tasksResourceBundle,
                       final SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
-                      final TaskProvider taskProvider) {
+                      final TaskProvider taskProvider,
+                      final UiPropertyContainer uiPropertyContainer) {
         this.userConfiguration = userConfiguration;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
@@ -118,6 +126,7 @@ public class MainWindow {
         this.tasksResourceBundle = tasksResourceBundle;
         this.sequentialTaskRunnerDialog = sequentialTaskRunnerDialog;
         this.taskProvider = taskProvider;
+        this.uiPropertyContainer = uiPropertyContainer;
     }
 
     /**
@@ -134,6 +143,7 @@ public class MainWindow {
         this.initializePlayerCountSelection();
         this.initializeConnectionBoundProperties();
         this.initializeMenuBar();
+        this.initializeNumSelectedLabel();
 
         // small hack to remove a circular dependency in the Spring dependency graph
         this.taskProvider.loadLibrariesTask.setMainWindow(this);
@@ -230,11 +240,11 @@ public class MainWindow {
      * Bind all the properties that are disabled/enabled depending on the presence on a console
      */
     private void initializeConnectionBoundProperties() {
-        BindingHelper.bindProperty((ReadOnlyProperty<?>) this.networkConnection.connectionStatusColorProperty(),
+        BindingHelper.bindProperty(this.uiPropertyContainer.connectionStatusColor,
                 this.shpConnectionStatus.fillProperty());
-        BindingHelper.bindProperty((ReadOnlyProperty<?>) this.networkConnection.connectionStatusProperty(),
+        BindingHelper.bindProperty((ReadOnlyProperty<?>) this.uiPropertyContainer.connectionStatus,
                 this.lblConnectionStatus.textProperty());
-        BindingHelper.bindProperty((ReadOnlyProperty<?>) this.networkConnection.disconnectedProperty(),
+        BindingHelper.bindProperty(this.uiPropertyContainer.disconnected,
                 this.btnSyncGames.disableProperty());
     }
 
@@ -263,6 +273,33 @@ public class MainWindow {
         }
     }
 
+    /**
+     * Initializes the label that shows the number of selected games.
+     */
+    private void initializeNumSelectedLabel() {
+        final ResourceBundle resources = ResourceBundle.getBundle(RESOURCE_BUNDLE_PATH);
+        BindingHelper.bindProperty(Bindings.format(resources.getString(CONNECTED_GAMES_LABEL_KEY),
+                this.uiPropertyContainer.numSelected), this.lblNumGamesSelected.textProperty());
+    }
+
+    /**
+     * Handler for clicking the button to sync games to the connected console.
+     * @throws IOException
+     */
+    @FXML
+    private void onSyncGamesClicked() throws IOException {
+        LOG.info("Attempting to sync games to the console");
+
+        final String syncPath = String.format("%s/%s/%s", this.networkConnection.getSystemSyncPath(),
+                this.networkConnection.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
+        //final String syncPath = String.format("%s/%s/%s", "/hakchi/media/games",
+        //        "snes-jpn", SharedConstants.CONSOLE_STORAGE_DIR);
+        this.taskProvider.createTempDataTask.setSyncPath(syncPath);
+        sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
+        sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask);
+        sequentialTaskRunnerDialog.showDialog();
+    }
+
     //////////////////////////////////////////////////////////////////////
     //     Stubbed out methods for testing half-baked functionality     //
     //////////////////////////////////////////////////////////////////////
@@ -278,19 +315,5 @@ public class MainWindow {
     private void onFlashCustomKernelClicked() throws UsbException, URISyntaxException, InterruptedException {
         LOG.debug("Custom kernel flash button clicked");
         this.kernelFlasher.flashCustomKernel();
-    }
-
-    @FXML
-    private void onSyncGamesClicked() throws IOException {
-        LOG.info("Attempting to sync games to the console");
-
-        final String syncPath = String.format("%s/%s/%s", this.networkConnection.getSystemSyncPath(),
-                this.networkConnection.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
-        //final String syncPath = String.format("%s/%s/%s", "/hakchi/media/games",
-        //        "snes-jpn", SharedConstants.CONSOLE_STORAGE_DIR);
-        this.taskProvider.createTempDataTask.setSyncPath(syncPath);
-        sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
-        sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask);
-        sequentialTaskRunnerDialog.showDialog();
     }
 }

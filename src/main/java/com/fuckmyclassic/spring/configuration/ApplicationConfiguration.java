@@ -5,6 +5,7 @@ import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.task.TaskProvider;
+import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
@@ -28,9 +29,10 @@ public class ApplicationConfiguration {
     @Bean
     public MainWindow mainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
                                  LibraryManager libraryManager, NetworkConnection networkConnection, ResourceBundle tasksResourceBundle,
-                                 SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider) {
+                                 SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider,
+                                 UiPropertyContainer uiPropertyContainer) {
         return new MainWindow(userConfiguration, membootHelper, kernelFlasher, libraryManager, networkConnection, tasksResourceBundle,
-                sequentialTaskRunnerDialog, taskProvider);
+                sequentialTaskRunnerDialog, taskProvider, uiPropertyContainer);
     }
 
     @Bean
@@ -40,8 +42,8 @@ public class ApplicationConfiguration {
 
     @Bean
     public LibraryManager libraryManager(UserConfiguration userConfiguration, HibernateManager hibernateManager,
-                                         LibraryDAO libraryDAO, ImageResizer imageResizer) {
-        return new LibraryManager(userConfiguration, hibernateManager, libraryDAO, imageResizer);
+                                         LibraryDAO libraryDAO, ImageResizer imageResizer, UiPropertyContainer uiPropertyContainer) {
+        return new LibraryManager(userConfiguration, hibernateManager, libraryDAO, imageResizer, uiPropertyContainer);
     }
 
     @Bean
@@ -57,5 +59,10 @@ public class ApplicationConfiguration {
     @Bean
     public ResourceBundle tasksResourceBundle() {
         return ResourceBundle.getBundle("i18n/Tasks");
+    }
+
+    @Bean
+    public UiPropertyContainer uiPropertyContainer() {
+        return new UiPropertyContainer();
     }
 }

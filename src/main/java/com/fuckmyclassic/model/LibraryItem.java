@@ -50,7 +50,6 @@ public class LibraryItem implements Externalizable {
         this.folder = folder;
         this.selected = new SimpleBooleanProperty(selected);
         this.numNodes = 0;
-
     }
 
     @Override

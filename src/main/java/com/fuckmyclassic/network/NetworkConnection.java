@@ -1,5 +1,6 @@
 package com.fuckmyclassic.network;
 
+import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -30,6 +31,10 @@ import static com.fuckmyclassic.network.NetworkConstants.CONNECTION_TIMEOUT;
 import static com.fuckmyclassic.network.NetworkConstants.CONSOLE_IP;
 import static com.fuckmyclassic.network.NetworkConstants.CONSOLE_PORT;
 import static com.fuckmyclassic.network.NetworkConstants.USER_NAME;
+import static com.fuckmyclassic.ui.component.UiPropertyContainer.CONNECTED_CIRCLE_COLOR;
+import static com.fuckmyclassic.ui.component.UiPropertyContainer.CONNECTED_STATUS_KEY;
+import static com.fuckmyclassic.ui.component.UiPropertyContainer.DISCONNECTED_CIRCLE_COLOR;
+import static com.fuckmyclassic.ui.component.UiPropertyContainer.DISCONNECTED_STATUS_KEY;
 
 /**
  * Class to represent a network connection to the Mini console. This
@@ -42,26 +47,16 @@ public class NetworkConnection {
 
     static Logger LOG = LogManager.getLogger(NetworkConnection.class.getName());
 
-    // Resource keys for connection status localized strings and displays
-    private static final String DISCONNECTED_STATUS_KEY = "MainWindow.lblConsoleDisconnected";
-    private static final String CONNECTED_STATUS_KEY = "MainWindow.lblConsoleConnected";
-    private static final String DISCONNECTED_CIRCLE_COLOR = "CRIMSON";
-    private static final String CONNECTED_CIRCLE_COLOR = "LIMEGREEN";
-
     /** Private instance of the JSch structure. */
     private final JSch jSch;
+    /** Property container so we can update the UI. */
+    final UiPropertyContainer uiPropertyContainer;
     /** The actual SSH connection to the console. */
     public Session connection;
     /** Background service to poll for connections. */
     private final NetworkPollingService pollingService;
     /** List of listeners to alert when a new connection is made. */
     private Set<SshConnectionListener> connectionListeners;
-    /** An FXML property that exposes whether the console is connected so we can bind it to the UI. */
-    private BooleanProperty disconnected;
-    /** An FXML property that displays the localized connection status so we can bind it to the UI. */
-    private StringProperty connectionStatus;
-    /** An FXML property that displays the color representing the connection status. */
-    private ObjectProperty<Paint> connectionStatusColor;
     /** ResourceBundle for getting localized connection status strings. */
     private ResourceBundle resourceBundle;
     /** The SID of the currently connected console. */
@@ -77,13 +72,11 @@ public class NetworkConnection {
 
      */
     @Autowired
-    public NetworkConnection(final JSch jSch) {
+    public NetworkConnection(final JSch jSch, final UiPropertyContainer uiPropertyContainer) {
         this.jSch = jSch;
+        this.uiPropertyContainer = uiPropertyContainer;
         this.connectionListeners = new HashSet<>();
         this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
-        this.disconnected = new SimpleBooleanProperty(true);
-        this.connectionStatus = new SimpleStringProperty(resourceBundle.getString(DISCONNECTED_STATUS_KEY));
-        this.connectionStatusColor = new SimpleObjectProperty<>(Paint.valueOf(DISCONNECTED_CIRCLE_COLOR));
         this.connectedConsoleSid = null;
 
         // set a background service that polls for a connection periodically
@@ -302,9 +295,9 @@ public class NetworkConnection {
      */
     public void setConnectedProperties(boolean connected) {
         // set the connection status properties
-        setConnectionStatus(resourceBundle.getString(
+        this.uiPropertyContainer.connectionStatus.setValue(resourceBundle.getString(
                 connected ? CONNECTED_STATUS_KEY : DISCONNECTED_STATUS_KEY));
-        setConnectionStatusColor(Paint.valueOf(
+        this.uiPropertyContainer.connectionStatusColor.setValue(Paint.valueOf(
                 connected ? CONNECTED_CIRCLE_COLOR : DISCONNECTED_CIRCLE_COLOR));
     }
 
@@ -314,7 +307,7 @@ public class NetworkConnection {
      */
     public void notifyConnectionHandlers(boolean connected) {
         // notify the listeners if this is a new connect or disconnect
-        if (this.disconnected.getValue() == connected) {
+        if (this.uiPropertyContainer.disconnected.getValue() == connected) {
             try {
                 if (connected) {
                     for (SshConnectionListener listener : this.connectionListeners) {
@@ -330,35 +323,7 @@ public class NetworkConnection {
             }
         }
 
-        this.disconnected.setValue(!connected);
-    }
-
-    public String getConnectionStatus() {
-        return connectionStatus.get();
-    }
-
-    public StringProperty connectionStatusProperty() {
-        return connectionStatus;
-    }
-
-    public void setConnectionStatus(String connectionStatus) {
-        this.connectionStatus.set(connectionStatus);
-    }
-
-    public Paint getConnectionStatusColor() {
-        return connectionStatusColor.get();
-    }
-
-    public ObjectProperty<Paint> connectionStatusColorProperty() {
-        return connectionStatusColor;
-    }
-
-    public void setConnectionStatusColor(Paint connectionStatusColor) {
-        this.connectionStatusColor.set(connectionStatusColor);
-    }
-
-    public BooleanProperty disconnectedProperty() {
-        return disconnected;
+        this.uiPropertyContainer.disconnected.setValue(!connected);
     }
 
     public String getConnectedConsoleSid() {

@@ -1,6 +1,7 @@
 package com.fuckmyclassic.task;
 
 import com.fuckmyclassic.ui.util.BindingHelper;
+import javafx.beans.binding.StringExpression;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -63,7 +64,7 @@ public class SequentialTaskRunner extends Task<Void> {
 
             // bind the message and subtask progress to the task runner
             BindingHelper.bindProperty(task.progressProperty(), subTaskProgress);
-            BindingHelper.bindProperty(task.messageProperty(), subTaskMessage);
+            BindingHelper.bindProperty((StringExpression) task.messageProperty(), subTaskMessage);
 
             // execute each task sequentially. if there's an exception then don't execute the rest, otherwise
             // update the message and progress
