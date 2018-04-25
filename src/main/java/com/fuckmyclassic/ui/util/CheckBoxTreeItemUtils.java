@@ -1,12 +1,10 @@
 package com.fuckmyclassic.ui.util;
 
 import com.fuckmyclassic.hibernate.HibernateManager;
+import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
-import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
-import javafx.beans.value.ChangeListener;
 import javafx.scene.control.CheckBoxTreeItem;
-import javafx.scene.control.TreeItem;
 
 /**
  * Small helper class to setup listeners and event handlers on
@@ -34,12 +32,15 @@ public class CheckBoxTreeItemUtils {
                 libraryItem.setSelected(newVal);
                 hibernateManager.updateEntity(libraryItem);
 
-                if (newVal) {
-                    uiPropertyContainer.numSelected.set(
-                            uiPropertyContainer.numSelected.get() + 1L);
-                } else {
-                    uiPropertyContainer.numSelected.set(
-                            uiPropertyContainer.numSelected.get() - 1L);
+                // only update the counts for games, not folders
+                if (!(libraryItem.getApplication() instanceof Folder)) {
+                    if (newVal) {
+                        uiPropertyContainer.numSelected.set(
+                                uiPropertyContainer.numSelected.get() + 1L);
+                    } else {
+                        uiPropertyContainer.numSelected.set(
+                                uiPropertyContainer.numSelected.get() - 1L);
+                    }
                 }
             }
         }));

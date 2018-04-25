@@ -3,7 +3,6 @@ package com.fuckmyclassic.hibernate.dao.impl;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
-import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.Library;
@@ -131,6 +130,7 @@ public class LibraryDAOImpl implements LibraryDAO {
             // small hack to change the value of the parent without altering
             // the values of what's below it
             parentFolder.setIndependent(true);
+            parentFolder.setSelected(false);
             parentFolder.setIndeterminate(true);
             parentFolder.setIndependent(false);
         }
@@ -179,13 +179,13 @@ public class LibraryDAOImpl implements LibraryDAO {
     }
 
     /**
-     * Gets the number of selected items for a given library.
+     * Gets the number of selected items for a given library (excluding folders).
      * @param library The library to query for.
-     * @return The number of selected items in the library.
+     * @return The number of selected items in the library (excluding folders).
      */
     public long getNumSelectedForLibrary(Library library) {
         final Query query = session.createQuery(
-                "select count(*) from LibraryItem l where l.library = :library and l.selected = true");
+                "select count(*) from LibraryItem l where l.library = :library and l.selected = true and l.application.class = Application");
         query.setParameter("library", library);
         return (Long) query.uniqueResult();
     }

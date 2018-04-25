@@ -85,16 +85,20 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                     visitedNodes++;
                     currentNode = nodesToVisit.remove(0);
                     nodesToVisit.addAll(currentNode.getChildren());
-
-                    // if it's a folder, create the actual folder for the games under it, then create
-                    // the switcher application in the parent folder (if there is a parent)
                     currentApp = currentNode.getValue().getApplication();
+
+                    // skip to the next one if this item isn't selected
+                    if (!currentNode.getValue().isSelected()) {
+                        continue;
+                    }
 
                     updateMessage(String.format(resourceBundle.getString(IN_PROGRESS_MESSAGE_KEY),
                             currentApp.getApplicationName()));
                     updateProgress(visitedNodes, maxItems);
                     shouldCreateApp = (currentNode.getParent() != null);
 
+                    // if it's a folder, create the actual folder for the games under it, then create
+                    // the switcher application in the parent folder (if there is a parent)
                     if (shouldCreateApp) {
                         originalGamePath = Paths.get(SharedConstants.GAMES_DIRECTORY, currentApp.getApplicationId());
 
