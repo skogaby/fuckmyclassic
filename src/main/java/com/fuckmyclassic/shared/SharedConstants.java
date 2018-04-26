@@ -1,5 +1,7 @@
 package com.fuckmyclassic.shared;
 
+import java.nio.file.Paths;
+
 /**
  * Shared class to contain constant values.
  * @author skogaby (skogabyskogaby@gmail.com)
@@ -24,6 +26,9 @@ public class SharedConstants {
     public static String BOXART_DIRECTORY = "boxart";
     /** Temp directory where we create the game structure and symlink the data to. */
     public static String TEMP_DIRECTORY = "temp";
+    // Uncomment the below line to use the system temp directory instead of a local one. I'm using a local
+    // one right now for debugging, but it should use the system path for release
+    // public static String TEMP_DIRECTORY = Paths.get(System.getProperty("java.io.tmpdir"), APP_NAME).toString();
     /** Directory where resource images are stored. */
     public static String IMAGES_DIRECTORY = "images";
     /** Resource path for the warning icon. */
