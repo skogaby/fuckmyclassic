@@ -1,16 +1,11 @@
 package com.fuckmyclassic.network;
 
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
+import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Paint;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
@@ -59,12 +54,6 @@ public class NetworkConnection {
     private Set<SshConnectionListener> connectionListeners;
     /** ResourceBundle for getting localized connection status strings. */
     private ResourceBundle resourceBundle;
-    /** The SID of the currently connected console. */
-    private String connectedConsoleSid;
-    /** The system type of the currently connected console. */
-    private String systemType;
-    /** The sync path for the currently connected console. */
-    private String systemSyncPath;
 
     /**
      * Constructor.
@@ -72,12 +61,12 @@ public class NetworkConnection {
 
      */
     @Autowired
-    public NetworkConnection(final JSch jSch, final UiPropertyContainer uiPropertyContainer) {
+    public NetworkConnection(final JSch jSch,
+                             final UiPropertyContainer uiPropertyContainer) {
         this.jSch = jSch;
         this.uiPropertyContainer = uiPropertyContainer;
         this.connectionListeners = new HashSet<>();
         this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
-        this.connectedConsoleSid = null;
 
         // set a background service that polls for a connection periodically
         this.pollingService = new NetworkPollingService();
@@ -324,32 +313,5 @@ public class NetworkConnection {
         }
 
         this.uiPropertyContainer.disconnected.setValue(!connected);
-    }
-
-    public String getConnectedConsoleSid() {
-        return connectedConsoleSid;
-    }
-
-    public NetworkConnection setConnectedConsoleSid(String connectedConsoleSid) {
-        this.connectedConsoleSid = connectedConsoleSid;
-        return this;
-    }
-
-    public String getSystemType() {
-        return systemType;
-    }
-
-    public NetworkConnection setSystemType(String systemType) {
-        this.systemType = systemType;
-        return this;
-    }
-
-    public String getSystemSyncPath() {
-        return systemSyncPath;
-    }
-
-    public NetworkConnection setSystemSyncPath(String systemSyncPath) {
-        this.systemSyncPath = systemSyncPath;
-        return this;
     }
 }

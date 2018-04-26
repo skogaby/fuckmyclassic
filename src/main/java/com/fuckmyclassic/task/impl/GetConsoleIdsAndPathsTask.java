@@ -2,6 +2,7 @@ package com.fuckmyclassic.task.impl;
 
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.task.AbstractTaskCreator;
+import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.jcraft.jsch.JSchException;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
@@ -26,13 +27,18 @@ public class GetConsoleIdsAndPathsTask extends AbstractTaskCreator<String> {
 
     /** The connection used for SSH commands. */
     private final NetworkConnection networkConnection;
+    /** The configuration about the currently connected console */
+    private final ConsoleConfiguration consoleConfiguration;
     /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
 
     @Autowired
-    public GetConsoleIdsAndPathsTask(final ResourceBundle resourceBundle, final NetworkConnection networkConnection) {
+    public GetConsoleIdsAndPathsTask(final ResourceBundle resourceBundle,
+                                     final NetworkConnection networkConnection,
+                                     final ConsoleConfiguration consoleConfiguration) {
         this.resourceBundle = resourceBundle;
         this.networkConnection = networkConnection;
+        this.consoleConfiguration = consoleConfiguration;
     }
 
     @Override
@@ -53,9 +59,9 @@ public class GetConsoleIdsAndPathsTask extends AbstractTaskCreator<String> {
                 LOG.info(String.format("Detected console type: %s", consoleType));
                 LOG.info(String.format("Detected console sync path: %s", syncPath));
 
-                networkConnection.setConnectedConsoleSid(consoleSid);
-                networkConnection.setSystemType(consoleType);
-                networkConnection.setSystemSyncPath(syncPath);
+                consoleConfiguration.setConnectedConsoleSid(consoleSid);
+                consoleConfiguration.setSystemType(consoleType);
+                consoleConfiguration.setSystemSyncPath(syncPath);
 
                 updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));
                 updateProgress(1, 1);

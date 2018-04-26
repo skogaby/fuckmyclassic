@@ -6,6 +6,7 @@ import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
+import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
@@ -31,8 +32,8 @@ public class UpdateUnknownLibrariesTask extends AbstractTaskCreator<Void> {
 
     /** Current user configuration */
     private final UserConfiguration userConfiguration;
-    /** Current handle to the console's network */
-    private final NetworkConnection networkConnection;
+    /** The configuration about the currently connected console */
+    private final ConsoleConfiguration consoleConfiguration;
     /** Hibernate manager to update libraries */
     private final HibernateManager hibernateManager;
     /** DAO for querying for libraries */
@@ -42,12 +43,12 @@ public class UpdateUnknownLibrariesTask extends AbstractTaskCreator<Void> {
 
     @Autowired
     public UpdateUnknownLibrariesTask(final UserConfiguration userConfiguration,
-                                      final NetworkConnection networkConnection,
+                                      final ConsoleConfiguration consoleConfiguration,
                                       final HibernateManager hibernateManager,
                                       final LibraryDAO libraryDAO,
                                       final ResourceBundle resourceBundle) {
         this.userConfiguration = userConfiguration;
-        this.networkConnection = networkConnection;
+        this.consoleConfiguration = consoleConfiguration;
         this.hibernateManager = hibernateManager;
         this.libraryDAO = libraryDAO;
         this.resourceBundle = resourceBundle;
@@ -62,12 +63,12 @@ public class UpdateUnknownLibrariesTask extends AbstractTaskCreator<Void> {
                 updateProgress(0, 1);
 
                 if (userConfiguration.getLastConsoleSID().equals(SharedConstants.DEFAULT_CONSOLE_SID) &&
-                        networkConnection.getConnectedConsoleSid() != null) {
+                        consoleConfiguration.getConnectedConsoleSid() != null) {
                     final List<Library> libraries = libraryDAO.getLibrariesForConsole(SharedConstants.DEFAULT_CONSOLE_SID);
                     LOG.info(String.format("Updating %d libraries to belong to the connected console", libraries.size()));
 
                     libraries.forEach(l -> {
-                        l.setConsoleSid(networkConnection.getConnectedConsoleSid());
+                        l.setConsoleSid(consoleConfiguration.getConnectedConsoleSid());
                         hibernateManager.updateEntity(l);
                     });
                 }

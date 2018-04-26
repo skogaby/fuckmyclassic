@@ -11,6 +11,7 @@ import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
+import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyProperty;
@@ -86,19 +87,21 @@ public class MainWindow {
     public MenuBar mainMenu;
     public Label lblNumGamesSelected;
 
-    /** The configuration object for user options and session settings.*/
+    /** The configuration object for user options and session settings */
     private final UserConfiguration userConfiguration;
-    /** Helper instance for membooting consoles.*/
+    /** Configuration about the connected console */
+    private final ConsoleConfiguration consoleConfiguration;
+    /** Helper instance for membooting consoles */
     private final MembootHelper membootHelper;
-    /** Helper instance for kernel flashing operations. */
+    /** Helper instance for kernel flashing operations */
     private final KernelFlasher kernelFlasher;
     /** Helper instance for managing the library loading and view */
     private final LibraryManager libraryManager;
-    /** Manager for SSH operations and network connections. */
+    /** Manager for SSH operations and network connections */
     private final NetworkConnection networkConnection;
-    /** Resource bundle for internationalized task strings. */
+    /** Resource bundle for internationalized task strings */
     private final ResourceBundle tasksResourceBundle;
-    /** The dialog to run sequential tasks. */
+    /** The dialog to run sequential tasks */
     private final SequentialTaskRunnerDialog sequentialTaskRunnerDialog;
     /** Provider for the Tasks we need during runtime for miscellaneous operations */
     private final TaskProvider taskProvider;
@@ -110,6 +113,7 @@ public class MainWindow {
      */
     @Autowired
     public MainWindow(final UserConfiguration userConfiguration,
+                      final ConsoleConfiguration consoleConfiguration,
                       final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher,
                       final LibraryManager libraryManager,
@@ -119,6 +123,7 @@ public class MainWindow {
                       final TaskProvider taskProvider,
                       final UiPropertyContainer uiPropertyContainer) {
         this.userConfiguration = userConfiguration;
+        this.consoleConfiguration = consoleConfiguration;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
@@ -290,8 +295,8 @@ public class MainWindow {
     private void onSyncGamesClicked() throws IOException {
         LOG.info("Attempting to sync games to the console");
 
-        final String syncPath = String.format("%s/%s/%s", this.networkConnection.getSystemSyncPath(),
-                this.networkConnection.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
+        final String syncPath = String.format("%s/%s/%s", this.consoleConfiguration.getSystemSyncPath(),
+                this.consoleConfiguration.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
         //final String syncPath = String.format("%s/%s/%s", "/hakchi/media/games",
         //        "snes-jpn", SharedConstants.CONSOLE_STORAGE_DIR);
         this.taskProvider.createTempDataTask.setSyncPath(syncPath);

@@ -9,6 +9,7 @@ import com.fuckmyclassic.task.impl.CreateTempDataTask;
 import com.fuckmyclassic.task.impl.GetConsoleIdsAndPathsTask;
 import com.fuckmyclassic.task.impl.LoadLibrariesTask;
 import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
+import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -31,20 +32,24 @@ public class TaskConfiguration {
     }
 
     @Bean
-    public GetConsoleIdsAndPathsTask getConsoleSidService(ResourceBundle resourceBundle, NetworkConnection networkConnection) {
-        return new GetConsoleIdsAndPathsTask(resourceBundle, networkConnection);
+    public GetConsoleIdsAndPathsTask getConsoleSidService(ResourceBundle resourceBundle, NetworkConnection networkConnection,
+                                                          ConsoleConfiguration consoleConfiguration) {
+        return new GetConsoleIdsAndPathsTask(resourceBundle, networkConnection, consoleConfiguration);
     }
 
     @Bean
     public UpdateUnknownLibrariesTask updateUnknownLibrariesTask(UserConfiguration userConfiguration,
-            NetworkConnection networkConnection, HibernateManager hibernateManager, LibraryDAO libraryDAO, ResourceBundle resourceBundle) {
-        return new UpdateUnknownLibrariesTask(userConfiguration, networkConnection, hibernateManager, libraryDAO, resourceBundle);
+                                                                 ConsoleConfiguration consoleConfiguration,
+                                                                 HibernateManager hibernateManager,
+                                                                 LibraryDAO libraryDAO,
+                                                                 ResourceBundle resourceBundle) {
+        return new UpdateUnknownLibrariesTask(userConfiguration, consoleConfiguration, hibernateManager, libraryDAO, resourceBundle);
     }
 
     @Bean
-    public LoadLibrariesTask loadLibrariesTask(UserConfiguration userConfiguration, NetworkConnection networkConnection,
+    public LoadLibrariesTask loadLibrariesTask(UserConfiguration userConfiguration, ConsoleConfiguration consoleConfiguration,
                                                LibraryDAO libraryDAO, ResourceBundle resourceBundle) {
-        return new LoadLibrariesTask(userConfiguration, networkConnection, libraryDAO, resourceBundle);
+        return new LoadLibrariesTask(userConfiguration, consoleConfiguration, libraryDAO, resourceBundle);
     }
 
     @Bean

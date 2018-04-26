@@ -1,12 +1,11 @@
 package com.fuckmyclassic.task.impl;
 
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
-import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.model.Library;
-import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.fuckmyclassic.ui.controller.MainWindow;
+import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -36,8 +35,8 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
 
     /** Current user configuration*/
     private final UserConfiguration userConfiguration;
-    /** Current handle to the console's network */
-    private final NetworkConnection networkConnection;
+    /** Configuration about the current console  */
+    private final ConsoleConfiguration consoleConfiguration;
     /** DAO for querying for libraries */
     private final LibraryDAO libraryDAO;
     /** Bundle for getting localized strings. */
@@ -46,10 +45,10 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
     private MainWindow mainWindow;
 
     @Autowired
-    public LoadLibrariesTask(final UserConfiguration userConfiguration, final NetworkConnection networkConnection,
+    public LoadLibrariesTask(final UserConfiguration userConfiguration, final ConsoleConfiguration consoleConfiguration,
                              final LibraryDAO libraryDAO, final ResourceBundle resourceBundle) {
         this.userConfiguration = userConfiguration;
-        this.networkConnection = networkConnection;
+        this.consoleConfiguration = consoleConfiguration;
         this.libraryDAO = libraryDAO;
         this.resourceBundle = resourceBundle;
     }
@@ -67,7 +66,7 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
                 updateMessage(resourceBundle.getString(IN_PROGRESS_MESSAGE_KEY));
                 updateProgress(0, 1);
 
-                final String connectedSid = networkConnection.getConnectedConsoleSid();
+                final String connectedSid = consoleConfiguration.getConnectedConsoleSid();
                 LOG.debug(String.format("Loading libraries for console %s", connectedSid));
 
                 // first load the libraries and setup the combobox for library selection

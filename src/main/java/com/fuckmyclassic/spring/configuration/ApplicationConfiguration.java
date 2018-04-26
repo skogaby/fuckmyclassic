@@ -11,6 +11,7 @@ import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.fuckmyclassic.ui.util.ImageResizer;
+import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -30,8 +31,8 @@ public class ApplicationConfiguration {
     public MainWindow mainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
                                  LibraryManager libraryManager, NetworkConnection networkConnection, ResourceBundle tasksResourceBundle,
                                  SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider,
-                                 UiPropertyContainer uiPropertyContainer) {
-        return new MainWindow(userConfiguration, membootHelper, kernelFlasher, libraryManager, networkConnection, tasksResourceBundle,
+                                 UiPropertyContainer uiPropertyContainer, ConsoleConfiguration consoleConfiguration) {
+        return new MainWindow(userConfiguration, consoleConfiguration, membootHelper, kernelFlasher, libraryManager, networkConnection, tasksResourceBundle,
                 sequentialTaskRunnerDialog, taskProvider, uiPropertyContainer);
     }
 
@@ -54,6 +55,11 @@ public class ApplicationConfiguration {
     @Bean
     public UserConfiguration userConfiguration() {
         return UserConfiguration.loadFromTomlFile();
+    }
+
+    @Bean
+    public ConsoleConfiguration consoleConfiguration() {
+        return new ConsoleConfiguration();
     }
 
     @Bean
