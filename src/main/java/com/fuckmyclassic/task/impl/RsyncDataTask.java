@@ -78,7 +78,7 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
 
                 // perform the actual sync
                 processOutput.monitor(rSync.builder());
-
+                
                 LOG.info(String.format("Done syncing data from %s to %s", source, destination));
                 updateMessage(COMPLETE_MESSAGE_KEY);
                 updateProgress(100, 100);

@@ -50,7 +50,7 @@ public class ShowSplashScreenAndStopUiTask extends AbstractTaskCreator<Void> {
 
                 LOG.info("Showing splash screen");
 
-                networkConnection.runCommand("uistop");
+                networkConnection.runCommand("uistop; usleep 500000");
                 int result = networkConnection.runCommandWithStreams("gunzip -c - > /dev/fb0",
                         new FileInputStream(SPLASH_SCREEN_PATH), null, null);
 
