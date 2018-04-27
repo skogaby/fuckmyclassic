@@ -6,6 +6,7 @@ import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.network.NetworkConstants;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
@@ -60,7 +61,7 @@ public class MainWindow {
     static Logger LOG = LogManager.getLogger(MainWindow.class.getName());
 
     private static final String RESOURCE_BUNDLE_PATH = "i18n/MainWindow";
-    private static final String SYNC_TASK_TITLE_KEY = "SyncOrExportTaskLabel";
+    private static final String SYNC_TASK_TITLE_KEY = "SyncTaskLabel";
     private static final String CONNECTED_GAMES_LABEL_KEY = "MainWindow.lblNumGamesSelected";
 
     // References to all of the UI objects that we need to manipulate
@@ -288,20 +289,32 @@ public class MainWindow {
     }
 
     /**
-     * Handler for clicking the button to sync games to the connected console.
+     * Handler for clicking the button to sync games to the connected console (internal sync).
      * @throws IOException
      */
     @FXML
     private void onSyncGamesClicked() throws IOException {
-        LOG.info("Attempting to sync games to the console");
+        LOG.info("Attempting to sync games to the console's internal memory");
 
+        // Uncomment for testing without a console connected
+        // final String syncPath = String.format("%s/%s/%s", "/media/hakchi/games",
+        //      "snes-jpn", SharedConstants.CONSOLE_STORAGE_DIR);
+
+        // setup the temp data task
         final String syncPath = String.format("%s/%s/%s", this.consoleConfiguration.getSystemSyncPath(),
                 this.consoleConfiguration.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
-        //final String syncPath = String.format("%s/%s/%s", "/hakchi/media/games",
-        //        "snes-jpn", SharedConstants.CONSOLE_STORAGE_DIR);
         this.taskProvider.createTempDataTask.setSyncPath(syncPath);
+
+        // setup the rsync task
+        this.taskProvider.rsyncDataTask.setSource(Paths.get(SharedConstants.TEMP_DIRECTORY).toString() + "/");
+        this.taskProvider.rsyncDataTask.setDestination(String.format(
+                "%s@%s:%s/%s/", NetworkConstants.USER_NAME, NetworkConstants.CONSOLE_IP,
+                consoleConfiguration.getSystemSyncPath(), consoleConfiguration.getSystemType()));
+
+        // run the tasks
         sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
-        sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask);
+        sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask, taskProvider.showSplashScreenAndStopUiTask,
+                taskProvider.unmountGamesTask, taskProvider.rsyncDataTask, taskProvider.mountGamesAndStartUiTask);
         sequentialTaskRunnerDialog.showDialog();
     }
 

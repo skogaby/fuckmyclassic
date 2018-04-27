@@ -3,7 +3,6 @@ package com.fuckmyclassic.task.impl;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.model.Library;
-import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.fuckmyclassic.userconfig.ConsoleConfiguration;

@@ -49,4 +49,6 @@ public class SharedConstants {
     public static String AUTOPLAY_DIR = "autoplay";
     /** The name of the pixelart folder for a game */
     public static String PIXELART_DIR = "pixelart";
+    /** The name of the splash screen file */
+    public static String SPLASH_SCREEN = "images/splash.gz";
 }

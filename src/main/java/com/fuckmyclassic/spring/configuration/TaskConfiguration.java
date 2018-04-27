@@ -8,6 +8,10 @@ import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.task.impl.CreateTempDataTask;
 import com.fuckmyclassic.task.impl.GetConsoleIdsAndPathsTask;
 import com.fuckmyclassic.task.impl.LoadLibrariesTask;
+import com.fuckmyclassic.task.impl.MountGamesAndStartUiTask;
+import com.fuckmyclassic.task.impl.RsyncDataTask;
+import com.fuckmyclassic.task.impl.ShowSplashScreenAndStopUiTask;
+import com.fuckmyclassic.task.impl.UnmountGamesTask;
 import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
 import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
@@ -15,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.net.URISyntaxException;
 import java.util.ResourceBundle;
 
 /**
@@ -27,12 +32,16 @@ public class TaskConfiguration {
 
     @Bean
     public TaskProvider taskProvider(GetConsoleIdsAndPathsTask getConsoleIdsAndPathsTask, UpdateUnknownLibrariesTask updateUnknownLibrariesTask,
-                                     LoadLibrariesTask loadLibrariesTask, CreateTempDataTask createTempDataTask) {
-        return new TaskProvider(createTempDataTask, getConsoleIdsAndPathsTask, loadLibrariesTask, updateUnknownLibrariesTask);
+                                     LoadLibrariesTask loadLibrariesTask, CreateTempDataTask createTempDataTask, RsyncDataTask rsyncDataTask,
+                                     ShowSplashScreenAndStopUiTask showSplashScreenAndStopUiTask, UnmountGamesTask unmountGamesTask,
+                                     MountGamesAndStartUiTask mountGamesAndStartUiTask) {
+        return new TaskProvider(createTempDataTask, getConsoleIdsAndPathsTask, loadLibrariesTask,
+                updateUnknownLibrariesTask, rsyncDataTask, showSplashScreenAndStopUiTask, unmountGamesTask,
+                mountGamesAndStartUiTask);
     }
 
     @Bean
-    public GetConsoleIdsAndPathsTask getConsoleSidService(ResourceBundle resourceBundle, NetworkConnection networkConnection,
+    public GetConsoleIdsAndPathsTask getConsoleIdsAndPathsTask(ResourceBundle resourceBundle, NetworkConnection networkConnection,
                                                           ConsoleConfiguration consoleConfiguration) {
         return new GetConsoleIdsAndPathsTask(resourceBundle, networkConnection, consoleConfiguration);
     }
@@ -55,5 +64,26 @@ public class TaskConfiguration {
     @Bean
     public CreateTempDataTask createTempDataTask(LibraryManager libraryManager, ResourceBundle resourceBundle) {
         return new CreateTempDataTask(libraryManager, resourceBundle);
+    }
+
+    @Bean
+    public RsyncDataTask rsyncDataTask(ResourceBundle resourceBundle) {
+        return new RsyncDataTask(resourceBundle);
+    }
+
+    @Bean
+    public ShowSplashScreenAndStopUiTask showSplashScreenTask(NetworkConnection networkConnection, ResourceBundle resourceBundle)
+            throws URISyntaxException {
+        return new ShowSplashScreenAndStopUiTask(networkConnection, resourceBundle);
+    }
+
+    @Bean
+    public UnmountGamesTask unmountGamesTask(NetworkConnection networkConnection, ResourceBundle resourceBundle) {
+        return new UnmountGamesTask(networkConnection, resourceBundle);
+    }
+
+    @Bean
+    public MountGamesAndStartUiTask mountGamesAndStartUiTask(NetworkConnection networkConnection, ResourceBundle resourceBundle) {
+        return new MountGamesAndStartUiTask(networkConnection, resourceBundle);
     }
 }

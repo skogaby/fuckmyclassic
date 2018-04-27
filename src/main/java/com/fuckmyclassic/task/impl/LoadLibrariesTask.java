@@ -67,7 +67,7 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
                 updateProgress(0, 1);
 
                 final String connectedSid = consoleConfiguration.getConnectedConsoleSid();
-                LOG.debug(String.format("Loading libraries for console %s", connectedSid));
+                LOG.info(String.format("Loading libraries for console %s", connectedSid));
 
                 // first load the libraries and setup the combobox for library selection
                 final List<Library> libraries = libraryDAO.getLibrariesForConsole(connectedSid);

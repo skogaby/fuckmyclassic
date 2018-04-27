@@ -59,6 +59,8 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
         return new Task<Void>() {
             @Override
             protected Void call() throws IOException {
+                LOG.info("Processing temporary data for the current library");
+
                 int maxItems = libraryManager.getCurrentLibraryTree().getValue().getNumNodes();
                 updateProgress(0, maxItems);
 
@@ -100,6 +102,8 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                     // if it's a folder, create the actual folder for the games under it, then create
                     // the switcher application in the parent folder (if there is a parent)
                     if (shouldCreateApp) {
+                        LOG.debug(String.format("Processing temp data for %s", currentApp.getApplicationName()));
+
                         originalGamePath = Paths.get(SharedConstants.GAMES_DIRECTORY, currentApp.getApplicationId());
 
                         // create the folder in .storage
@@ -118,6 +122,8 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                                 String.format("%s.desktop", currentApp.getApplicationId())).toString()));
                         desktopFileWriter.write(desktopFileContents);
                         desktopFileWriter.close();
+
+                        LOG.debug(String.format("Created desktop file for %s", currentApp.getApplicationName()));
 
                         // symlink the actual contents of the app itself in the "storage" folder, minus the autoplay
                         // and pixelart folders
@@ -147,6 +153,8 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                                         Paths.get(SharedConstants.BOXART_DIRECTORY, thumbnailName).toAbsolutePath() :
                                         Paths.get(SharedConstants.BOXART_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL).toAbsolutePath());
 
+                        LOG.debug(String.format("Symlinked the boxart for %s", currentApp.getApplicationName()));
+
                         // if they exist in the original game, create a pixelart and autoplay
                         // folder in the temp folder for the game and symlink back to the originals
                         final File srcPixelartFolder = new File(
@@ -156,6 +164,7 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                                     Paths.get(newAppDirectoryTemp.toString(), SharedConstants.PIXELART_DIR).toUri());
                             dstPixelArtFolder.mkdirs();
                             symlinkContentsOfDirectory(srcPixelartFolder.toPath(), dstPixelArtFolder.toPath());
+                            LOG.debug(String.format("Symlinked the pixelart data for %s", currentApp.getApplicationName()));
                         }
 
                         final File srcAutoplayFolder = new File(
@@ -165,6 +174,7 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                                     Paths.get(newAppDirectoryTemp.toString(), SharedConstants.AUTOPLAY_DIR).toUri());
                             dstAutoplayFolder.mkdirs();
                             symlinkContentsOfDirectory(srcAutoplayFolder.toPath(), dstAutoplayFolder.toPath());
+                            LOG.debug(String.format("Symlinked the autoplay data for %s", currentApp.getApplicationName()));
                         }
                     }
                 }
