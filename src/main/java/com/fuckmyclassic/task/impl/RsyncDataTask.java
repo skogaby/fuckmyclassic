@@ -58,11 +58,13 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
                 rSync = new RSync()
                         .source(source)
                         .destination(destination)
-                        .archive(true)
                         .delete(true)
                         .copyLinks(true)
+                        .progress(true)
                         .humanReadable(true)
-                        .progress(true);
+                        .owner(false)
+                        .group(false)
+                        .recursive(true);
 
                 final RsyncOutputProcessor rsyncOutputProcessor = new RsyncOutputProcessor();
                 final StreamingProcessOutput processOutput = new StreamingProcessOutput(rsyncOutputProcessor);
@@ -78,7 +80,7 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
 
                 // perform the actual sync
                 processOutput.monitor(rSync.builder());
-                
+
                 LOG.info(String.format("Done syncing data from %s to %s", source, destination));
                 updateMessage(COMPLETE_MESSAGE_KEY);
                 updateProgress(100, 100);
