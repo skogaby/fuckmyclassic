@@ -18,9 +18,9 @@
     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
    <children>
-      <Label fx:id="lblMainMessage" text="Label" GridPane.hgrow="ALWAYS" />
+      <Label fx:id="lblMainMessage" GridPane.hgrow="ALWAYS" />
       <ProgressBar fx:id="prgMainTaskProgress" maxWidth="1.7976931348623157E308" progress="0.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
-      <Label fx:id="lblSubTaskMessage" text="Label" GridPane.rowIndex="2" />
+      <Label fx:id="lblSubTaskMessage" GridPane.rowIndex="2" />
       <ProgressBar fx:id="prgSubTaskProgress" maxWidth="1.7976931348623157E308" progress="0.0" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3" />
    </children>
    <padding>
