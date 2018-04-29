@@ -83,7 +83,7 @@ public class SequentialTaskRunnerDialog {
         stage.setScene(scene);
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setTitle(String.format("%s v%s", SharedConstants.APP_NAME, SharedConstants.APP_VERSION));
-        stage.show();
+        stage.showAndWait();
     }
 
     public TaskCreator[] getTaskCreators() {

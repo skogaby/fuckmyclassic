@@ -5,10 +5,12 @@ import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.task.TaskProvider;
+import com.fuckmyclassic.task.impl.RsyncDataTask;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.ui.controller.RsyncRunnerDialog;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.ConsoleConfiguration;
@@ -30,15 +32,19 @@ public class ApplicationConfiguration {
     @Bean
     public MainWindow mainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
                                  LibraryManager libraryManager, NetworkConnection networkConnection, ResourceBundle tasksResourceBundle,
-                                 SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider,
+                                 RsyncRunnerDialog rsyncRunnerDialog, SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider,
                                  UiPropertyContainer uiPropertyContainer, ConsoleConfiguration consoleConfiguration) {
         return new MainWindow(userConfiguration, consoleConfiguration, membootHelper, kernelFlasher, libraryManager, networkConnection, tasksResourceBundle,
-                sequentialTaskRunnerDialog, taskProvider, uiPropertyContainer);
+                sequentialTaskRunnerDialog, rsyncRunnerDialog, taskProvider, uiPropertyContainer);
     }
 
     @Bean
     public SequentialTaskRunnerDialog sequentialTaskRunnerDialog() {
         return new SequentialTaskRunnerDialog();
+    }
+
+    @Bean RsyncRunnerDialog rsyncRunnerDialog(RsyncDataTask rsyncDataTask, ResourceBundle resourceBundle) {
+        return new RsyncRunnerDialog(rsyncDataTask, resourceBundle);
     }
 
     @Bean

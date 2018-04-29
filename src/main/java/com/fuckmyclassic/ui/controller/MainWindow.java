@@ -104,6 +104,8 @@ public class MainWindow {
     private final ResourceBundle tasksResourceBundle;
     /** The dialog to run sequential tasks */
     private final SequentialTaskRunnerDialog sequentialTaskRunnerDialog;
+    /** Rsync runner dialog for game syncing */
+    private final RsyncRunnerDialog rsyncRunnerDialog;
     /** Provider for the Tasks we need during runtime for miscellaneous operations */
     private final TaskProvider taskProvider;
     /** Container for UI properties we need to update */
@@ -121,6 +123,7 @@ public class MainWindow {
                       final NetworkConnection networkConnection,
                       final ResourceBundle tasksResourceBundle,
                       final SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
+                      final RsyncRunnerDialog rsyncRunnerDialog,
                       final TaskProvider taskProvider,
                       final UiPropertyContainer uiPropertyContainer) {
         this.userConfiguration = userConfiguration;
@@ -131,6 +134,7 @@ public class MainWindow {
         this.networkConnection = networkConnection;
         this.tasksResourceBundle = tasksResourceBundle;
         this.sequentialTaskRunnerDialog = sequentialTaskRunnerDialog;
+        this.rsyncRunnerDialog = rsyncRunnerDialog;
         this.taskProvider = taskProvider;
         this.uiPropertyContainer = uiPropertyContainer;
     }
@@ -296,25 +300,26 @@ public class MainWindow {
     private void onSyncGamesClicked() throws IOException {
         LOG.info("Attempting to sync games to the console's internal memory");
 
-        // Uncomment for testing without a console connected
-        // final String syncPath = String.format("%s/%s/%s", "/media/hakchi/games",
-        //      "snes-jpn", SharedConstants.CONSOLE_STORAGE_DIR);
-
         // setup the temp data task
         final String syncPath = String.format("%s/%s/%s", this.consoleConfiguration.getSystemSyncPath(),
                 this.consoleConfiguration.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
         this.taskProvider.createTempDataTask.setSyncPath(syncPath);
 
-        // setup the rsync task
-        this.taskProvider.rsyncDataTask.setSource(Paths.get(SharedConstants.TEMP_DIRECTORY).toString() + "/");
-        this.taskProvider.rsyncDataTask.setDestination(String.format(
-                "%s@%s:%s/%s/", NetworkConstants.USER_NAME, NetworkConstants.CONSOLE_IP,
-                consoleConfiguration.getSystemSyncPath(), consoleConfiguration.getSystemType()));
-
-        // run the tasks
+        // run the pre-sync tasks
         sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
         sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask, taskProvider.showSplashScreenAndStopUiTask,
-                taskProvider.unmountGamesTask, taskProvider.rsyncDataTask, taskProvider.mountGamesAndStartUiTask);
+                taskProvider.unmountGamesTask);
+        sequentialTaskRunnerDialog.showDialog();
+
+        // setup the rsync task
+        rsyncRunnerDialog.setSource(Paths.get(SharedConstants.TEMP_DIRECTORY).toString() + "/");
+        rsyncRunnerDialog.setDestination(String.format(
+                "%s@%s:%s/%s/", NetworkConstants.USER_NAME, NetworkConstants.CONSOLE_IP,
+                consoleConfiguration.getSystemSyncPath(), consoleConfiguration.getSystemType()));
+        rsyncRunnerDialog.showDialog();
+
+        // start the UI back up
+        sequentialTaskRunnerDialog.setTaskCreators(taskProvider.mountGamesAndStartUiTask);
         sequentialTaskRunnerDialog.showDialog();
     }
 

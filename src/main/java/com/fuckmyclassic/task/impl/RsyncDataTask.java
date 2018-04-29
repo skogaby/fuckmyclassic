@@ -1,5 +1,7 @@
 package com.fuckmyclassic.task.impl;
 
+import com.fuckmyclassic.rsync.RsyncCompletionCallback;
+import com.fuckmyclassic.rsync.RsyncOutputCallback;
 import com.fuckmyclassic.rsync.RsyncOutputProcessor;
 import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.github.fracpete.processoutput4j.output.StreamingProcessOutput;
@@ -34,6 +36,12 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
     private String source;
     /** The destination path to sync to */
     private String destination;
+    /** Callback for the stdout of the rsync process */
+    private RsyncOutputCallback stdoutCallback;
+    /** Callback for the stderr of the rsync process */
+    private RsyncOutputCallback stderrCallback;
+    /** Callback for rsync process completion */
+    private RsyncCompletionCallback rsyncCompletionCallback;
 
     @Autowired
     public RsyncDataTask(final ResourceBundle resourceBundle) {
@@ -69,14 +77,13 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
                 final RsyncOutputProcessor rsyncOutputProcessor = new RsyncOutputProcessor();
                 final StreamingProcessOutput processOutput = new StreamingProcessOutput(rsyncOutputProcessor);
 
-                // TODO: handle this output properly so we can advance the progress bar and message appropriately
-                rsyncOutputProcessor.setStdoutCallback(output -> {
-                    LOG.info(output);
-                });
+                if (stdoutCallback != null) {
+                    rsyncOutputProcessor.setStdoutCallback(stdoutCallback);
+                }
 
-                rsyncOutputProcessor.setStderrCallback(output -> {
-                    LOG.error(output);
-                });
+                if (stderrCallback != null) {
+                    rsyncOutputProcessor.setStderrCallback(stderrCallback);
+                }
 
                 // perform the actual sync
                 processOutput.monitor(rSync.builder());
@@ -84,6 +91,10 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
                 LOG.info(String.format("Done syncing data from %s to %s", source, destination));
                 updateMessage(COMPLETE_MESSAGE_KEY);
                 updateProgress(100, 100);
+
+                if (rsyncCompletionCallback != null) {
+                    rsyncCompletionCallback.call();
+                }
 
                 return null;
             }
@@ -105,6 +116,33 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
 
     public RsyncDataTask setDestination(String destination) {
         this.destination = destination;
+        return this;
+    }
+
+    public RsyncOutputCallback getStdoutCallback() {
+        return stdoutCallback;
+    }
+
+    public RsyncDataTask setStdoutCallback(RsyncOutputCallback stdoutCallback) {
+        this.stdoutCallback = stdoutCallback;
+        return this;
+    }
+
+    public RsyncOutputCallback getStderrCallback() {
+        return stderrCallback;
+    }
+
+    public RsyncDataTask setStderrCallback(RsyncOutputCallback stderrCallback) {
+        this.stderrCallback = stderrCallback;
+        return this;
+    }
+
+    public RsyncCompletionCallback getRsyncCompletionCallback() {
+        return rsyncCompletionCallback;
+    }
+
+    public RsyncDataTask setRsyncCompletionCallback(RsyncCompletionCallback rsyncCompletionCallback) {
+        this.rsyncCompletionCallback = rsyncCompletionCallback;
         return this;
     }
 }
