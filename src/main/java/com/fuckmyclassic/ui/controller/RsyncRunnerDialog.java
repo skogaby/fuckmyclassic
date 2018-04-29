@@ -23,7 +23,6 @@ import java.util.ResourceBundle;
 public class RsyncRunnerDialog {
 
     private final String IN_PROGRESS_MESSAGE_KEY = "RsyncDataTask.inProgressMessage";
-    private final String COMPLETE_MESSAGE_KEY = "RsyncDataTask.completeMessage";
 
     static Logger LOG = LogManager.getLogger(RsyncRunnerDialog.class.getName());
 
@@ -64,17 +63,21 @@ public class RsyncRunnerDialog {
         rsyncDataTask.setStdoutCallback(output -> {
             LOG.info(output);
 
-            /*if (output.contains("CLV-")) {
+            if (output.contains("CLV-")) {
                 Platform.runLater(() -> lblSubTaskMessage.setText(output));
-            } else if (output.contains("to-check")) {
-                final String index = output.split("\\s+")[5].split("=")[1];
+            }
+
+            if (output.contains("to-check")) {
+                final String index = output.trim().split("\\s+")[5].split("=")[1];
                 final int first = Integer.parseInt(index.split("/")[0]);
-                final int second = Integer.parseInt(index.split("/")[1]);
+                final int second = Integer.parseInt(index.split("/")[1].split("\\)")[0]);
                 Platform.runLater(() -> prgMainTaskProgress.setProgress(((double) second - first) / second));
-            } else if (output.contains("%")) {
-                int percentage = Integer.parseInt(output.split("\\s+")[1].split("%")[0]);
+            }
+
+            if (output.contains("%")) {
+                int percentage = Integer.parseInt(output.trim().split("\\s+")[1].split("%")[0]);
                 Platform.runLater(() -> prgSubTaskProgress.setProgress(((double) percentage) / 100));
-            }*/
+            }
         });
 
         final Task<Void> task = rsyncDataTask.createTask();
