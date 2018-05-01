@@ -6,7 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.swing.filechooser.FileSystemView;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
@@ -52,6 +57,9 @@ public class PathConfiguration {
     /** Name of the flag file to designate the program is in nonportable mode */
     public static final String NONPORTABLE_FLAG = "nonportable.flag";
 
+    /** Name of the flag file to designate the temp folder, if the user wants the location specified */
+    public static final String TEMP_FOLDER_FLAG = "tempfolder.flag";
+
     //////////////////////////////////////////////////////////////////////////
     // Non-static members
     //////////////////////////////////////////////////////////////////////////
@@ -75,7 +83,7 @@ public class PathConfiguration {
     private final String tempDirectory;
 
     @Autowired
-    public PathConfiguration() {
+    public PathConfiguration() throws IOException {
         // really ugly hack to make sure we get the path of the program itself, and not the path
         // of wherever the process was invoked from. we want it to always go to the installation
         // directory
@@ -95,11 +103,11 @@ public class PathConfiguration {
         // setup the portable/non-portable dependent paths
         this.gamesDirectory = Paths.get(this.externalDirectory, GAMES_DIRECTORY).toString();
         this.boxartDirectory = Paths.get(this.externalDirectory, BOXART_DIRECTORY).toString();
-        this.tempDirectory = Paths.get(this.externalDirectory, TEMP_DIRECTORY).toString();
 
-        // Uncomment the below line to use the system temp directory instead of a local one. I'm using a local
-        // one right now for debugging, but it should use the system path for release
-        // this.tempDirectory = Paths.get(System.getProperty("java.io.tmpdir"), APP_NAME).toString();
+        final File tempFolderFlag = new File(Paths.get(programDirectory, TEMP_FOLDER_FLAG).toString());
+        this.tempDirectory = tempFolderFlag.exists() ?
+                new BufferedReader(new FileReader(tempFolderFlag)).readLine().trim() :
+                Paths.get(System.getProperty("java.io.tmpdir"), SharedConstants.APP_NAME).toString();
     }
 
     public boolean isPortable() {
