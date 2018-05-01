@@ -5,6 +5,7 @@ import com.fuckmyclassic.shared.SharedConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.nio.file.Paths;
 
@@ -85,10 +86,11 @@ public class PathConfiguration {
         final File nonportableFlag = new File(Paths.get(programDirectory, NONPORTABLE_FLAG).toString());
         this.portable = nonportableFlag.exists() ? false : true;
 
-        // the external directory is either the user's home directory (nonportable mode) or
+        // the external directory is either the user's home/documents directory (nonportable mode) or
         // the installation directory (portable mode)
         this.externalDirectory = portable ? programDirectory :
-                Paths.get(System.getProperty("user.home"), SharedConstants.APP_NAME).toString();
+                Paths.get(FileSystemView.getFileSystemView().getDefaultDirectory().getPath(),
+                        SharedConstants.APP_NAME).toString();
 
         // setup the portable/non-portable dependent paths
         this.gamesDirectory = Paths.get(this.externalDirectory, GAMES_DIRECTORY).toString();
