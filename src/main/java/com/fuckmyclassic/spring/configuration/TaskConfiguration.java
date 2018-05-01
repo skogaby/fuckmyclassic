@@ -14,6 +14,7 @@ import com.fuckmyclassic.task.impl.ShowSplashScreenAndStopUiTask;
 import com.fuckmyclassic.task.impl.UnmountGamesTask;
 import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
 import com.fuckmyclassic.userconfig.ConsoleConfiguration;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -62,8 +63,8 @@ public class TaskConfiguration {
     }
 
     @Bean
-    public CreateTempDataTask createTempDataTask(LibraryManager libraryManager, ResourceBundle resourceBundle) {
-        return new CreateTempDataTask(libraryManager, resourceBundle);
+    public CreateTempDataTask createTempDataTask(LibraryManager libraryManager, ResourceBundle resourceBundle, PathConfiguration pathConfiguration) {
+        return new CreateTempDataTask(libraryManager, resourceBundle, pathConfiguration);
     }
 
     @Bean

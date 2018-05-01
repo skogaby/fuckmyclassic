@@ -13,6 +13,7 @@ import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.ConsoleConfiguration;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyProperty;
@@ -92,6 +93,8 @@ public class MainWindow {
     private final UserConfiguration userConfiguration;
     /** Configuration about the connected console */
     private final ConsoleConfiguration consoleConfiguration;
+    /** Path configuration for runtime operations */
+    private final PathConfiguration pathConfiguration;
     /** Helper instance for membooting consoles */
     private final MembootHelper membootHelper;
     /** Helper instance for kernel flashing operations */
@@ -117,6 +120,7 @@ public class MainWindow {
     @Autowired
     public MainWindow(final UserConfiguration userConfiguration,
                       final ConsoleConfiguration consoleConfiguration,
+                      final PathConfiguration pathConfiguration,
                       final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher,
                       final LibraryManager libraryManager,
@@ -128,6 +132,7 @@ public class MainWindow {
                       final UiPropertyContainer uiPropertyContainer) {
         this.userConfiguration = userConfiguration;
         this.consoleConfiguration = consoleConfiguration;
+        this.pathConfiguration = pathConfiguration;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
@@ -302,7 +307,7 @@ public class MainWindow {
 
         // setup the temp data task
         final String syncPath = String.format("%s/%s/%s", this.consoleConfiguration.getSystemSyncPath(),
-                this.consoleConfiguration.getSystemType(), SharedConstants.CONSOLE_STORAGE_DIR);
+                this.consoleConfiguration.getSystemType(), PathConfiguration.CONSOLE_STORAGE_DIR);
         this.taskProvider.createTempDataTask.setSyncPath(syncPath);
 
         // run the pre-sync tasks
@@ -312,7 +317,7 @@ public class MainWindow {
         sequentialTaskRunnerDialog.showDialog();
 
         // setup the rsync task
-        rsyncRunnerDialog.setSource(Paths.get(SharedConstants.TEMP_DIRECTORY).toString() + "/");
+        rsyncRunnerDialog.setSource(this.pathConfiguration.getTempDirectory() + "/");
         rsyncRunnerDialog.setDestination(String.format(
                 "%s@%s:%s/%s/", NetworkConstants.USER_NAME, NetworkConstants.CONSOLE_IP,
                 consoleConfiguration.getSystemSyncPath(), consoleConfiguration.getSystemType()));

@@ -5,8 +5,8 @@ import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAOImpl;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.hibernate.dao.impl.LibraryDAOImpl;
-import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +17,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import java.nio.file.Paths;
 import java.util.Properties;
 
 /**
@@ -29,11 +30,11 @@ import java.util.Properties;
 @EnableTransactionManagement
 public class HibernateConfiguration {
 
+    /** The name of the sqlite database file */
+    private static final String SQLITE_DATABASE = "fuckmyclassic.sqlite";
+
     @Value("${jdbc.driverClassName}")
     private String driverClassName;
-
-    @Value("${jdbc.url}")
-    private String url;
 
     @Value("${jdbc.username}")
     private String username;
@@ -71,12 +72,16 @@ public class HibernateConfiguration {
     }
 
     @Bean
-    public DriverManagerDataSource dataSource() {
+    public DriverManagerDataSource dataSource(PathConfiguration pathConfiguration) {
         final DriverManagerDataSource source = new DriverManagerDataSource();
         source.setDriverClassName(this.driverClassName);
-        source.setUrl(this.url);
         source.setUsername(this.username);
         source.setPassword(this.password);
+
+        // locate the database in the user directory, and replace backslashes with forward slashes so it works on
+        // Windows correctly, per sqlite-jdbc's spec
+        source.setUrl(String.format("jdbc:sqlite:%s",
+                Paths.get(pathConfiguration.getExternalDirectory(), SQLITE_DATABASE).toString().replace('\\', '/')));
 
         return source;
     }

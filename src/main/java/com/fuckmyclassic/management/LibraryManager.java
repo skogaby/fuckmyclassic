@@ -11,6 +11,7 @@ import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.component.ApplicationTreeCell;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
@@ -44,6 +45,8 @@ public class LibraryManager {
 
     /** User configuration object. */
     private final UserConfiguration userConfiguration;
+    /** Path configuration for runtime operations */
+    private final PathConfiguration pathConfiguration;
     /** Manager for interacting with the Hibernate session */
     private final HibernateManager hibernateManager;
     /** DAO for library metadata */
@@ -60,9 +63,10 @@ public class LibraryManager {
     private final UiPropertyContainer uiPropertyContainer;
 
     @Autowired
-    public LibraryManager(final UserConfiguration userConfiguration, final HibernateManager hibernateManager,
+    public LibraryManager(final UserConfiguration userConfiguration, final PathConfiguration pathConfiguration, final HibernateManager hibernateManager,
                           final LibraryDAO libraryDAO, final ImageResizer imageResizer, final UiPropertyContainer uiPropertyContainer) {
         this.userConfiguration = userConfiguration;
+        this.pathConfiguration = pathConfiguration;
         this.hibernateManager = hibernateManager;
         this.libraryDAO = libraryDAO;
         this.imageResizer = imageResizer;
@@ -112,7 +116,7 @@ public class LibraryManager {
 
         // initialize the cell factory so we can control theming, drag and drop, etc.
         mainWindow.treeViewGames.setCellFactory(param ->
-                new ApplicationTreeCell(new AppImporter(this.hibernateManager, this, this.uiPropertyContainer)));
+                new ApplicationTreeCell(new AppImporter(this.hibernateManager, this, this.uiPropertyContainer, this.pathConfiguration)));
 
         // whenever an item is selected, we'll bind the data to the UI and save whatever app
         // was being viewed previously to the database
@@ -146,13 +150,13 @@ public class LibraryManager {
             if (!StringUtils.isEmpty(app.getBoxArtPath())) {
                 try {
                     mainWindow.imgBoxArtPreview.setImage(new Image(
-                            Paths.get(SharedConstants.BOXART_DIRECTORY, app.getBoxArtPath()).toUri().toURL().toExternalForm()));
+                            Paths.get(pathConfiguration.getBoxartDirectory(), app.getBoxArtPath()).toUri().toURL().toExternalForm()));
                 } catch (MalformedURLException e) {
                     LOG.error(e);
                 }
             } else {
                 mainWindow.imgBoxArtPreview.setImage(new Image(Paths.get(
-                        SharedConstants.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString()));
+                        PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString()));
             }
 
             // persist the item to the database and refresh the application view
@@ -186,20 +190,20 @@ public class LibraryManager {
             BufferedImage inputImage = ImageIO.read(boxArt);
             BufferedImage resizedImage = this.imageResizer.resizeProportionally(inputImage,
                     SharedConstants.BOXART_SIZE, SharedConstants.BOXART_SIZE);
-            File outputFile = new File(Paths.get(SharedConstants.BOXART_DIRECTORY, newBoxartFile).toUri());
+            File outputFile = new File(Paths.get(this.pathConfiguration.getBoxartDirectory(), newBoxartFile).toUri());
             ImageIO.write(resizedImage, "png", outputFile);
 
             // now, do the thumbnail
             resizedImage = this.imageResizer.resizeProportionally(inputImage,
                     SharedConstants.THUMBNAIL_SIZE, SharedConstants.THUMBNAIL_SIZE);
-            outputFile = new File(Paths.get(SharedConstants.BOXART_DIRECTORY, newThumbnailFile).toUri());
+            outputFile = new File(Paths.get(this.pathConfiguration.getBoxartDirectory(), newThumbnailFile).toUri());
             ImageIO.write(resizedImage, "png", outputFile);
 
             // also update the Application itself
             this.currentApp.setBoxArtPath(newBoxartFile);
             this.hibernateManager.updateEntity(currentApp);
 
-            return new Image(Paths.get(SharedConstants.BOXART_DIRECTORY, newBoxartFile).toUri().toURL().toExternalForm());
+            return new Image(Paths.get(this.pathConfiguration.getBoxartDirectory(), newBoxartFile).toUri().toURL().toExternalForm());
         } else {
             return null;
         }

@@ -1,6 +1,6 @@
 package com.fuckmyclassic.model;
 
-import com.fuckmyclassic.shared.SharedConstants;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
@@ -159,11 +159,11 @@ public class Application implements Externalizable {
     @Transient
     public String getDesktopFile(final String gameStoragePath) {
         String execLine = StringUtils.isBlank(getCommandLine()) ? "" : getCommandLine();
-        String iconPath = String.format("%s/%s/%s.png", SharedConstants.CONSOLE_GAMES_DIR, getApplicationId(), getApplicationId());
+        String iconPath = String.format("%s/%s/%s.png", PathConfiguration.CONSOLE_GAMES_DIR, getApplicationId(), getApplicationId());
 
         if (!StringUtils.isBlank(gameStoragePath)) {
-            execLine = execLine.replace(SharedConstants.CONSOLE_GAMES_DIR, gameStoragePath);
-            iconPath = iconPath.replace(SharedConstants.CONSOLE_GAMES_DIR, gameStoragePath);
+            execLine = execLine.replace(PathConfiguration.CONSOLE_GAMES_DIR, gameStoragePath);
+            iconPath = iconPath.replace(PathConfiguration.CONSOLE_GAMES_DIR, gameStoragePath);
         }
 
         // TODO: make this a little more robust and handle the SNES-specific fields correctly,
@@ -172,7 +172,7 @@ public class Application implements Externalizable {
         sb.append("[Desktop Entry]\n");
         sb.append("Type=Application\n");
         sb.append(String.format("Exec=%s\n", execLine));
-        sb.append(String.format("Path=%s//%s\n", SharedConstants.CONSOLE_SAVES_DIR, getApplicationId()));
+        sb.append(String.format("Path=%s//%s\n", PathConfiguration.CONSOLE_SAVES_DIR, getApplicationId()));
         sb.append(String.format("Name=%s\n", getApplicationName()));
         sb.append(String.format("Icon=%s\n\n", iconPath));
         sb.append(String.format("[X-CLOVER Game]\n"));

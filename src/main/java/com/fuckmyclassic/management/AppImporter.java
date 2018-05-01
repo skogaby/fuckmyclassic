@@ -7,6 +7,7 @@ import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import javafx.scene.control.CheckBoxTreeItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,13 +36,17 @@ public class AppImporter {
     private final LibraryManager libraryManager;
     /** Container for UI properties we need to update */
     private final UiPropertyContainer uiPropertyContainer;
+    /** Paths for runtime operations */
+    private final PathConfiguration pathConfiguration;
 
     public AppImporter(final HibernateManager hibernateManager,
                        final LibraryManager libraryManager,
-                       final UiPropertyContainer uiPropertyContainer) {
+                       final UiPropertyContainer uiPropertyContainer,
+                       final PathConfiguration pathConfiguration) {
         this.hibernateManager = hibernateManager;
         this.libraryManager = libraryManager;
         this.uiPropertyContainer = uiPropertyContainer;
+        this.pathConfiguration = pathConfiguration;
     }
 
     /**
@@ -102,7 +107,7 @@ public class AppImporter {
 
         // then, create the directory if it doesn't exist and copy the files
         final File targetGameDirectory = new File(Paths.get(
-                SharedConstants.GAMES_DIRECTORY, newAppId).toUri());
+                this.pathConfiguration.getGamesDirectory(), newAppId).toUri());
         targetGameDirectory.mkdirs();
         long applicationSize = 0;
 

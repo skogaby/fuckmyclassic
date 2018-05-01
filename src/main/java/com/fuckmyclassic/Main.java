@@ -4,6 +4,7 @@ import com.fuckmyclassic.network.NetworkConnection;
 import com.fuckmyclassic.network.SshConnectionListener;
 import com.fuckmyclassic.spring.configuration.ApplicationConfiguration;
 import com.fuckmyclassic.shared.SharedConstants;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -31,15 +32,16 @@ public class Main extends Application {
     /**
      * Spring context that we can load beans from manually.
      */
-    private AnnotationConfigApplicationContext applicationContext;
+    private static AnnotationConfigApplicationContext applicationContext;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        applicationContext = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
+
         // do a little pre-setup
         setupRuntimeDirectories();
 
         // load the controller and show the window
-        applicationContext = new AnnotationConfigApplicationContext(ApplicationConfiguration.class);
         ResourceBundle resources = ResourceBundle.getBundle("i18n/MainWindow");
         FXMLLoader loader = new FXMLLoader(Main.class.getClassLoader().getResource("fxml/MainWindow.fxml"), resources);
         loader.setControllerFactory(applicationContext::getBean);
@@ -98,24 +100,25 @@ public class Main extends Application {
      */
     public static void setupRuntimeDirectories() throws URISyntaxException, IOException {
         // create the directories
-        final File gamesDir = new File(SharedConstants.GAMES_DIRECTORY);
-        final File boxartDir = new File(SharedConstants.BOXART_DIRECTORY);
+        final PathConfiguration pathConfiguration = applicationContext.getBean(PathConfiguration.class);
+        final File gamesDir = new File(pathConfiguration.getGamesDirectory());
+        final File boxartDir = new File(pathConfiguration.getBoxartDirectory());
         gamesDir.mkdirs();
         boxartDir.mkdirs();
 
         // prepopulate static assets
         URL warningResource = ClassLoader.getSystemResource(
-                Paths.get(SharedConstants.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString());
+                Paths.get(PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString());
         Files.copy(
                 Paths.get(warningResource.toURI()).toFile().toPath(),
-                Paths.get(SharedConstants.BOXART_DIRECTORY, SharedConstants.WARNING_IMAGE),
+                Paths.get(pathConfiguration.getBoxartDirectory(), SharedConstants.WARNING_IMAGE),
                 StandardCopyOption.REPLACE_EXISTING);
 
         warningResource = ClassLoader.getSystemResource(
-                Paths.get(SharedConstants.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL).toString());
+                Paths.get(PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL).toString());
         Files.copy(
                 Paths.get(warningResource.toURI()).toFile().toPath(),
-                Paths.get(SharedConstants.BOXART_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL),
+                Paths.get(pathConfiguration.getBoxartDirectory(), SharedConstants.WARNING_IMAGE_THUMBNAIL),
                 StandardCopyOption.REPLACE_EXISTING);
     }
 

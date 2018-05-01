@@ -72,7 +72,8 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
                         .humanReadable(true)
                         .owner(false)
                         .group(false)
-                        .recursive(true);
+                        .recursive(true)
+                        .rsh("ssh -o StrictHostKeyChecking=no");
 
                 final RsyncOutputProcessor rsyncOutputProcessor = new RsyncOutputProcessor();
                 final StreamingProcessOutput processOutput = new StreamingProcessOutput(rsyncOutputProcessor);

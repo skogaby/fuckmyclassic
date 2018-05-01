@@ -1,7 +1,6 @@
 package com.fuckmyclassic.task.impl;
 
 import com.fuckmyclassic.network.NetworkConnection;
-import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.jcraft.jsch.JSchException;
 import javafx.concurrent.Task;
@@ -21,12 +20,15 @@ import java.util.ResourceBundle;
  */
 public class ShowSplashScreenAndStopUiTask extends AbstractTaskCreator<Void> {
 
-    private final String SPLASH_SCREEN_PATH = Paths.get(ClassLoader.getSystemResource(SharedConstants.SPLASH_SCREEN).toURI()).toString();
-
     static Logger LOG = LogManager.getLogger(ShowSplashScreenAndStopUiTask.class.getName());
 
     private final String IN_PROGRESS_MESSAGE_KEY = "ShowSplashScreenTask.inProgressMessage";
     private final String COMPLETE_MESSAGE_KEY = "ShowSplashScreenTask.completeMessage";
+
+    /** The name of the splash screen file */
+    public static String SPLASH_SCREEN = "images/splash.gz";
+    /** The actual path of the splash screen file */
+    private final String SPLASH_SCREEN_PATH = Paths.get(ClassLoader.getSystemResource(SPLASH_SCREEN).toURI()).toString();
 
     /** Network connection to the console */
     private final NetworkConnection networkConnection;

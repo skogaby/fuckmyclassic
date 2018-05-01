@@ -6,6 +6,7 @@ import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import javafx.concurrent.Task;
 import javafx.scene.control.TreeItem;
 import org.apache.commons.io.FileUtils;
@@ -43,14 +44,18 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
     private final LibraryManager libraryManager;
     /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
+    /** Configuration for runtime paths */
+    private final PathConfiguration pathConfiguration;
     /** The path to replace the default directory with in the desktop files (for linked sync/export) */
     private String syncPath;
 
     @Autowired
     public CreateTempDataTask(final LibraryManager libraryManager,
-                              final ResourceBundle resourceBundle) {
+                              final ResourceBundle resourceBundle,
+                              final PathConfiguration pathConfiguration) {
         this.libraryManager = libraryManager;
         this.resourceBundle = resourceBundle;
+        this.pathConfiguration = pathConfiguration;
         this.syncPath = null;
     }
 
@@ -65,8 +70,9 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                 updateProgress(0, maxItems);
 
                 // first, create the temp directory or empty it if it exists
-                final String storageDir = Paths.get(SharedConstants.TEMP_DIRECTORY, SharedConstants.CONSOLE_STORAGE_DIR).toString();
-                cleanDirectory(SharedConstants.TEMP_DIRECTORY);
+                final String storageDir = Paths.get(pathConfiguration.getTempDirectory(),
+                        PathConfiguration.CONSOLE_STORAGE_DIR).toString();
+                cleanDirectory(pathConfiguration.getTempDirectory());
                 cleanDirectory(storageDir);
 
                 // traverse the current library tree and create the temp data appropriately
@@ -104,14 +110,14 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                     if (shouldCreateApp) {
                         LOG.debug(String.format("Processing temp data for %s", currentApp.getApplicationName()));
 
-                        originalGamePath = Paths.get(SharedConstants.GAMES_DIRECTORY, currentApp.getApplicationId());
+                        originalGamePath = Paths.get(pathConfiguration.getGamesDirectory(), currentApp.getApplicationId());
 
                         // create the folder in .storage
                         newAppDirectoryStorage = new File(Paths.get(storageDir,
                                 currentApp.getApplicationId()).toUri());
                         newAppDirectoryStorage.mkdirs();
                         // create the folder for this app in the parent folder's directory
-                        newAppDirectoryTemp = new File(Paths.get(SharedConstants.TEMP_DIRECTORY,
+                        newAppDirectoryTemp = new File(Paths.get(pathConfiguration.getTempDirectory(),
                                 currentNode.getParent().getValue().getApplication().getApplicationId(),
                                 currentApp.getApplicationId()).toUri());
                         newAppDirectoryTemp.mkdirs();
@@ -136,42 +142,42 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                         final String thumbnailName = boxartName.replace(".png", "_small.png");
                         final String desiredBoxartName = String.format("%s.png", currentApp.getApplicationId());
                         final String desiredThumbnailName = String.format("%s_small.png", currentApp.getApplicationId());
-                        final File sourceBoxart = Paths.get(SharedConstants.BOXART_DIRECTORY, boxartName)
+                        final File sourceBoxart = Paths.get(pathConfiguration.getBoxartDirectory(), boxartName)
                                 .toAbsolutePath().toFile();
-                        final File sourceThumbnail = Paths.get(SharedConstants.BOXART_DIRECTORY, thumbnailName)
+                        final File sourceThumbnail = Paths.get(pathConfiguration.getBoxartDirectory(), thumbnailName)
                                 .toAbsolutePath().toFile();
 
                         // if the boxart for the game isn't set or doesn't exist, just copy the warning image in its place
                         Files.createSymbolicLink(
                                 Paths.get(newAppDirectoryStorage.toString(), desiredBoxartName).toAbsolutePath(),
                                 (!StringUtils.isBlank(boxartName) && sourceBoxart.exists()) ?
-                                        Paths.get(SharedConstants.BOXART_DIRECTORY, boxartName).toAbsolutePath() :
-                                        Paths.get(SharedConstants.BOXART_DIRECTORY, SharedConstants.WARNING_IMAGE).toAbsolutePath());
+                                        Paths.get(pathConfiguration.getBoxartDirectory(), boxartName).toAbsolutePath() :
+                                        Paths.get(pathConfiguration.getBoxartDirectory(), SharedConstants.WARNING_IMAGE).toAbsolutePath());
                         Files.createSymbolicLink(
                                 Paths.get(newAppDirectoryStorage.toString(), desiredThumbnailName).toAbsolutePath(),
                                 (!StringUtils.isBlank(thumbnailName) && sourceThumbnail.exists()) ?
-                                        Paths.get(SharedConstants.BOXART_DIRECTORY, thumbnailName).toAbsolutePath() :
-                                        Paths.get(SharedConstants.BOXART_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL).toAbsolutePath());
+                                        Paths.get(pathConfiguration.getBoxartDirectory(), thumbnailName).toAbsolutePath() :
+                                        Paths.get(pathConfiguration.getBoxartDirectory(), SharedConstants.WARNING_IMAGE_THUMBNAIL).toAbsolutePath());
 
                         LOG.debug(String.format("Symlinked the boxart for %s", currentApp.getApplicationName()));
 
                         // if they exist in the original game, create a pixelart and autoplay
                         // folder in the temp folder for the game and symlink back to the originals
                         final File srcPixelartFolder = new File(
-                                Paths.get(originalGamePath.toString(), SharedConstants.PIXELART_DIR).toUri());
+                                Paths.get(originalGamePath.toString(), PathConfiguration.PIXELART_DIR).toUri());
                         if (srcPixelartFolder.exists() && srcPixelartFolder.isDirectory()) {
                             final File dstPixelArtFolder = new File(
-                                    Paths.get(newAppDirectoryTemp.toString(), SharedConstants.PIXELART_DIR).toUri());
+                                    Paths.get(newAppDirectoryTemp.toString(), PathConfiguration.PIXELART_DIR).toUri());
                             dstPixelArtFolder.mkdirs();
                             symlinkContentsOfDirectory(srcPixelartFolder.toPath(), dstPixelArtFolder.toPath());
                             LOG.debug(String.format("Symlinked the pixelart data for %s", currentApp.getApplicationName()));
                         }
 
                         final File srcAutoplayFolder = new File(
-                                Paths.get(originalGamePath.toString(), SharedConstants.AUTOPLAY_DIR).toUri());
+                                Paths.get(originalGamePath.toString(), PathConfiguration.AUTOPLAY_DIR).toUri());
                         if (srcAutoplayFolder.exists() && srcAutoplayFolder.isDirectory()) {
                             final File dstAutoplayFolder = new File(
-                                    Paths.get(newAppDirectoryTemp.toString(), SharedConstants.AUTOPLAY_DIR).toUri());
+                                    Paths.get(newAppDirectoryTemp.toString(), PathConfiguration.AUTOPLAY_DIR).toUri());
                             dstAutoplayFolder.mkdirs();
                             symlinkContentsOfDirectory(srcAutoplayFolder.toPath(), dstAutoplayFolder.toPath());
                             LOG.debug(String.format("Symlinked the autoplay data for %s", currentApp.getApplicationName()));
@@ -201,8 +207,8 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
             final File dstFile = new File(Paths.get(dst.toString(), path.getFileName().toString()).toUri());
 
             if (path.toFile().isDirectory()) {
-                if (!path.toFile().getName().equals(SharedConstants.AUTOPLAY_DIR) &&
-                        !path.toFile().getName().equals(SharedConstants.PIXELART_DIR)) {
+                if (!path.toFile().getName().equals(PathConfiguration.AUTOPLAY_DIR) &&
+                        !path.toFile().getName().equals(PathConfiguration.PIXELART_DIR)) {
                     // if it's a folder, create the folder and symlink the contents
                     dstFile.mkdirs();
                     symlinkContentsOfDirectory(path, dstFile.toPath());

@@ -14,6 +14,7 @@ import com.fuckmyclassic.ui.controller.RsyncRunnerDialog;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.ConsoleConfiguration;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -33,9 +34,9 @@ public class ApplicationConfiguration {
     public MainWindow mainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
                                  LibraryManager libraryManager, NetworkConnection networkConnection, ResourceBundle tasksResourceBundle,
                                  RsyncRunnerDialog rsyncRunnerDialog, SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider,
-                                 UiPropertyContainer uiPropertyContainer, ConsoleConfiguration consoleConfiguration) {
-        return new MainWindow(userConfiguration, consoleConfiguration, membootHelper, kernelFlasher, libraryManager, networkConnection, tasksResourceBundle,
-                sequentialTaskRunnerDialog, rsyncRunnerDialog, taskProvider, uiPropertyContainer);
+                                 UiPropertyContainer uiPropertyContainer, ConsoleConfiguration consoleConfiguration, PathConfiguration pathConfiguration) {
+        return new MainWindow(userConfiguration, consoleConfiguration, pathConfiguration, membootHelper, kernelFlasher, libraryManager,
+                networkConnection, tasksResourceBundle, sequentialTaskRunnerDialog, rsyncRunnerDialog, taskProvider, uiPropertyContainer);
     }
 
     @Bean
@@ -48,9 +49,9 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    public LibraryManager libraryManager(UserConfiguration userConfiguration, HibernateManager hibernateManager,
+    public LibraryManager libraryManager(UserConfiguration userConfiguration, PathConfiguration pathConfiguration, HibernateManager hibernateManager,
                                          LibraryDAO libraryDAO, ImageResizer imageResizer, UiPropertyContainer uiPropertyContainer) {
-        return new LibraryManager(userConfiguration, hibernateManager, libraryDAO, imageResizer, uiPropertyContainer);
+        return new LibraryManager(userConfiguration, pathConfiguration, hibernateManager, libraryDAO, imageResizer, uiPropertyContainer);
     }
 
     @Bean
@@ -76,5 +77,10 @@ public class ApplicationConfiguration {
     @Bean
     public UiPropertyContainer uiPropertyContainer() {
         return new UiPropertyContainer();
+    }
+
+    @Bean
+    public PathConfiguration pathConfiguration() {
+        return new PathConfiguration();
     }
 }
