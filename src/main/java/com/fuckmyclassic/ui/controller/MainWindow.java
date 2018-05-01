@@ -317,7 +317,7 @@ public class MainWindow {
         sequentialTaskRunnerDialog.showDialog();
 
         // setup the rsync task
-        rsyncRunnerDialog.setSource(this.pathConfiguration.getTempDirectory() + "/");
+        rsyncRunnerDialog.setSource(this.pathConfiguration.getTempDirectory() + File.separator);
         rsyncRunnerDialog.setDestination(String.format(
                 "%s@%s:%s/%s/", NetworkConstants.USER_NAME, NetworkConstants.CONSOLE_IP,
                 consoleConfiguration.getSystemSyncPath(), consoleConfiguration.getSystemType()));

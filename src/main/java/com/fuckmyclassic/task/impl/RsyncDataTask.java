@@ -7,13 +7,19 @@ import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.github.fracpete.processoutput4j.output.StreamingProcessOutput;
 import com.github.fracpete.rsync4j.RSync;
 import javafx.concurrent.Task;
+import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ResourceBundle;
+
+import static com.github.fracpete.rsync4j.Binaries.WINDOWS_HOME_DIR;
 
 /**
  * Task that will use rsync to sync data from a given source folder
@@ -42,10 +48,28 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
     private RsyncOutputCallback stderrCallback;
     /** Callback for rsync process completion */
     private RsyncCompletionCallback rsyncCompletionCallback;
+    /** Path to the SSH.exe file on Windows */
+    private final String sshExePath;
 
     @Autowired
-    public RsyncDataTask(final ResourceBundle resourceBundle) {
+    public RsyncDataTask(final ResourceBundle resourceBundle) throws IOException {
         this.resourceBundle = resourceBundle;
+
+        // get the ssh.exe path
+        String rsync4jHome = System.getProperty("user.home") + File.separator + "rsync4j";
+
+        if (SystemUtils.IS_OS_WINDOWS) {
+            if (System.getenv(WINDOWS_HOME_DIR) != null) {
+                final File dir = new File(System.getenv(WINDOWS_HOME_DIR));
+
+                if (!dir.exists() || dir.isDirectory()) {
+                    rsync4jHome = dir.getAbsolutePath();
+                }
+            }
+        }
+
+        final File sshExe = new File(Paths.get(rsync4jHome, "bin", "ssh.exe").toString());
+        this.sshExePath = sshExe.getAbsolutePath();
     }
 
     @Override
@@ -72,8 +96,16 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
                         .humanReadable(true)
                         .owner(false)
                         .group(false)
-                        .recursive(true)
-                        .rsh("ssh -o StrictHostKeyChecking=no");
+                        .recursive(true);
+
+                // on Windows, we need to specify the path to the built-in ssh.exe in case
+                // there's something like git installed that's conflicting. on Mac/Linux, use the system
+                // built-in ssh
+                if (!SystemUtils.IS_OS_WINDOWS) {
+                    rSync.rsh("ssh -o StrictHostKeyChecking=no");
+                } else {
+                    rSync.rsh(String.format("%s -o StrictHostKeyChecking=no", sshExePath));
+                }
 
                 final RsyncOutputProcessor rsyncOutputProcessor = new RsyncOutputProcessor();
                 final StreamingProcessOutput processOutput = new StreamingProcessOutput(rsyncOutputProcessor);

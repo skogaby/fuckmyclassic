@@ -14,8 +14,4 @@ public class NetworkConstants {
     public static final int CONSOLE_PORT = 22;
     /** The connection timeout for SSH connections. */
     public static final int CONNECTION_TIMEOUT = 5000;
-    /** The path to the hardcoded SSH private key. */
-    public static final String SSH_PRIVATE_KEY = "networking/sshkey_private";
-    /** The path to the hardcoded SSH private key. */
-    public static final String SSH_PUBLIC_KEY = "networking/sshkey_public";
 }

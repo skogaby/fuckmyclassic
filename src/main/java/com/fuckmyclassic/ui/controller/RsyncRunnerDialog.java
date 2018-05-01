@@ -67,7 +67,8 @@ public class RsyncRunnerDialog {
                 Platform.runLater(() -> lblSubTaskMessage.setText(output));
             }
 
-            if (output.contains("to-check")) {
+            if (output.contains("to-check") ||
+                    output.contains("to-chk")) {
                 final String index = output.trim().split("\\s+")[5].split("=")[1];
                 final int first = Integer.parseInt(index.split("/")[0]);
                 final int second = Integer.parseInt(index.split("/")[1].split("\\)")[0]);
