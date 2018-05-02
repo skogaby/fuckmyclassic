@@ -87,8 +87,10 @@ public class PathConfiguration {
         // really ugly hack to make sure we get the path of the program itself, and not the path
         // of wherever the process was invoked from. we want it to always go to the installation
         // directory
+        // TODO: Test this on Windows. Test from a JAR, rather than from IDE testing. This should be more
+        // robust in the future
         this.programDirectory = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().getPath())
-                .getParentFile().getParentFile().getParentFile().toPath().toAbsolutePath().toString();
+                .getParentFile().getParentFile().getParentFile().getParentFile().toPath().toAbsolutePath().toString();
 
         // portable mode is enabled if there is a portable.flag file in the main program directory
         final File nonportableFlag = new File(Paths.get(programDirectory, NONPORTABLE_FLAG).toString());
