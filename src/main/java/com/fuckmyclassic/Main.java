@@ -11,6 +11,8 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -29,9 +31,9 @@ import java.util.ResourceBundle;
  */
 public class Main extends Application {
 
-    /**
-     * Spring context that we can load beans from manually.
-     */
+    static Logger LOG = LogManager.getLogger(Main.class.getName());
+
+    /** Spring context that we can load beans from manually. */
     private static AnnotationConfigApplicationContext applicationContext;
 
     @Override
@@ -52,6 +54,12 @@ public class Main extends Application {
 
         // fix for the process not fully ending when you click 'X'
         primaryStage.setOnCloseRequest(t -> {
+            try {
+                stop();
+            } catch (IOException e) {
+                LOG.error(e);
+            }
+
             Platform.exit();
             System.exit(0);
         });
