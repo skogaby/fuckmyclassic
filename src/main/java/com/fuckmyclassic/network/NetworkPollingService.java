@@ -8,48 +8,56 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 /**
- * Simple scheduled service to poll the console for a connection and set the
+ * Simple scheduled service to poll the known consoles for a connection and set the
  * connection status appropriately.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
-public class NetworkPollingService extends ScheduledService<Boolean> {
+public class NetworkPollingService extends ScheduledService<Void> {
 
-    private NetworkConnection networkConnection;
-
-    public NetworkConnection getNetworkConnection() {
-        return networkConnection;
-    }
-
-    public NetworkPollingService setNetworkConnection(NetworkConnection networkConnection) {
-        this.networkConnection = networkConnection;
-        return this;
-    }
+    /** Network connection manager so we can connect to consoles */
+    private NetworkManager networkManager;
+    /** The MDNS listener that tells us which IPs to poll for */
+    private MdnsListener mdnsListener;
 
     @Override
-    protected Task<Boolean> createTask() {
-        return new Task<Boolean>() {
+    protected Task<Void> createTask() {
+        return new Task<Void>() {
             @Override
-            protected Boolean call() throws IOException {
+            protected Void call() throws IOException {
                 boolean connected = false;
 
-                if (networkConnection != null) {
-                    if (networkConnection.isConnected()) {
-                        connected = true;
-                    } else {
-                        if (InetAddress.getByName(NetworkConstants.CONSOLE_IP).isReachable(500)) {
-                            try {
-                                networkConnection.connect();
-                                connected = true;
-                            } catch (JSchException e) {
-                                connected = false;
+                if (networkManager != null &&
+                        mdnsListener != null) {
+                    for (String address : mdnsListener.getAdvertisedAddresses()) {
+                        if (networkManager.isConnected(address)) {
+                            connected = true;
+                        } else {
+                            if (InetAddress.getByName(address).isReachable(500)) {
+                                try {
+                                    networkManager.connect(address);
+                                    connected = true;
+                                } catch (JSchException e) {
+                                    connected = false;
+                                }
                             }
                         }
+
+                        networkManager.notifyConnectionHandlers(address, connected);
                     }
                 }
 
-                networkConnection.notifyConnectionHandlers(connected);
-                return connected;
+                return null;
             }
         };
+    }
+
+    public NetworkPollingService setNetworkManager(NetworkManager networkManager) {
+        this.networkManager = networkManager;
+        return this;
+    }
+
+    public NetworkPollingService setMdnsListener(MdnsListener mdnsListener) {
+        this.mdnsListener = mdnsListener;
+        return this;
     }
 }

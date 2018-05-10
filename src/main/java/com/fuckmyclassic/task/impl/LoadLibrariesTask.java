@@ -5,7 +5,6 @@ import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.fuckmyclassic.ui.controller.MainWindow;
-import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -33,10 +32,8 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
     private final String IN_PROGRESS_MESSAGE_KEY = "LoadLibrariesTask.inProgressMessage";
     private final String COMPLETE_MESSAGE_KEY = "LoadLibrariesTask.completeMessage";
 
-    /** Current user configuration*/
+    /** Current user configuration */
     private final UserConfiguration userConfiguration;
-    /** Configuration about the current console  */
-    private final ConsoleConfiguration consoleConfiguration;
     /** DAO for querying for libraries */
     private final LibraryDAO libraryDAO;
     /** Bundle for getting localized strings. */
@@ -45,10 +42,10 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
     private MainWindow mainWindow;
 
     @Autowired
-    public LoadLibrariesTask(final UserConfiguration userConfiguration, final ConsoleConfiguration consoleConfiguration,
-                             final LibraryDAO libraryDAO, final ResourceBundle resourceBundle) {
+    public LoadLibrariesTask(final UserConfiguration userConfiguration,
+                             final LibraryDAO libraryDAO,
+                             final ResourceBundle resourceBundle) {
         this.userConfiguration = userConfiguration;
-        this.consoleConfiguration = consoleConfiguration;
         this.libraryDAO = libraryDAO;
         this.resourceBundle = resourceBundle;
     }
@@ -66,26 +63,26 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
                 updateMessage(resourceBundle.getString(IN_PROGRESS_MESSAGE_KEY));
                 updateProgress(0, 1);
 
-                final String connectedSid = consoleConfiguration.getConnectedConsoleSid();
+                final String connectedSid = userConfiguration.getSelectedConsole().getConsoleSid();
                 LOG.info(String.format("Loading libraries for console %s", connectedSid));
 
                 // first load the libraries and setup the combobox for library selection
-                final List<Library> libraries = libraryDAO.getLibrariesForConsole(connectedSid);
+                final List<Library> libraries = libraryDAO.getOrCreateLibrariesForConsole(connectedSid);
                 final ObservableList<Library> items = FXCollections.observableArrayList(libraries);
                 final Library library;
 
                 // load the last used library, or the first one if there's no config value yet or the new console
                 // is different from the last one
-                if (userConfiguration.getLastLibraryID() == -1L ||
+                if (userConfiguration.getSelectedLibraryID() == -1L ||
                         (!userConfiguration.getLastConsoleSID().equals(SharedConstants.DEFAULT_CONSOLE_SID) &&
                         !userConfiguration.getLastConsoleSID().equals(connectedSid))) {
                     library = items.get(0);
                 } else {
-                    library = items.stream().filter(l -> l.getId() == userConfiguration.getLastLibraryID())
+                    library = items.stream().filter(l -> l.getId() == userConfiguration.getSelectedLibraryID())
                             .collect(Collectors.toList()).get(0);
                 }
 
-                userConfiguration.setLastLibraryID(library.getId());
+                userConfiguration.setSelectedLibraryID(library.getId());
                 userConfiguration.setLastConsoleSID(connectedSid);
 
                 Platform.runLater(() -> {

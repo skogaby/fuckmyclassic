@@ -1,7 +1,8 @@
 package com.fuckmyclassic.task.impl;
 
-import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.task.AbstractTaskCreator;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import com.jcraft.jsch.JSchException;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
@@ -22,15 +23,20 @@ public class UnmountGamesTask extends AbstractTaskCreator<Void> {
     private final String IN_PROGRESS_MESSAGE_KEY = "UnmountGamesTask.inProgressMessage";
     private final String COMPLETE_MESSAGE_KEY = "UnmountGamesTask.completeMessage";
 
-    /** Network connection to the console */
-    private final NetworkConnection networkConnection;
+
+    /** Network manager, to send commands to consoles */
+    private final NetworkManager networkManager;
+    /** User configuration for the current session */
+    private final UserConfiguration userConfiguration;
     /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
 
     @Autowired
-    public UnmountGamesTask(final NetworkConnection networkConnection,
+    public UnmountGamesTask(final NetworkManager networkManager,
+                            final UserConfiguration userConfiguration,
                             final ResourceBundle resourceBundle) {
-        this.networkConnection = networkConnection;
+        this.networkManager = networkManager;
+        this.userConfiguration = userConfiguration;
         this.resourceBundle = resourceBundle;
     }
 
@@ -42,8 +48,9 @@ public class UnmountGamesTask extends AbstractTaskCreator<Void> {
                 updateMessage(resourceBundle.getString(IN_PROGRESS_MESSAGE_KEY));
                 updateProgress(0, 1);
 
-                LOG.info("Unmounting the games directory");
-                networkConnection.runCommand("hakchi eval 'umount \"$gamepath\"'");
+                LOG.info(String.format("Unmounting the games directory on \"%s\"", userConfiguration.getSelectedConsole().getNickname()));
+                networkManager.runCommand(userConfiguration.getSelectedConsole().getLastKnownAddress(),
+                        "hakchi eval 'umount \"$gamepath\"'");
                 LOG.info("Done unmounting the games directory");
 
                 updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));

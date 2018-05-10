@@ -29,9 +29,9 @@ public class UiPropertyContainer {
     public static final String CONNECTED_CIRCLE_COLOR = "LIMEGREEN";
 
     /** A property that exposes whether the console is connected */
-    public final BooleanProperty disconnected;
+    public final BooleanProperty selectedConsoleDisconnected;
     /** A property that displays the localized connection status */
-    public final StringProperty connectionStatus;
+    public final StringProperty selectedConsoleConnectionStatus;
     /** A property that displays the color representing the connection status */
     public final ObjectProperty<Paint> connectionStatusColor;
     /** A property to display how many games are currently selected */
@@ -40,8 +40,8 @@ public class UiPropertyContainer {
     @Autowired
     public UiPropertyContainer() {
         final ResourceBundle resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
-        this.disconnected = new SimpleBooleanProperty(true);
-        this.connectionStatus = new SimpleStringProperty(resourceBundle.getString(DISCONNECTED_STATUS_KEY));
+        this.selectedConsoleDisconnected = new SimpleBooleanProperty(true);
+        this.selectedConsoleConnectionStatus = new SimpleStringProperty(resourceBundle.getString(DISCONNECTED_STATUS_KEY));
         this.connectionStatusColor = new SimpleObjectProperty<>(Paint.valueOf(DISCONNECTED_CIRCLE_COLOR));
         this.numSelected = new SimpleLongProperty(0);
     }

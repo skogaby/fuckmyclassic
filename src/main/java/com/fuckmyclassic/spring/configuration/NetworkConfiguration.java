@@ -1,16 +1,20 @@
 package com.fuckmyclassic.spring.configuration;
 
-import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
+import com.fuckmyclassic.network.MdnsListener;
+import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.network.SshConnectionListener;
 import com.fuckmyclassic.network.SshConnectionListenerImpl;
 import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import com.jcraft.jsch.JSch;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.IOException;
 import java.util.ResourceBundle;
 
 /**
@@ -27,13 +31,19 @@ public class NetworkConfiguration {
     }
 
     @Bean
-    public NetworkConnection networkConnection(JSch jSch, UiPropertyContainer uiPropertyContainer) {
-        return new NetworkConnection(jSch, uiPropertyContainer);
+    public NetworkManager networkConnection(JSch jSch, MdnsListener mdnsListener, UiPropertyContainer uiPropertyContainer) {
+        return new NetworkManager(jSch, mdnsListener, uiPropertyContainer);
     }
 
     @Bean
     public SshConnectionListener sshConnectionListener(ResourceBundle resourceBundle, SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
-                                                       TaskProvider taskProvider) {
-        return new SshConnectionListenerImpl(resourceBundle, sequentialTaskRunnerDialog, taskProvider);
+                                                       TaskProvider taskProvider, ConsoleDAO consoleDAO, UserConfiguration userConfiguration,
+                                                       NetworkManager networkManager) {
+        return new SshConnectionListenerImpl(resourceBundle, sequentialTaskRunnerDialog, taskProvider, consoleDAO, userConfiguration, networkManager);
+    }
+
+    @Bean
+    public MdnsListener mdnsListener() throws IOException {
+        return new MdnsListener();
     }
 }

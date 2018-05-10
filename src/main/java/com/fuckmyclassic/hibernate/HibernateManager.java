@@ -51,7 +51,7 @@ public class HibernateManager {
      * @param entity
      */
     public void saveEntity(final Object entity) {
-        performMutation(entity, x -> this.hibernateSession.persist(x));
+        performMutation(entity, x -> this.hibernateSession.saveOrUpdate(x));
     }
 
     /**
@@ -59,7 +59,7 @@ public class HibernateManager {
      * @param entity
      */
     public void updateEntity(final Object entity) {
-        performMutation(entity, x -> this.hibernateSession.merge(x));
+        performMutation(entity, x -> this.hibernateSession.saveOrUpdate(x));
     }
 
     /**
@@ -67,6 +67,6 @@ public class HibernateManager {
      * @param entity
      */
     public void deleteEntity(final Object entity) {
-        performMutation(entity, x -> this.hibernateSession.remove(x));
+        performMutation(entity, x -> this.hibernateSession.delete(x));
     }
 }

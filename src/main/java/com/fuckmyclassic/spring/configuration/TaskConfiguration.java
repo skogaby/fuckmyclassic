@@ -1,9 +1,10 @@
 package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.hibernate.HibernateManager;
+import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.management.LibraryManager;
-import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.task.impl.CreateTempDataTask;
 import com.fuckmyclassic.task.impl.GetConsoleIdsAndPathsTask;
@@ -13,7 +14,6 @@ import com.fuckmyclassic.task.impl.RsyncDataTask;
 import com.fuckmyclassic.task.impl.ShowSplashScreenAndStopUiTask;
 import com.fuckmyclassic.task.impl.UnmountGamesTask;
 import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
-import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -43,24 +43,24 @@ public class TaskConfiguration {
     }
 
     @Bean
-    public GetConsoleIdsAndPathsTask getConsoleIdsAndPathsTask(ResourceBundle resourceBundle, NetworkConnection networkConnection,
-                                                          ConsoleConfiguration consoleConfiguration) {
-        return new GetConsoleIdsAndPathsTask(resourceBundle, networkConnection, consoleConfiguration);
+    public GetConsoleIdsAndPathsTask getConsoleIdsAndPathsTask(ResourceBundle resourceBundle, NetworkManager networkManager,
+                                                               UserConfiguration userConfiguration, ConsoleDAO consoleDAO,
+                                                               HibernateManager hibernateManager) {
+        return new GetConsoleIdsAndPathsTask(resourceBundle, networkManager, userConfiguration, consoleDAO, hibernateManager);
     }
 
     @Bean
     public UpdateUnknownLibrariesTask updateUnknownLibrariesTask(UserConfiguration userConfiguration,
-                                                                 ConsoleConfiguration consoleConfiguration,
                                                                  HibernateManager hibernateManager,
                                                                  LibraryDAO libraryDAO,
                                                                  ResourceBundle resourceBundle) {
-        return new UpdateUnknownLibrariesTask(userConfiguration, consoleConfiguration, hibernateManager, libraryDAO, resourceBundle);
+        return new UpdateUnknownLibrariesTask(userConfiguration, hibernateManager, libraryDAO, resourceBundle);
     }
 
     @Bean
-    public LoadLibrariesTask loadLibrariesTask(UserConfiguration userConfiguration, ConsoleConfiguration consoleConfiguration,
-                                               LibraryDAO libraryDAO, ResourceBundle resourceBundle) {
-        return new LoadLibrariesTask(userConfiguration, consoleConfiguration, libraryDAO, resourceBundle);
+    public LoadLibrariesTask loadLibrariesTask(UserConfiguration userConfiguration, LibraryDAO libraryDAO,
+                                               ResourceBundle resourceBundle) {
+        return new LoadLibrariesTask(userConfiguration, libraryDAO, resourceBundle);
     }
 
     @Bean
@@ -74,18 +74,21 @@ public class TaskConfiguration {
     }
 
     @Bean
-    public ShowSplashScreenAndStopUiTask showSplashScreenTask(NetworkConnection networkConnection, ResourceBundle resourceBundle)
+    public ShowSplashScreenAndStopUiTask showSplashScreenTask(NetworkManager networkManager, UserConfiguration userConfiguration,
+                                                              ResourceBundle resourceBundle)
             throws URISyntaxException {
-        return new ShowSplashScreenAndStopUiTask(networkConnection, resourceBundle);
+        return new ShowSplashScreenAndStopUiTask(networkManager, userConfiguration, resourceBundle);
     }
 
     @Bean
-    public UnmountGamesTask unmountGamesTask(NetworkConnection networkConnection, ResourceBundle resourceBundle) {
-        return new UnmountGamesTask(networkConnection, resourceBundle);
+    public UnmountGamesTask unmountGamesTask(NetworkManager networkManager, UserConfiguration userConfiguration,
+                                             ResourceBundle resourceBundle) {
+        return new UnmountGamesTask(networkManager, userConfiguration, resourceBundle);
     }
 
     @Bean
-    public MountGamesAndStartUiTask mountGamesAndStartUiTask(NetworkConnection networkConnection, ResourceBundle resourceBundle) {
-        return new MountGamesAndStartUiTask(networkConnection, resourceBundle);
+    public MountGamesAndStartUiTask mountGamesAndStartUiTask(NetworkManager networkManager, UserConfiguration userConfiguration,
+                                                             ResourceBundle resourceBundle) {
+        return new MountGamesAndStartUiTask(networkManager, userConfiguration, resourceBundle);
     }
 }

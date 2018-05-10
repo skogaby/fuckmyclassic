@@ -1,9 +1,11 @@
 package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
+import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
 import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAOImpl;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAOImpl;
 import com.fuckmyclassic.hibernate.dao.impl.LibraryDAOImpl;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
@@ -92,13 +94,18 @@ public class HibernateConfiguration {
     }
 
     @Bean
-    public ApplicationDAO applicationDAO(HibernateManager hibernateManager, Session session) {
-        return new ApplicationDAOImpl(hibernateManager, session);
+    public ApplicationDAO applicationDAO(Session session) {
+        return new ApplicationDAOImpl(session);
     }
 
     @Bean
     public LibraryDAO libraryDAO(HibernateManager hibernateManager, Session session, ApplicationDAO applicationDAO,
                                  UiPropertyContainer uiPropertyContainer) {
         return new LibraryDAOImpl(hibernateManager, session, applicationDAO, uiPropertyContainer);
+    }
+
+    @Bean
+    public ConsoleDAO consoleDAO(HibernateManager hibernateManager, Session session) {
+        return new ConsoleDAOImpl(hibernateManager, session);
     }
 }

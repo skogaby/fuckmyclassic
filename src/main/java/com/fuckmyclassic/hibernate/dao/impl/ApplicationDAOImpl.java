@@ -1,6 +1,5 @@
 package com.fuckmyclassic.hibernate.dao.impl;
 
-import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
 import com.fuckmyclassic.model.Application;
 import org.hibernate.Session;
@@ -11,19 +10,17 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Implementation of the ApplicationDAO interface.
+ * Implementation of the ApplicationDAO interface using MySQL and Hibernate.
+ * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Repository
 public class ApplicationDAOImpl implements ApplicationDAO {
 
-    /** Hibernate manager for higher level interactions. */
-    private final HibernateManager hibernateManager;
     /** Hibernate session for database interaction at a low level. */
     private final Session session;
 
     @Autowired
-    public ApplicationDAOImpl(final HibernateManager hibernateManager, final Session session) {
-        this.hibernateManager = hibernateManager;
+    public ApplicationDAOImpl(final Session session) {
         this.session = session;
     }
 

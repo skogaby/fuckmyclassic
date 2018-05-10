@@ -9,10 +9,10 @@ public interface SshConnectionListener {
     /**
      * Callback for when a new console is connected.
      */
-    void onSshConnected();
+    void onSshConnected(String address);
 
     /**
      * Callback for when a console disconnects.
      */
-    void onSshDisconnected();
+    void onSshDisconnected(String address);
 }

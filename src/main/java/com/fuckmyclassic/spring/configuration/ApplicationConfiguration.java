@@ -2,8 +2,9 @@ package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
+import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
 import com.fuckmyclassic.management.LibraryManager;
-import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.task.impl.RsyncDataTask;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
@@ -13,7 +14,6 @@ import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.ui.controller.RsyncRunnerDialog;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.fuckmyclassic.ui.util.ImageResizer;
-import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -33,11 +33,11 @@ public class ApplicationConfiguration {
 
     @Bean
     public MainWindow mainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
-                                 LibraryManager libraryManager, NetworkConnection networkConnection, ResourceBundle tasksResourceBundle,
+                                 LibraryManager libraryManager, NetworkManager networkManager, ResourceBundle tasksResourceBundle,
                                  RsyncRunnerDialog rsyncRunnerDialog, SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider,
-                                 UiPropertyContainer uiPropertyContainer, ConsoleConfiguration consoleConfiguration, PathConfiguration pathConfiguration) {
-        return new MainWindow(userConfiguration, consoleConfiguration, pathConfiguration, membootHelper, kernelFlasher, libraryManager,
-                networkConnection, tasksResourceBundle, sequentialTaskRunnerDialog, rsyncRunnerDialog, taskProvider, uiPropertyContainer);
+                                 UiPropertyContainer uiPropertyContainer, PathConfiguration pathConfiguration) {
+        return new MainWindow(userConfiguration, pathConfiguration, membootHelper, kernelFlasher, libraryManager,
+                networkManager, tasksResourceBundle, sequentialTaskRunnerDialog, rsyncRunnerDialog, taskProvider, uiPropertyContainer);
     }
 
     @Bean
@@ -61,13 +61,11 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    public UserConfiguration userConfiguration() {
-        return UserConfiguration.loadFromTomlFile();
-    }
+    public UserConfiguration userConfiguration(ConsoleDAO consoleDAO) {
+        final UserConfiguration userConfiguration = new UserConfiguration(consoleDAO);
+        userConfiguration.initFromTomlFile();
 
-    @Bean
-    public ConsoleConfiguration consoleConfiguration() {
-        return new ConsoleConfiguration();
+        return userConfiguration;
     }
 
     @Bean

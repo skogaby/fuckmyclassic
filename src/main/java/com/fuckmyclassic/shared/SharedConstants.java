@@ -26,6 +26,9 @@ public class SharedConstants {
     /** Default console SID when none have been connected, yet. */
     public static final String DEFAULT_CONSOLE_SID = "UNKNOWN";
 
+    /** Default nickname for the default console */
+    public static final String DEFAULT_CONSOLE_NICKNAME = "Default console";
+
     /** Resource path for the warning icon. */
     public static final String WARNING_IMAGE = "warning.png";
 

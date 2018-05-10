@@ -1,6 +1,6 @@
 package com.fuckmyclassic;
 
-import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.network.SshConnectionListener;
 import com.fuckmyclassic.spring.configuration.ApplicationConfiguration;
 import com.fuckmyclassic.shared.SharedConstants;
@@ -67,10 +67,10 @@ public class Main extends Application {
         primaryStage.show();
 
         // start polling for a network connection once the main window is initialized
-        final NetworkConnection networkConnection = applicationContext.getBean(NetworkConnection.class);
+        final NetworkManager networkManager = applicationContext.getBean(NetworkManager.class);
         final SshConnectionListener connectionListener = applicationContext.getBean(SshConnectionListener.class);
-        networkConnection.addConnectionListener(connectionListener);
-        networkConnection.beginPolling();
+        networkManager.addConnectionListener(connectionListener);
+        networkManager.beginPolling();
     }
 
     @Override
@@ -84,18 +84,18 @@ public class Main extends Application {
             }
 
             // close the SSH connection if there is one
-            final NetworkConnection networkConnection = applicationContext.getBean(NetworkConnection.class);
+            final NetworkManager networkManager = applicationContext.getBean(NetworkManager.class);
 
-            if (networkConnection != null) {
-                networkConnection.endPolling();
-                networkConnection.disconnect();
+            if (networkManager != null) {
+                networkManager.endPolling();
+                networkManager.disconnectAll();
             }
 
             // save the config file to disk
             final UserConfiguration userConfiguration = applicationContext.getBean(UserConfiguration.class);
 
             if (userConfiguration != null) {
-                UserConfiguration.saveTomlFile(userConfiguration);
+                userConfiguration.saveTomlFile();
             }
 
             applicationContext.close();

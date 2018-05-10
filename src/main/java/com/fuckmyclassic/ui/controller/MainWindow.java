@@ -3,16 +3,16 @@ package com.fuckmyclassic.ui.controller;
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
 import com.fuckmyclassic.management.LibraryManager;
+import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
-import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.network.NetworkConstants;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
-import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.beans.binding.Bindings;
@@ -91,8 +91,6 @@ public class MainWindow {
 
     /** The configuration object for user options and session settings */
     private final UserConfiguration userConfiguration;
-    /** Configuration about the connected console */
-    private final ConsoleConfiguration consoleConfiguration;
     /** Path configuration for runtime operations */
     private final PathConfiguration pathConfiguration;
     /** Helper instance for membooting consoles */
@@ -102,7 +100,7 @@ public class MainWindow {
     /** Helper instance for managing the library loading and view */
     private final LibraryManager libraryManager;
     /** Manager for SSH operations and network connections */
-    private final NetworkConnection networkConnection;
+    private final NetworkManager networkManager;
     /** Resource bundle for internationalized task strings */
     private final ResourceBundle tasksResourceBundle;
     /** The dialog to run sequential tasks */
@@ -119,24 +117,22 @@ public class MainWindow {
      */
     @Autowired
     public MainWindow(final UserConfiguration userConfiguration,
-                      final ConsoleConfiguration consoleConfiguration,
                       final PathConfiguration pathConfiguration,
                       final MembootHelper membootHelper,
                       final KernelFlasher kernelFlasher,
                       final LibraryManager libraryManager,
-                      final NetworkConnection networkConnection,
+                      final NetworkManager networkManager,
                       final ResourceBundle tasksResourceBundle,
                       final SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
                       final RsyncRunnerDialog rsyncRunnerDialog,
                       final TaskProvider taskProvider,
                       final UiPropertyContainer uiPropertyContainer) {
         this.userConfiguration = userConfiguration;
-        this.consoleConfiguration = consoleConfiguration;
         this.pathConfiguration = pathConfiguration;
         this.membootHelper = membootHelper;
         this.kernelFlasher = kernelFlasher;
         this.libraryManager = libraryManager;
-        this.networkConnection = networkConnection;
+        this.networkManager = networkManager;
         this.tasksResourceBundle = tasksResourceBundle;
         this.sequentialTaskRunnerDialog = sequentialTaskRunnerDialog;
         this.rsyncRunnerDialog = rsyncRunnerDialog;
@@ -257,9 +253,9 @@ public class MainWindow {
     private void initializeConnectionBoundProperties() {
         BindingHelper.bindProperty(this.uiPropertyContainer.connectionStatusColor,
                 this.shpConnectionStatus.fillProperty());
-        BindingHelper.bindProperty((ReadOnlyProperty<?>) this.uiPropertyContainer.connectionStatus,
+        BindingHelper.bindProperty((ReadOnlyProperty<?>) this.uiPropertyContainer.selectedConsoleConnectionStatus,
                 this.lblConnectionStatus.textProperty());
-        BindingHelper.bindProperty(this.uiPropertyContainer.disconnected,
+        BindingHelper.bindProperty(this.uiPropertyContainer.selectedConsoleDisconnected,
                 this.btnSyncGames.disableProperty());
     }
 
@@ -306,8 +302,9 @@ public class MainWindow {
         LOG.info("Attempting to sync games to the console's internal memory");
 
         // setup the temp data task
-        final String syncPath = String.format("%s/%s/%s", this.consoleConfiguration.getSystemSyncPath(),
-                this.consoleConfiguration.getSystemType(), PathConfiguration.CONSOLE_STORAGE_DIR);
+        final Console selectedConsole = this.userConfiguration.getSelectedConsole();
+        final String syncPath = String.format("%s/%s/%s", selectedConsole.getConsoleSyncPath(),
+                selectedConsole.getConsoleType().getConsoleCode(), PathConfiguration.CONSOLE_STORAGE_DIR);
         this.taskProvider.createTempDataTask.setSyncPath(syncPath);
 
         // run the pre-sync tasks
@@ -316,14 +313,14 @@ public class MainWindow {
                 taskProvider.unmountGamesTask);
         sequentialTaskRunnerDialog.showDialog();
 
-        // setup the rsync task
+        // run the rsync task
         rsyncRunnerDialog.setSource(this.pathConfiguration.getTempDirectory() + File.separator);
         rsyncRunnerDialog.setDestination(String.format(
-                "%s@%s:%s/%s/", NetworkConstants.USER_NAME, NetworkConstants.CONSOLE_IP,
-                consoleConfiguration.getSystemSyncPath(), consoleConfiguration.getSystemType()));
+                "%s@%s:%s/%s/", NetworkConstants.USER_NAME, selectedConsole.getLastKnownAddress(),
+                selectedConsole.getConsoleSyncPath(), selectedConsole.getConsoleType().getConsoleCode()));
         rsyncRunnerDialog.showDialog();
 
-        // start the UI back up
+        // start the console's UI back up
         sequentialTaskRunnerDialog.setTaskCreators(taskProvider.mountGamesAndStartUiTask);
         sequentialTaskRunnerDialog.showDialog();
     }

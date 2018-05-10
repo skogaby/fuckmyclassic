@@ -1,6 +1,6 @@
 package com.fuckmyclassic.boot;
 
-import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.network.NetworkManager;
 import com.jcraft.jsch.JSchException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,22 +26,22 @@ public class KernelFlasher {
     public static final String BOOT_IMG_PATH = String.format("%s%c%s", "uboot", File.separatorChar, "memboot.img");
 
     /** The SSH connection to the console. */
-    private final NetworkConnection networkConnection;
+    private final NetworkManager networkManager;
     /** he helper for memboot operations. */
     private final MembootHelper membootHelper;
 
     /**
      * Constructor.
-     * @param networkConnection
+     * @param networkManager
      */
     @Autowired
-    public KernelFlasher(final NetworkConnection networkConnection, final MembootHelper membootHelper) {
-        this.networkConnection = networkConnection;
+    public KernelFlasher(final NetworkManager networkManager, final MembootHelper membootHelper) {
+        this.networkManager = networkManager;
         this.membootHelper = membootHelper;
     }
 
     public void flashCustomKernel() throws UsbException, URISyntaxException, InterruptedException {
-        LOG.info("Flashing the custom kernel to the console");
+        /*LOG.info("Flashing the custom kernel to the console");
         LOG.debug("First, membooting into the prebaked kernel image");
 
         final Path bootImgPath = Paths.get(ClassLoader.getSystemResource(BOOT_IMG_PATH).toURI());
@@ -56,18 +56,18 @@ public class KernelFlasher {
         while (!connected) {
             try {
                 Thread.sleep(3000);
-                this.networkConnection.connect();
+                this.networkManager.connect();
                 connected = true;
             } catch (JSchException e) {
                 LOG.debug("No SSH connection available yet");
             }
         }
 
-        if (this.networkConnection.isConnected()) {
+        if (this.networkManager.isConnected()) {
             LOG.debug("Connected to SSH successfully! Initiating kernel installation");
         } else {
             LOG.error("Something went wrong, couldn't SSH to console after membooting");
             return;
-        }
+        }*/
     }
 }

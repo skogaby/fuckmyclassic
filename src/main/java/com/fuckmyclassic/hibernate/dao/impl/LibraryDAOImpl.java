@@ -19,6 +19,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of the LibraryDAO interface using MySQL and Hibernate.
+ * @author skogaby (skogabyskogaby@gmail.com)
+ */
 @Repository
 public class LibraryDAOImpl implements LibraryDAO {
 
@@ -41,15 +45,14 @@ public class LibraryDAOImpl implements LibraryDAO {
     }
 
     /**
-     * Fetches the metadata for all of the libraries for a given console.
+     * Fetches the metadata for all of the libraries for a given console,
+     * or creates a default library if none exists for this console.
      * @param consoleSid The console SID to fetch the libraries for
      * @return The list of Library metadata items for the given console
      */
     @Override
-    public List<Library> getLibrariesForConsole(String consoleSid) {
-        final Query<Library> query = session.createQuery("from Library where console_sid = :console_sid");
-        query.setParameter("console_sid", consoleSid);
-        List<Library> results = query.getResultList();
+    public List<Library> getOrCreateLibrariesForConsole(String consoleSid) {
+        List<Library> results = getLibrariesForConsole(consoleSid);
 
         // create a default library if none exists
         if (results.isEmpty()) {
@@ -59,6 +62,18 @@ public class LibraryDAOImpl implements LibraryDAO {
         }
 
         return results;
+    }
+
+    /**
+     * Fetches the metadata for all of the libraries for a given console.
+     * @param consoleSid The console SID to fetch the libraries for
+     * @return The list of Library metadata items for the given console
+     */
+    @Override
+    public List<Library> getLibrariesForConsole(String consoleSid) {
+        final Query<Library> query = session.createQuery("from Library where console_sid = :console_sid");
+        query.setParameter("console_sid", consoleSid);
+        return query.getResultList();
     }
 
     /**

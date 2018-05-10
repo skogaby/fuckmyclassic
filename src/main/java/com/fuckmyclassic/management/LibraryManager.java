@@ -81,28 +81,30 @@ public class LibraryManager {
     public void initializeLibrarySelection(final MainWindow mainWindow) {
         LOG.debug("Initializing the dropdown box for library selection");
 
-        final List<Library> libraries = libraryDAO.getLibrariesForConsole(this.userConfiguration.getLastConsoleSID());
+        final List<Library> libraries = libraryDAO.getOrCreateLibrariesForConsole(this.userConfiguration.getLastConsoleSID());
         final ObservableList<Library> items = FXCollections.observableArrayList(libraries);
         mainWindow.cmbCurrentCollection.setItems(items);
         final Library library;
 
         // load the last used library, or the first one if there's no config value yet
-        if (this.userConfiguration.getLastLibraryID() == -1L) {
+        if (this.userConfiguration.getSelectedLibraryID() == -1L) {
             library = items.get(0);
         } else {
-            library = items.stream().filter(l -> l.getId() == this.userConfiguration.getLastLibraryID())
+            library = items.stream().filter(l -> l.getId() == this.userConfiguration.getSelectedLibraryID())
                     .collect(Collectors.toList()).get(0);
         }
 
         mainWindow.cmbCurrentCollection.getSelectionModel().select(library);
-        this.userConfiguration.setLastLibraryID(library.getId());
+        this.userConfiguration.setSelectedLibraryID(library.getId());
 
         mainWindow.cmbCurrentCollection.valueProperty().addListener(((observable, oldValue, newValue) -> {
-            this.currentLibrary = newValue;
-            this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary);
-            mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
-            mainWindow.treeViewGames.getSelectionModel().selectFirst();
-            this.userConfiguration.setLastLibraryID(this.currentLibrary.getId());
+            if (newValue != null) {
+                this.currentLibrary = newValue;
+                this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary);
+                mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
+                mainWindow.treeViewGames.getSelectionModel().selectFirst();
+                this.userConfiguration.setSelectedLibraryID(this.currentLibrary.getId());
+            }
         }));
 
         this.currentLibrary = library;

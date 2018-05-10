@@ -1,12 +1,20 @@
 package com.fuckmyclassic.userconfig;
 
+import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
+import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.moandjiezana.toml.Toml;
 import com.moandjiezana.toml.TomlWriter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class to contain the user configurations.
@@ -16,38 +24,51 @@ import java.io.IOException;
 public class UserConfiguration {
 
     /** The name of the configuration file on-disk. */
-    public static final String CONFIG_FILE = "config.toml";
-    /** The SID of the last console that was connected to. */
-    private String lastConsoleSID;
-    /** The ID of the last library that was loaded for the console. */
-    private long lastLibraryID;
+    private static final String CONFIG_FILE = "config.toml";
+    /** Config key for the selected console SID */
+    private static final String SELECTED_CONSOLE_KEY = "selectedConsole";
+    /** Condif key for the selected library ID */
+    private static final String SELECTED_LIBRARY_KEY = "selectedLibraryID";
 
-    public UserConfiguration() {
+    /** Console DAO for loading up the saved console */
+    private final ConsoleDAO consoleDAO;
+    /** The currently selected Console to manage */
+    private Console selectedConsole;
+    /** The set of currently connected Consoles */
+    private Set<Console> connectedConsoles;
+    /** The last console SID that was connected, so we can know if the connection is from a new console */
+    private String lastConsoleSID;
+    /** The ID of the last library that was selected for the console. */
+    private long selectedLibraryID;
+
+    @Autowired
+    public UserConfiguration(final ConsoleDAO consoleDAO) {
+        this.consoleDAO = consoleDAO;
+        this.selectedConsole = null;
+        this.connectedConsoles = Collections.newSetFromMap(new ConcurrentHashMap<Console, Boolean>());
         this.lastConsoleSID = SharedConstants.DEFAULT_CONSOLE_SID;
-        this.lastLibraryID = -1L;
+        this.selectedLibraryID = -1L;
     }
 
     /**
      * Creates a UserConfiguration file from the standard config file path.
      * @return A new UserConfiguration file from the file path, or a default one if the file doesn't exist
      */
-    public static UserConfiguration loadFromTomlFile() {
+    public void initFromTomlFile() {
         final File tomlFile = new File(CONFIG_FILE);
-        final UserConfiguration configuration;
 
-        if (!tomlFile.exists()) {
-            configuration = new UserConfiguration();
-        } else {
-            configuration = new Toml().read(tomlFile).to(UserConfiguration.class);
+        if (tomlFile.exists()) {
+            final Toml toml = new Toml().read(tomlFile);
+            this.selectedConsole = consoleDAO.getOrCreateConsoleForSid(toml.getString(SELECTED_CONSOLE_KEY));
+            this.selectedLibraryID = toml.getLong(SELECTED_LIBRARY_KEY);
+            this.lastConsoleSID = this.selectedConsole.getConsoleSid();
         }
-
-        return configuration;
     }
 
     /**
      * Saves the current configuration values to the disk.
      */
-    public static void saveTomlFile(final UserConfiguration userConfiguration) throws IOException {
+    public void saveTomlFile() throws IOException {
         final TomlWriter tomlWriter = new TomlWriter();
         final File tomlFile = new File(CONFIG_FILE);
 
@@ -55,7 +76,46 @@ public class UserConfiguration {
             tomlFile.createNewFile();
         }
 
-        tomlWriter.write(userConfiguration, tomlFile);
+        final Map<String, Object> fileAttribs = new HashMap<>();
+        fileAttribs.put(SELECTED_CONSOLE_KEY, this.selectedConsole == null ?
+                SharedConstants.DEFAULT_CONSOLE_SID : this.selectedConsole.getConsoleSid());
+        fileAttribs.put(SELECTED_LIBRARY_KEY, this.selectedLibraryID);
+        tomlWriter.write(fileAttribs, tomlFile);
+    }
+
+    /**
+     * Add a new Console to the connected consoles set.
+     * @param console The newly connected console.
+     */
+    public void addConnectedConsole(final Console console) {
+        this.connectedConsoles.add(console);
+    }
+
+    public Console getSelectedConsole() {
+        return selectedConsole;
+    }
+
+    public UserConfiguration setSelectedConsole(Console selectedConsole) {
+        this.selectedConsole = selectedConsole;
+        return this;
+    }
+
+    public long getSelectedLibraryID() {
+        return selectedLibraryID;
+    }
+
+    public UserConfiguration setSelectedLibraryID(long selectedLibraryID) {
+        this.selectedLibraryID = selectedLibraryID;
+        return this;
+    }
+
+    public Set<Console> getConnectedConsoles() {
+        return connectedConsoles;
+    }
+
+    public UserConfiguration setConnectedConsoles(Set<Console> connectedConsoles) {
+        this.connectedConsoles = connectedConsoles;
+        return this;
     }
 
     public String getLastConsoleSID() {
@@ -64,15 +124,6 @@ public class UserConfiguration {
 
     public UserConfiguration setLastConsoleSID(String lastConsoleSID) {
         this.lastConsoleSID = lastConsoleSID;
-        return this;
-    }
-
-    public long getLastLibraryID() {
-        return lastLibraryID;
-    }
-
-    public UserConfiguration setLastLibraryID(long lastLibraryID) {
-        this.lastLibraryID = lastLibraryID;
         return this;
     }
 }

@@ -1,11 +1,11 @@
 package com.fuckmyclassic.network;
 
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
-import com.fuckmyclassic.userconfig.ConsoleConfiguration;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import javafx.application.Platform;
 import javafx.scene.paint.Paint;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
@@ -16,14 +16,15 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.fuckmyclassic.network.NetworkConstants.CONNECTION_TIMEOUT;
-import static com.fuckmyclassic.network.NetworkConstants.CONSOLE_IP;
 import static com.fuckmyclassic.network.NetworkConstants.CONSOLE_PORT;
 import static com.fuckmyclassic.network.NetworkConstants.USER_NAME;
 import static com.fuckmyclassic.ui.component.UiPropertyContainer.CONNECTED_CIRCLE_COLOR;
@@ -32,22 +33,24 @@ import static com.fuckmyclassic.ui.component.UiPropertyContainer.DISCONNECTED_CI
 import static com.fuckmyclassic.ui.component.UiPropertyContainer.DISCONNECTED_STATUS_KEY;
 
 /**
- * Class to represent a network connection to the Mini console. This
+ * Class to manage network connections to one or more Mini consoles. This
  * class handles connecting to the console and re-connecting automatically
  * once it's detected, as well as enabling SSH commands.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Component
-public class NetworkConnection {
+public class NetworkManager {
 
-    static Logger LOG = LogManager.getLogger(NetworkConnection.class.getName());
+    static Logger LOG = LogManager.getLogger(NetworkManager.class.getName());
 
     /** Private instance of the JSch structure. */
     private final JSch jSch;
     /** Property container so we can update the UI. */
     final UiPropertyContainer uiPropertyContainer;
-    /** The actual SSH connection to the console. */
-    public Session connection;
+    /** A mapping of currently connected console IPs to their Sessions */
+    private final Map<String, Session> connectedConsoles;
+    /** Background listener to poll for MDNS records */
+    private final MdnsListener mdnsListener;
     /** Background service to poll for connections. */
     private final NetworkPollingService pollingService;
     /** List of listeners to alert when a new connection is made. */
@@ -58,49 +61,68 @@ public class NetworkConnection {
     /**
      * Constructor.
      * @throws JSchException
-
      */
     @Autowired
-    public NetworkConnection(final JSch jSch,
-                             final UiPropertyContainer uiPropertyContainer) {
+    public NetworkManager(final JSch jSch,
+                          final MdnsListener mdnsListener,
+                          final UiPropertyContainer uiPropertyContainer) {
         this.jSch = jSch;
+        this.mdnsListener = mdnsListener;
         this.uiPropertyContainer = uiPropertyContainer;
         this.connectionListeners = new HashSet<>();
         this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
+        this.connectedConsoles = new HashMap<>();
 
         // set a background service that polls for a connection periodically
         this.pollingService = new NetworkPollingService();
-        pollingService.setNetworkConnection(this);
+        pollingService.setNetworkManager(this);
+        pollingService.setMdnsListener(mdnsListener);
         pollingService.setPeriod(Duration.seconds(1));
-        pollingService.setOnSucceeded(t -> setConnectedProperties((boolean)t.getSource().getValue()));
     }
 
     /**
-     * Connects the SSH session to the console.
+     * Connects the SSH session to the given console.
+     * @param address The IP address to connect to
      * @throws JSchException
      */
-    public void connect() throws JSchException {
-        if (this.connection != null) {
-            this.connection.disconnect();
-            this.connection = null;
+    public void connect(final String address) throws JSchException {
+        if (this.connectedConsoles.containsKey(address)) {
+            this.connectedConsoles.get(address).disconnect();
+            this.connectedConsoles.remove(address);
         }
 
         final Properties config = new Properties();
         config.put("StrictHostKeyChecking", "no");
 
-        this.connection = this.jSch.getSession(USER_NAME, CONSOLE_IP, CONSOLE_PORT);
-        this.connection.setConfig(config);
-        this.connection.setServerAliveInterval(5000);
-        this.connection.connect(CONNECTION_TIMEOUT);
+        final Session session = this.jSch.getSession(USER_NAME, address, CONSOLE_PORT);
+        session.setConfig(config);
+        session.setServerAliveInterval(5000);
+        session.connect(CONNECTION_TIMEOUT);
+        this.connectedConsoles.put(address, session);
     }
 
     /**
      * Disconnects the SSH session from the console.
      */
-    public void disconnect() {
-        if (this.isConnected()) {
-            this.connection.disconnect();
-            this.connection = null;
+    public void disconnect(final String address) {
+        if (this.isConnected(address)) {
+            this.connectedConsoles.get(address).disconnect();
+            this.connectedConsoles.remove(address);
+        }
+    }
+
+    /**
+     * Disconnects all currently connected SSH sessions.
+     */
+    public void disconnectAll() {
+        for (Session session : this.connectedConsoles.values()) {
+            if (session.isConnected()) {
+                session.disconnect();
+            }
+
+            if (this.connectedConsoles.containsKey(session.getHost())) {
+                this.connectedConsoles.remove(session.getHost());
+            }
         }
     }
 
@@ -108,9 +130,9 @@ public class NetworkConnection {
      * Says whether the SSH connection is established.
      * @return
      */
-    public boolean isConnected() {
-        return (this.connection != null &&
-                this.connection.isConnected());
+    public boolean isConnected(final String address) {
+        return (this.connectedConsoles.containsKey(address) &&
+                this.connectedConsoles.get(address).isConnected());
     }
 
     /**
@@ -120,15 +142,19 @@ public class NetworkConnection {
         if (!this.pollingService.isRunning()) {
             this.pollingService.start();
         }
+
+        this.mdnsListener.beginPolling();
     }
 
     /**
      * Stops polling for new connections.
      */
-    public void endPolling() {
+    public void endPolling() throws IOException {
         if (this.pollingService.isRunning()) {
             this.pollingService.cancel();
         }
+
+        this.mdnsListener.endPolling();
     }
 
     /**
@@ -149,25 +175,28 @@ public class NetworkConnection {
 
     /**
      * Runs a command on the console, throwing an exception if the exit code was non-zero.
+     * @param address The address of the console to run the command on
      * @param command The command to execute
      * @return The output of the command
      * @throws IOException
      * @throws JSchException
      */
-    public String runCommand(final String command) throws IOException, JSchException {
-        return runCommand(command, true);
+    public String runCommand(final String address, final String command) throws IOException, JSchException {
+        return runCommand(address, command, true);
     }
 
     /**
      * Runs a command on the console, optionally throwing an exception if the exit code was non-zero.
+     * @param address The address of the console to run the command on
      * @param command The command to execute
      * @param throwOnNonZero Whether or not to throw an exception if the exit code was non-zero
      * @return The output of the command
      * @throws IOException
      * @throws JSchException
      */
-    public String runCommand(final String command, boolean throwOnNonZero) throws IOException, JSchException {
-        final SshCommandResult result = getRunCommandResult(command);
+    public String runCommand(final String address, final String command, boolean throwOnNonZero)
+            throws IOException, JSchException {
+        final SshCommandResult result = getRunCommandResult(address, command);
 
         if (throwOnNonZero && result.getExitCode() != 0) {
             throw new SshNonZeroExitCodeException();
@@ -178,12 +207,14 @@ public class NetworkConnection {
 
     /**
      * Runs a command through SSH on the console.
-     * @param command The command to be run remotely.
+     * @param address The address of the console to run the command on
+     * @param command The command to be run remotely
      * @return The output and exit status of the command.
      */
-    public SshCommandResult getRunCommandResult(final String command) throws JSchException, IOException {
-        if (this.isConnected()) {
-            final ChannelExec channel = (ChannelExec)this.connection.openChannel("exec");
+    public SshCommandResult getRunCommandResult(final String address,
+                                                final String command) throws JSchException, IOException {
+        if (this.isConnected(address)) {
+            final ChannelExec channel = (ChannelExec) this.connectedConsoles.get(address).openChannel("exec");
 
             try {
                 channel.setCommand(command);
@@ -231,6 +262,7 @@ public class NetworkConnection {
 
     /**
      * Runs a command remotely through SSH, redirecting the stdin/stdout/stderr streams locally.
+     * @param address The address of the console to run the command on
      * @param command The remote command to run
      * @param stdin The stdin stream to use for the command
      * @param stdout The stdout stream to use for the command
@@ -239,10 +271,13 @@ public class NetworkConnection {
      * @throws JSchException
      * @throws IOException
      */
-    public int runCommandWithStreams(final String command, final InputStream stdin, final OutputStream stdout,
+    public int runCommandWithStreams(final String address,
+                                     final String command,
+                                     final InputStream stdin,
+                                     final OutputStream stdout,
                                      final OutputStream stderr) throws JSchException, IOException {
-        if (this.isConnected()) {
-            final ChannelExec channel = (ChannelExec)this.connection.openChannel("exec");
+        if (this.isConnected(address)) {
+            final ChannelExec channel = (ChannelExec) this.connectedConsoles.get(address).openChannel("exec");
 
             try {
                 channel.setCommand(command);
@@ -254,10 +289,11 @@ public class NetworkConnection {
 
                 while (!channel.isClosed()) {
                     try {
-                        this.connection.sendKeepAliveMsg();
+                        this.connectedConsoles.get(address).sendKeepAliveMsg();
                     } catch (final Exception ex) {
                         throw new IOException(ex);
                     }
+
                     try {
                         TimeUnit.SECONDS.sleep(1L);
                     } catch (final InterruptedException ex) {
@@ -279,12 +315,12 @@ public class NetworkConnection {
     }
 
     /**
-     * Sets the connection related FXML properties, and notifies connection listeners if the status changes.
+     * Sets the connection related FXML properties.
      * @param connected
      */
     public void setConnectedProperties(boolean connected) {
         // set the connection status properties
-        this.uiPropertyContainer.connectionStatus.setValue(resourceBundle.getString(
+        this.uiPropertyContainer.selectedConsoleConnectionStatus.setValue(resourceBundle.getString(
                 connected ? CONNECTED_STATUS_KEY : DISCONNECTED_STATUS_KEY));
         this.uiPropertyContainer.connectionStatusColor.setValue(Paint.valueOf(
                 connected ? CONNECTED_CIRCLE_COLOR : DISCONNECTED_CIRCLE_COLOR));
@@ -292,26 +328,33 @@ public class NetworkConnection {
 
     /**
      * Notify the connection handlers of the current status if it's changed.
-     * @param connected
+     * @param address The address of the console that generated the event
+     * @param connected Whether or not the console is connected
      */
-    public void notifyConnectionHandlers(boolean connected) {
+    public void notifyConnectionHandlers(final String address,
+                                         final boolean connected) {
         // notify the listeners if this is a new connect or disconnect
-        if (this.uiPropertyContainer.disconnected.getValue() == connected) {
+        if (this.uiPropertyContainer.selectedConsoleDisconnected.getValue() == connected) {
             try {
                 if (connected) {
                     for (SshConnectionListener listener : this.connectionListeners) {
-                        listener.onSshConnected();
+                        listener.onSshConnected(address);
                     }
                 } else {
                     for (SshConnectionListener listener : this.connectionListeners) {
-                        listener.onSshDisconnected();
+                        listener.onSshDisconnected(address);
                     }
                 }
+
+                this.uiPropertyContainer.selectedConsoleDisconnected.setValue(!connected);
+                Platform.runLater(() -> setConnectedProperties(connected));
             } catch (Exception e) {
                 LOG.error(e);
             }
         }
+    }
 
-        this.uiPropertyContainer.disconnected.setValue(!connected);
+    public Map<String, Session> getConnectedConsoles() {
+        return connectedConsoles;
     }
 }

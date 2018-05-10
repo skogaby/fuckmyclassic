@@ -1,7 +1,9 @@
 package com.fuckmyclassic.task.impl;
 
-import com.fuckmyclassic.network.NetworkConnection;
+import com.fuckmyclassic.model.Console;
+import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.task.AbstractTaskCreator;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import com.jcraft.jsch.JSchException;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
@@ -22,15 +24,19 @@ public class MountGamesAndStartUiTask extends AbstractTaskCreator<Void> {
     private final String IN_PROGRESS_MESSAGE_KEY = "MountGamesAndStartUiTask.inProgressMessage";
     private final String COMPLETE_MESSAGE_KEY = "MountGamesAndStartUiTask.completeMessage";
 
-    /** Network connection to the console */
-    private final NetworkConnection networkConnection;
+    /** Network manager, to send commands to consoles */
+    private final NetworkManager networkManager;
+    /** User configuration for the current session */
+    private final UserConfiguration userConfiguration;
     /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
 
     @Autowired
-    public MountGamesAndStartUiTask(final NetworkConnection networkConnection,
-                            final ResourceBundle resourceBundle) {
-        this.networkConnection = networkConnection;
+    public MountGamesAndStartUiTask(final NetworkManager networkManager,
+                                    final UserConfiguration userConfiguration,
+                                    final ResourceBundle resourceBundle) {
+        this.networkManager = networkManager;
+        this.userConfiguration = userConfiguration;
         this.resourceBundle = resourceBundle;
     }
 
@@ -42,8 +48,11 @@ public class MountGamesAndStartUiTask extends AbstractTaskCreator<Void> {
                 updateMessage(resourceBundle.getString(IN_PROGRESS_MESSAGE_KEY));
                 updateProgress(0, 1);
 
-                LOG.info("Overmounting the games directory and starting the UI");
-                networkConnection.runCommand("hakchi overmount_games; uistart");
+                final Console console = userConfiguration.getSelectedConsole();
+                LOG.info(String.format("Overmounting the games directory and starting the UI on \"%s\"",
+                        console.getNickname()));
+                networkManager.runCommand(userConfiguration.getSelectedConsole().getLastKnownAddress(),
+                        "hakchi overmount_games; uistart");
                 LOG.info("Done unmounting the games directory");
 
                 updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));
