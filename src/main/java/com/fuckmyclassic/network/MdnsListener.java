@@ -49,14 +49,13 @@ public class MdnsListener {
             @Override
             public void receiveMessage(Object id, Message m) {
                 final Record[] records = m.getSectionArray(Section.ADDITIONAL);
-                advertisedAddresses.clear();
 
                 for (Record r : records) {
                     if (r instanceof ARecord) {
                         final String ipAddress = ((ARecord) r).getAddress().getHostAddress();
                         advertisedAddresses.add(ipAddress);
 
-                        LOG.trace(String.format("Detected IP for %s: %s", SERVICE_TYPE, ipAddress));
+                        LOG.debug(String.format("Detected IP for %s: %s", SERVICE_TYPE, ipAddress));
                     }
                 }
             }

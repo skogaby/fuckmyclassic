@@ -91,6 +91,21 @@ public class UserConfiguration {
         this.connectedConsoles.add(console);
     }
 
+    /**
+     * Says whether or not any of the logically connected consoles has the given IP address.
+     * @param address The address to check for
+     * @return Whether or not the given address is connected
+     */
+    public boolean isAddressConnected(final String address) {
+        for (Console console : connectedConsoles) {
+            if (console.getLastKnownAddress().equals(address)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public Console getSelectedConsole() {
         return selectedConsole;
     }

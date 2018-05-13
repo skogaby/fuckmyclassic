@@ -24,11 +24,11 @@ public class NetworkPollingService extends ScheduledService<Void> {
         return new Task<Void>() {
             @Override
             protected Void call() throws IOException {
-                boolean connected = false;
-
                 if (networkManager != null &&
                         mdnsListener != null) {
                     for (String address : mdnsListener.getAdvertisedAddresses()) {
+                        boolean connected = false;
+
                         if (networkManager.isConnected(address)) {
                             connected = true;
                         } else {

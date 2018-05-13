@@ -1,6 +1,7 @@
 package com.fuckmyclassic.network;
 
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -53,6 +54,8 @@ public class NetworkManager {
     private final MdnsListener mdnsListener;
     /** Background service to poll for connections. */
     private final NetworkPollingService pollingService;
+    /** User configuration instance, so we can keep track of the logically connected consoles */
+    private final UserConfiguration userConfiguration;
     /** List of listeners to alert when a new connection is made. */
     private Set<SshConnectionListener> connectionListeners;
     /** ResourceBundle for getting localized connection status strings. */
@@ -65,10 +68,12 @@ public class NetworkManager {
     @Autowired
     public NetworkManager(final JSch jSch,
                           final MdnsListener mdnsListener,
-                          final UiPropertyContainer uiPropertyContainer) {
+                          final UiPropertyContainer uiPropertyContainer,
+                          final UserConfiguration userConfiguration) {
         this.jSch = jSch;
         this.mdnsListener = mdnsListener;
         this.uiPropertyContainer = uiPropertyContainer;
+        this.userConfiguration = userConfiguration;
         this.connectionListeners = new HashSet<>();
         this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
         this.connectedConsoles = new HashMap<>();
@@ -334,7 +339,7 @@ public class NetworkManager {
     public void notifyConnectionHandlers(final String address,
                                          final boolean connected) {
         // notify the listeners if this is a new connect or disconnect
-        if (this.uiPropertyContainer.selectedConsoleDisconnected.getValue() == connected) {
+        if (this.userConfiguration.isAddressConnected(address) != connected) {
             try {
                 if (connected) {
                     for (SshConnectionListener listener : this.connectionListeners) {
@@ -346,8 +351,10 @@ public class NetworkManager {
                     }
                 }
 
-                this.uiPropertyContainer.selectedConsoleDisconnected.setValue(!connected);
-                Platform.runLater(() -> setConnectedProperties(connected));
+                if (userConfiguration.getSelectedConsole().getLastKnownAddress().equals(address)) {
+                    this.uiPropertyContainer.selectedConsoleDisconnected.setValue(!connected);
+                    Platform.runLater(() -> setConnectedProperties(connected));
+                }
             } catch (Exception e) {
                 LOG.error(e);
             }

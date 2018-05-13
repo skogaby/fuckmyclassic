@@ -31,8 +31,9 @@ public class NetworkConfiguration {
     }
 
     @Bean
-    public NetworkManager networkConnection(JSch jSch, MdnsListener mdnsListener, UiPropertyContainer uiPropertyContainer) {
-        return new NetworkManager(jSch, mdnsListener, uiPropertyContainer);
+    public NetworkManager networkConnection(JSch jSch, MdnsListener mdnsListener, UiPropertyContainer uiPropertyContainer,
+                                            UserConfiguration userConfiguration) {
+        return new NetworkManager(jSch, mdnsListener, uiPropertyContainer, userConfiguration);
     }
 
     @Bean
