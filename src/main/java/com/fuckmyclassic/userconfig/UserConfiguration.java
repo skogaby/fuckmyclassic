@@ -92,6 +92,14 @@ public class UserConfiguration {
     }
 
     /**
+     * Removes a Console from the connected consoles set.
+     * @param console The newly disconnected console.
+     */
+    public void removeConnectedConsole(final Console console) {
+        this.connectedConsoles.removeIf(x -> x.getConsoleSid().equals(console.getConsoleSid()));
+    }
+
+    /**
      * Says whether or not any of the logically connected consoles has the given IP address.
      * @param address The address to check for
      * @return Whether or not the given address is connected

@@ -112,8 +112,9 @@ public class NetworkManager {
     public void disconnect(final String address) {
         if (this.isConnected(address)) {
             this.connectedConsoles.get(address).disconnect();
-            this.connectedConsoles.remove(address);
         }
+
+        this.connectedConsoles.remove(address);
     }
 
     /**

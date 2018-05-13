@@ -88,9 +88,8 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
         final Console console = this.consoleDAO.getConsoleForLastKnownAddress(address);
 
         if (console != null) {
-            this.userConfiguration.getConnectedConsoles().remove(console);
+            this.userConfiguration.removeConnectedConsole(console);
             this.networkManager.disconnect(console.getLastKnownAddress());
-            this.networkManager.getConnectedConsoles().remove(address);
         }
     }
 }

@@ -20,6 +20,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Objects;
 
 /**
  * Simple model to represent a console we've seen before.
@@ -171,6 +172,12 @@ public class Console implements Externalizable {
     @Override
     public boolean equals(Object obj) {
         // only compare SIDs in equality, the rest doesn't matter
-        return this.consoleSid.get().equals(((Console) obj).consoleSid.get());
+        return this.consoleSid.get().equals(((Console) obj).consoleSid.get()) &&
+                this.getId() == ((Console) obj).getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, consoleSid);
     }
 }

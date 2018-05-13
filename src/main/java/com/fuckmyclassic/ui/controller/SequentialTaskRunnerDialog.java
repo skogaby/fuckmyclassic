@@ -63,6 +63,10 @@ public class SequentialTaskRunnerDialog {
                 ((Stage) this.lblMainMessage.getScene().getWindow()).close();
             });
 
+            taskRunner.setOnFailed(event -> {
+                LOG.error(event.getSource().getMessage());
+            });
+
             final Thread thread = new Thread(taskRunner);
             thread.setDaemon(true);
             thread.start();
