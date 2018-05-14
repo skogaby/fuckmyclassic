@@ -1,12 +1,14 @@
 package com.fuckmyclassic.task.impl;
 
+import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.fuckmyclassic.ui.controller.MainWindow;
+import com.fuckmyclassic.ui.util.PlatformUtils;
 import com.fuckmyclassic.userconfig.UserConfiguration;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -36,18 +38,25 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
     private final UserConfiguration userConfiguration;
     /** DAO for querying for libraries */
     private final LibraryDAO libraryDAO;
+    /** The DAO for accessing known consoles */
+    private final ConsoleDAO consoleDAO;
     /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
     /** The main window, so we can refresh the views */
     private MainWindow mainWindow;
+    /** Says whether the console combobox should refresh */
+    private boolean shouldRefreshConsoles;
 
     @Autowired
     public LoadLibrariesTask(final UserConfiguration userConfiguration,
                              final LibraryDAO libraryDAO,
+                             final ConsoleDAO consoleDAO,
                              final ResourceBundle resourceBundle) {
         this.userConfiguration = userConfiguration;
         this.libraryDAO = libraryDAO;
+        this.consoleDAO = consoleDAO;
         this.resourceBundle = resourceBundle;
+        this.shouldRefreshConsoles = false;
     }
 
     @Override
@@ -63,12 +72,18 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
                 updateMessage(resourceBundle.getString(IN_PROGRESS_MESSAGE_KEY));
                 updateProgress(0, 1);
 
+                // first, refresh the consoles view, in case we deleted the UNKNOWN console
+                // or created a new console
+                LOG.info("Refreshing the consoles list");
+                final List<Console> consoles = consoleDAO.getAllConsoles();
+                final ObservableList<Console> consoleItems = FXCollections.observableArrayList(consoles);
+
                 final String connectedSid = userConfiguration.getSelectedConsole().getConsoleSid();
                 LOG.info(String.format("Loading libraries for console %s", connectedSid));
 
-                // first load the libraries and setup the combobox for library selection
+                // next, load the libraries and setup the combobox for library selection
                 final List<Library> libraries = libraryDAO.getOrCreateLibrariesForConsole(connectedSid);
-                final ObservableList<Library> items = FXCollections.observableArrayList(libraries);
+                final ObservableList<Library> libraryItems = FXCollections.observableArrayList(libraries);
                 final Library library;
 
                 // load the last used library, or the first one if there's no config value yet or the new console
@@ -76,18 +91,26 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
                 if (userConfiguration.getSelectedLibraryID() == -1L ||
                         (!userConfiguration.getLastConsoleSID().equals(SharedConstants.DEFAULT_CONSOLE_SID) &&
                         !userConfiguration.getLastConsoleSID().equals(connectedSid))) {
-                    library = items.get(0);
+                    library = libraryItems.get(0);
                 } else {
-                    library = items.stream().filter(l -> l.getId() == userConfiguration.getSelectedLibraryID())
+                    library = libraryItems.stream().filter(l -> l.getId() == userConfiguration.getSelectedLibraryID())
                             .collect(Collectors.toList()).get(0);
                 }
 
                 userConfiguration.setSelectedLibraryID(library.getId());
                 userConfiguration.setLastConsoleSID(connectedSid);
 
-                Platform.runLater(() -> {
-                    mainWindow.cmbCurrentCollection.setItems(items);
-                    mainWindow.cmbCurrentCollection.getSelectionModel().select(library);
+                PlatformUtils.runAndWait(() -> {
+                    if (shouldRefreshConsoles) {
+                        mainWindow.cmbCurrentConsole.getItems().clear();
+                        mainWindow.cmbCurrentConsole.getItems().addAll(consoleItems);
+                        mainWindow.cmbCurrentConsole.setValue(userConfiguration.getSelectedConsole());
+                        shouldRefreshConsoles = false;
+                    }
+
+                    mainWindow.cmbCurrentCollection.getItems().clear();
+                    mainWindow.cmbCurrentCollection.getItems().addAll(libraryItems);
+                    mainWindow.cmbCurrentCollection.setValue(library);
                 });
 
                 updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));
@@ -100,6 +123,11 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
 
     public LoadLibrariesTask setMainWindow(MainWindow mainWindow) {
         this.mainWindow = mainWindow;
+        return this;
+    }
+
+    public LoadLibrariesTask setShouldRefreshConsoles(boolean shouldRefreshConsoles) {
+        this.shouldRefreshConsoles = shouldRefreshConsoles;
         return this;
     }
 }

@@ -58,9 +58,9 @@ public class TaskConfiguration {
     }
 
     @Bean
-    public LoadLibrariesTask loadLibrariesTask(UserConfiguration userConfiguration, LibraryDAO libraryDAO,
+    public LoadLibrariesTask loadLibrariesTask(UserConfiguration userConfiguration, LibraryDAO libraryDAO, ConsoleDAO consoleDAO,
                                                ResourceBundle resourceBundle) {
-        return new LoadLibrariesTask(userConfiguration, libraryDAO, resourceBundle);
+        return new LoadLibrariesTask(userConfiguration, libraryDAO, consoleDAO, resourceBundle);
     }
 
     @Bean

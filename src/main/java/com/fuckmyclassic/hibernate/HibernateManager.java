@@ -5,6 +5,8 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * Helper class to manage Hibernate entities. Handles things
  * such as wrapping commits in transactions, things like that.
@@ -39,6 +41,16 @@ public class HibernateManager {
             } catch (Exception e) {
                 if (tx != null) {
                     tx.rollback();
+                }
+
+                if (e instanceof ExecutionException) {
+                    // retry if this was due to multiple mutations happening at once
+                    try {
+                        Thread.sleep(500);
+                        performMutation(entity, operation);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
                 }
 
                 throw e;

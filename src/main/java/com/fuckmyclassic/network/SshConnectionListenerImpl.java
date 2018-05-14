@@ -4,8 +4,8 @@ import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
+import com.fuckmyclassic.ui.util.PlatformUtils;
 import com.fuckmyclassic.userconfig.UserConfiguration;
-import javafx.application.Platform;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,9 +62,10 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
         LOG.info(String.format("New console connected. Address: %s", address));
 
         // identify the console and load its libraries
-        Platform.runLater(() -> {
+        PlatformUtils.runAndWait(() -> {
             try {
                 taskProvider.getConsoleIdsAndPathsTask.setDstAddress(address);
+                taskProvider.loadLibrariesTask.setShouldRefreshConsoles(true);
 
                 sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONNECT_TASK_MESSAGE_KEY));
                 sequentialTaskRunnerDialog.setTaskCreators(taskProvider.getConsoleIdsAndPathsTask,

@@ -36,13 +36,28 @@ public class UiPropertyContainer {
     public final ObjectProperty<Paint> connectionStatusColor;
     /** A property to display how many games are currently selected */
     public final LongProperty numSelected;
+    /** ResourceBundle for getting localized connection status strings. */
+    private ResourceBundle resourceBundle;
 
     @Autowired
     public UiPropertyContainer() {
-        final ResourceBundle resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
+        this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
         this.selectedConsoleDisconnected = new SimpleBooleanProperty(true);
         this.selectedConsoleConnectionStatus = new SimpleStringProperty(resourceBundle.getString(DISCONNECTED_STATUS_KEY));
         this.connectionStatusColor = new SimpleObjectProperty<>(Paint.valueOf(DISCONNECTED_CIRCLE_COLOR));
         this.numSelected = new SimpleLongProperty(0);
+    }
+
+    /**
+     * Sets the connection related FXML properties.
+     * @param connected
+     */
+    public void setConnectedProperties(boolean connected) {
+        // set the connection status properties
+        this.selectedConsoleConnectionStatus.setValue(resourceBundle.getString(
+                connected ? CONNECTED_STATUS_KEY : DISCONNECTED_STATUS_KEY));
+        this.connectionStatusColor.setValue(Paint.valueOf(
+                connected ? CONNECTED_CIRCLE_COLOR : DISCONNECTED_CIRCLE_COLOR));
+        this.selectedConsoleDisconnected.setValue(!connected);
     }
 }

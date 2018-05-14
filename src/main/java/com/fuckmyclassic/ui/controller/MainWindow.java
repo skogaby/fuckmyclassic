@@ -2,6 +2,7 @@ package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
+import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Library;
@@ -17,6 +18,8 @@ import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -47,6 +50,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -59,6 +63,8 @@ import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
 @Component
 public class MainWindow {
 
+    private final String ON_CONSOLE_SWITCH_MESSAGE_KEY = "SwitchConsoleTaskLabel";
+
     static Logger LOG = LogManager.getLogger(MainWindow.class.getName());
 
     private static final String RESOURCE_BUNDLE_PATH = "i18n/MainWindow";
@@ -66,6 +72,7 @@ public class MainWindow {
     private static final String CONNECTED_GAMES_LABEL_KEY = "MainWindow.lblNumGamesSelected";
 
     // References to all of the UI objects that we need to manipulate
+    public ComboBox<Console> cmbCurrentConsole;
     public ComboBox<Library> cmbCurrentCollection;
     public TreeView<LibraryItem> treeViewGames;
     public Label lblApplicationId;
@@ -111,6 +118,8 @@ public class MainWindow {
     private final TaskProvider taskProvider;
     /** Container for UI properties we need to update */
     private final UiPropertyContainer uiPropertyContainer;
+    /** The DAO for accessing known consoles */
+    private final ConsoleDAO consoleDAO;
 
     /**
      * Constructor.
@@ -126,7 +135,8 @@ public class MainWindow {
                       final SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
                       final RsyncRunnerDialog rsyncRunnerDialog,
                       final TaskProvider taskProvider,
-                      final UiPropertyContainer uiPropertyContainer) {
+                      final UiPropertyContainer uiPropertyContainer,
+                      final ConsoleDAO consoleDAO) {
         this.userConfiguration = userConfiguration;
         this.pathConfiguration = pathConfiguration;
         this.membootHelper = membootHelper;
@@ -138,6 +148,7 @@ public class MainWindow {
         this.rsyncRunnerDialog = rsyncRunnerDialog;
         this.taskProvider = taskProvider;
         this.uiPropertyContainer = uiPropertyContainer;
+        this.consoleDAO = consoleDAO;
     }
 
     /**
@@ -149,6 +160,7 @@ public class MainWindow {
 
         this.initializeSaveCountSpinner();
         this.initializeBoxartImageView();
+        this.initializeConsoleSelection();
         this.libraryManager.initializeLibrarySelection(this);
         this.libraryManager.initializeApplicationTreeView(this);
         this.initializePlayerCountSelection();
@@ -158,6 +170,36 @@ public class MainWindow {
 
         // small hack to remove a circular dependency in the Spring dependency graph
         this.taskProvider.loadLibrariesTask.setMainWindow(this);
+    }
+
+    /**
+     * Initialize the combo box for console selection.
+     */
+    private void initializeConsoleSelection() {
+        final List<Console> consoles = this.consoleDAO.getAllConsoles();
+        final ObservableList<Console> items = FXCollections.observableArrayList(consoles);
+        this.cmbCurrentConsole.setItems(items);
+        this.cmbCurrentConsole.setValue(userConfiguration.getSelectedConsole());
+
+        this.cmbCurrentConsole.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (oldValue != null &&
+                    newValue != null &&
+                    !newValue.equals(this.userConfiguration.getSelectedConsole())) {
+                try {
+                    this.userConfiguration.setSelectedConsole(newValue);
+                    this.taskProvider.getConsoleIdsAndPathsTask.setDstAddress(newValue.getLastKnownAddress());
+
+                    this.sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONSOLE_SWITCH_MESSAGE_KEY));
+                    this.sequentialTaskRunnerDialog.setTaskCreators(taskProvider.loadLibrariesTask);
+                    this.sequentialTaskRunnerDialog.showDialog();
+
+                    this.uiPropertyContainer.setConnectedProperties(
+                            this.networkManager.isConnected(newValue.getLastKnownAddress()));
+                } catch (IOException e) {
+                    LOG.error(e);
+                }
+            }
+        });
     }
 
     /**

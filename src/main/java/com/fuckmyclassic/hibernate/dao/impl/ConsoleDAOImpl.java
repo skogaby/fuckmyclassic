@@ -31,6 +31,43 @@ public class ConsoleDAOImpl implements ConsoleDAO {
     }
 
     /**
+     * Get a list of all known consoles (or the default console if none exist)
+     */
+    @Override
+    public List<Console> getAllConsoles() {
+        final List<Console> consoles = session.createQuery("from Console").getResultList();
+
+        if (consoles.isEmpty()) {
+            final Console console = new Console();
+            console.setNickname(SharedConstants.DEFAULT_CONSOLE_NICKNAME);
+            console.setConsoleSid(SharedConstants.DEFAULT_CONSOLE_SID);
+            consoles.add(console);
+            this.hibernateManager.saveEntity(console);
+        }
+
+        return consoles;
+    }
+
+    /**
+     * Fetch a console from the database based on its SID.
+     * @param consoleSid The SID of the console to fetch
+     * @return The Console corresponding to the given SID
+     */
+    @Override
+    public Console getConsoleForSid(String consoleSid) {
+        final Query<Console> query = session.createQuery("from Console where console_sid = :sid");
+        query.setParameter("sid", consoleSid);
+        final List<Console> results = query.getResultList();
+        Console console = null;
+
+        if (!results.isEmpty()) {
+            console = results.get(0);
+        }
+
+        return console;
+    }
+
+    /**
      * Fetch a console from the database based on its SID, or create it if it doesn't exist.
      * @param consoleSid The SID of the console to fetch
      * @return The Console corresponding to the given SID

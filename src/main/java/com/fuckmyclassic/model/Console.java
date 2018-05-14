@@ -1,5 +1,6 @@
 package com.fuckmyclassic.model;
 
+import com.fuckmyclassic.shared.SharedConstants;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleLongProperty;
@@ -170,14 +171,21 @@ public class Console implements Externalizable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        // only compare SIDs in equality, the rest doesn't matter
-        return this.consoleSid.get().equals(((Console) obj).consoleSid.get()) &&
-                this.getId() == ((Console) obj).getId();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Console console = (Console) o;
+        return Objects.equals(consoleSid, console.consoleSid);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, consoleSid);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s (%s)", getNickname(), getConsoleType() == null ?
+                SharedConstants.DEFAULT_CONSOLE_SID : getConsoleType().getConsoleCode());
     }
 }

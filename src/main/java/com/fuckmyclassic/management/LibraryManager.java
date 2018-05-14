@@ -13,6 +13,7 @@ import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -62,9 +63,14 @@ public class LibraryManager {
     /** Container for UI properties we need to update */
     private final UiPropertyContainer uiPropertyContainer;
 
+
     @Autowired
-    public LibraryManager(final UserConfiguration userConfiguration, final PathConfiguration pathConfiguration, final HibernateManager hibernateManager,
-                          final LibraryDAO libraryDAO, final ImageResizer imageResizer, final UiPropertyContainer uiPropertyContainer) {
+    public LibraryManager(final UserConfiguration userConfiguration,
+                          final PathConfiguration pathConfiguration,
+                          final HibernateManager hibernateManager,
+                          final LibraryDAO libraryDAO,
+                          final ImageResizer imageResizer,
+                          final UiPropertyContainer uiPropertyContainer) {
         this.userConfiguration = userConfiguration;
         this.pathConfiguration = pathConfiguration;
         this.hibernateManager = hibernateManager;
@@ -94,7 +100,7 @@ public class LibraryManager {
                     .collect(Collectors.toList()).get(0);
         }
 
-        mainWindow.cmbCurrentCollection.getSelectionModel().select(library);
+        mainWindow.cmbCurrentCollection.setValue(library);
         this.userConfiguration.setSelectedLibraryID(library.getId());
 
         mainWindow.cmbCurrentCollection.valueProperty().addListener(((observable, oldValue, newValue) -> {
@@ -102,7 +108,6 @@ public class LibraryManager {
                 this.currentLibrary = newValue;
                 this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary);
                 mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
-                mainWindow.treeViewGames.getSelectionModel().selectFirst();
                 this.userConfiguration.setSelectedLibraryID(this.currentLibrary.getId());
             }
         }));
@@ -123,54 +128,57 @@ public class LibraryManager {
         // whenever an item is selected, we'll bind the data to the UI and save whatever app
         // was being viewed previously to the database
         mainWindow.treeViewGames.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            final Application app = newValue.getValue().getApplication();
-            final Application oldApp = oldValue == null ? null : oldValue.getValue().getApplication();
-            this.currentApp = app;
+            if (newValue != null) {
+                final Application app = newValue.getValue().getApplication();
+                final Application oldApp = oldValue == null ? null : oldValue.getValue().getApplication();
+                this.currentApp = app;
 
-            BindingHelper.bindProperty((ReadOnlyProperty<?>) app.applicationIdProperty(), mainWindow.lblApplicationId.textProperty());
-            BindingHelper.bindProperty(app.applicationSizeProperty().asString(), mainWindow.lblGameSize.textProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.compressedProperty(),
-                    app.compressedProperty(), mainWindow.chkCompressed.selectedProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.applicationNameProperty(),
-                    app.applicationNameProperty(), mainWindow.txtApplicationName.textProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.sortNameProperty(),
-                    app.sortNameProperty(), mainWindow.txtApplicationSortName.textProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.releaseDateProperty(),
-                    app.releaseDateProperty(), mainWindow.dateReleaseDate.valueProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.publisherProperty(),
-                    app.publisherProperty(), mainWindow.txtPublisher.textProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.saveCountProperty(),
-                    app.saveCountProperty(), mainWindow.spnSaveCount.getValueFactory().valueProperty());
-            BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.commandLineProperty(),
-                    app.commandLineProperty(), mainWindow.txtCommandLine.textProperty());
+                BindingHelper.bindProperty((ReadOnlyProperty<?>) app.applicationIdProperty(), mainWindow.lblApplicationId.textProperty());
+                BindingHelper.bindProperty(app.applicationSizeProperty().asString(), mainWindow.lblGameSize.textProperty());
 
-            mainWindow.radOnePlayer.setSelected(app.isSinglePlayer());
-            mainWindow.radTwoPlayerNoSim.setSelected(app.getNonSimultaneousMultiplayer());
-            mainWindow.radTwoPlayerSim.setSelected(app.isSimultaneousMultiplayer());
 
-            // set the box art if there is any
-            if (!StringUtils.isEmpty(app.getBoxArtPath())) {
-                try {
-                    mainWindow.imgBoxArtPreview.setImage(new Image(
-                            Paths.get(pathConfiguration.getBoxartDirectory(), app.getBoxArtPath()).toUri().toURL().toExternalForm()));
-                } catch (MalformedURLException e) {
-                    LOG.error(e);
+                BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.compressedProperty(),
+                        app.compressedProperty(), mainWindow.chkCompressed.selectedProperty());
+                BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.applicationNameProperty(),
+                        app.applicationNameProperty(), mainWindow.txtApplicationName.textProperty());
+                BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.sortNameProperty(),
+                        app.sortNameProperty(), mainWindow.txtApplicationSortName.textProperty());
+                BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.releaseDateProperty(),
+                        app.releaseDateProperty(), mainWindow.dateReleaseDate.valueProperty());
+                BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.publisherProperty(),
+                        app.publisherProperty(), mainWindow.txtPublisher.textProperty());
+                BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.saveCountProperty(),
+                        app.saveCountProperty(), mainWindow.spnSaveCount.getValueFactory().valueProperty());
+                BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.commandLineProperty(),
+                        app.commandLineProperty(), mainWindow.txtCommandLine.textProperty());
+
+                mainWindow.radOnePlayer.setSelected(app.isSinglePlayer());
+                mainWindow.radTwoPlayerNoSim.setSelected(app.getNonSimultaneousMultiplayer());
+                mainWindow.radTwoPlayerSim.setSelected(app.isSimultaneousMultiplayer());
+
+                // set the box art if there is any
+                if (!StringUtils.isEmpty(app.getBoxArtPath())) {
+                    try {
+                        mainWindow.imgBoxArtPreview.setImage(new Image(
+                                Paths.get(pathConfiguration.getBoxartDirectory(), app.getBoxArtPath()).toUri().toURL().toExternalForm()));
+                    } catch (MalformedURLException e) {
+                        LOG.error(e);
+                    }
+                } else {
+                    mainWindow.imgBoxArtPreview.setImage(new Image(Paths.get(
+                            PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString()));
                 }
-            } else {
-                mainWindow.imgBoxArtPreview.setImage(new Image(Paths.get(
-                        PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString()));
-            }
 
-            // persist the item to the database and refresh the application view
-            this.hibernateManager.updateEntity(oldApp);
-            mainWindow.treeViewGames.refresh();
+                // persist the item to the database and refresh the application view
+                this.hibernateManager.updateEntity(oldApp);
+                mainWindow.treeViewGames.refresh();
+            }
         });
 
         // load the library items for the current console and library
         LOG.info(String.format("Loading library for console %s from the database", this.userConfiguration.getLastConsoleSID()));
         this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary);
         mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
-        mainWindow.treeViewGames.getSelectionModel().selectFirst();
     }
 
     /**

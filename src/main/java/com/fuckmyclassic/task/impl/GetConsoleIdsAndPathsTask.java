@@ -5,6 +5,7 @@ import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.ConsoleType;
 import com.fuckmyclassic.network.NetworkManager;
+import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import com.jcraft.jsch.JSchException;
@@ -84,6 +85,13 @@ public class GetConsoleIdsAndPathsTask extends AbstractTaskCreator<String> {
                     hibernateManager.updateEntity(console);
                     userConfiguration.setSelectedConsole(console);
                     userConfiguration.addConnectedConsole(console);
+
+                    // if there is a saved console for UNKNOWN, go ahead and delete it also
+                    final Console defaultConsole = consoleDAO.getConsoleForSid(SharedConstants.DEFAULT_CONSOLE_SID);
+
+                    if (defaultConsole != null) {
+                        hibernateManager.deleteEntity(defaultConsole);
+                    }
 
                     updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));
                     updateProgress(1, 1);

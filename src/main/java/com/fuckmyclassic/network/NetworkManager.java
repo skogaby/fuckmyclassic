@@ -1,13 +1,12 @@
 package com.fuckmyclassic.network;
 
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
+import com.fuckmyclassic.ui.util.PlatformUtils;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import javafx.application.Platform;
-import javafx.scene.paint.Paint;
 import javafx.util.Duration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,17 +20,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.fuckmyclassic.network.NetworkConstants.CONNECTION_TIMEOUT;
 import static com.fuckmyclassic.network.NetworkConstants.CONSOLE_PORT;
 import static com.fuckmyclassic.network.NetworkConstants.USER_NAME;
-import static com.fuckmyclassic.ui.component.UiPropertyContainer.CONNECTED_CIRCLE_COLOR;
-import static com.fuckmyclassic.ui.component.UiPropertyContainer.CONNECTED_STATUS_KEY;
-import static com.fuckmyclassic.ui.component.UiPropertyContainer.DISCONNECTED_CIRCLE_COLOR;
-import static com.fuckmyclassic.ui.component.UiPropertyContainer.DISCONNECTED_STATUS_KEY;
 
 /**
  * Class to manage network connections to one or more Mini consoles. This
@@ -58,8 +52,6 @@ public class NetworkManager {
     private final UserConfiguration userConfiguration;
     /** List of listeners to alert when a new connection is made. */
     private Set<SshConnectionListener> connectionListeners;
-    /** ResourceBundle for getting localized connection status strings. */
-    private ResourceBundle resourceBundle;
 
     /**
      * Constructor.
@@ -75,7 +67,6 @@ public class NetworkManager {
         this.uiPropertyContainer = uiPropertyContainer;
         this.userConfiguration = userConfiguration;
         this.connectionListeners = new HashSet<>();
-        this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
         this.connectedConsoles = new HashMap<>();
 
         // set a background service that polls for a connection periodically
@@ -321,18 +312,6 @@ public class NetworkManager {
     }
 
     /**
-     * Sets the connection related FXML properties.
-     * @param connected
-     */
-    public void setConnectedProperties(boolean connected) {
-        // set the connection status properties
-        this.uiPropertyContainer.selectedConsoleConnectionStatus.setValue(resourceBundle.getString(
-                connected ? CONNECTED_STATUS_KEY : DISCONNECTED_STATUS_KEY));
-        this.uiPropertyContainer.connectionStatusColor.setValue(Paint.valueOf(
-                connected ? CONNECTED_CIRCLE_COLOR : DISCONNECTED_CIRCLE_COLOR));
-    }
-
-    /**
      * Notify the connection handlers of the current status if it's changed.
      * @param address The address of the console that generated the event
      * @param connected Whether or not the console is connected
@@ -353,16 +332,11 @@ public class NetworkManager {
                 }
 
                 if (userConfiguration.getSelectedConsole().getLastKnownAddress().equals(address)) {
-                    this.uiPropertyContainer.selectedConsoleDisconnected.setValue(!connected);
-                    Platform.runLater(() -> setConnectedProperties(connected));
+                    PlatformUtils.runAndWait(() -> uiPropertyContainer.setConnectedProperties(connected));
                 }
             } catch (Exception e) {
                 LOG.error(e);
             }
         }
-    }
-
-    public Map<String, Session> getConnectedConsoles() {
-        return connectedConsoles;
     }
 }

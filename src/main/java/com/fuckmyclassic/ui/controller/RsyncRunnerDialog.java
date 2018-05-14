@@ -2,7 +2,7 @@ package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.impl.RsyncDataTask;
-import javafx.application.Platform;
+import com.fuckmyclassic.ui.util.PlatformUtils;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -64,7 +64,7 @@ public class RsyncRunnerDialog {
             LOG.info(output);
 
             if (output.contains("CLV-")) {
-                Platform.runLater(() -> lblSubTaskMessage.setText(output));
+                PlatformUtils.runAndWait(() -> lblSubTaskMessage.setText(output));
             }
 
             if (output.contains("to-check") ||
@@ -72,12 +72,12 @@ public class RsyncRunnerDialog {
                 final String index = output.trim().split("\\s+")[5].split("=")[1];
                 final int first = Integer.parseInt(index.split("/")[0]);
                 final int second = Integer.parseInt(index.split("/")[1].split("\\)")[0]);
-                Platform.runLater(() -> prgMainTaskProgress.setProgress(((double) second - first) / second));
+                PlatformUtils.runAndWait(() -> prgMainTaskProgress.setProgress(((double) second - first) / second));
             }
 
             if (output.contains("%")) {
                 int percentage = Integer.parseInt(output.trim().split("\\s+")[1].split("%")[0]);
-                Platform.runLater(() -> prgSubTaskProgress.setProgress(((double) percentage) / 100));
+                PlatformUtils.runAndWait(() -> prgSubTaskProgress.setProgress(((double) percentage) / 100));
             }
         });
 

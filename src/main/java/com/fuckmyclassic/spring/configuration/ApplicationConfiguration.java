@@ -35,9 +35,10 @@ public class ApplicationConfiguration {
     public MainWindow mainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
                                  LibraryManager libraryManager, NetworkManager networkManager, ResourceBundle tasksResourceBundle,
                                  RsyncRunnerDialog rsyncRunnerDialog, SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider,
-                                 UiPropertyContainer uiPropertyContainer, PathConfiguration pathConfiguration) {
+                                 UiPropertyContainer uiPropertyContainer, PathConfiguration pathConfiguration, ConsoleDAO consoleDAO) {
         return new MainWindow(userConfiguration, pathConfiguration, membootHelper, kernelFlasher, libraryManager,
-                networkManager, tasksResourceBundle, sequentialTaskRunnerDialog, rsyncRunnerDialog, taskProvider, uiPropertyContainer);
+                networkManager, tasksResourceBundle, sequentialTaskRunnerDialog, rsyncRunnerDialog, taskProvider,
+                uiPropertyContainer, consoleDAO);
     }
 
     @Bean
