@@ -64,11 +64,11 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
         // identify the console and load its libraries
         PlatformUtils.runAndWait(() -> {
             try {
-                taskProvider.getConsoleIdsAndPathsTask.setDstAddress(address);
+                taskProvider.identifyConnectedConsoleTask.setDstAddress(address);
                 taskProvider.loadLibrariesTask.setShouldRefreshConsoles(true);
 
                 sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONNECT_TASK_MESSAGE_KEY));
-                sequentialTaskRunnerDialog.setTaskCreators(taskProvider.getConsoleIdsAndPathsTask,
+                sequentialTaskRunnerDialog.setTaskCreators(taskProvider.identifyConnectedConsoleTask,
                         taskProvider.updateUnknownLibrariesTask, taskProvider.loadLibrariesTask);
                 sequentialTaskRunnerDialog.showDialog();
             } catch (IOException e) {

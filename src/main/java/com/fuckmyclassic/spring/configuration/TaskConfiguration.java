@@ -7,7 +7,7 @@ import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.task.impl.CreateTempDataTask;
-import com.fuckmyclassic.task.impl.GetConsoleIdsAndPathsTask;
+import com.fuckmyclassic.task.impl.IdentifyConnectedConsoleTask;
 import com.fuckmyclassic.task.impl.LoadLibrariesTask;
 import com.fuckmyclassic.task.impl.MountGamesAndStartUiTask;
 import com.fuckmyclassic.task.impl.RsyncDataTask;
@@ -33,20 +33,20 @@ import java.util.ResourceBundle;
 public class TaskConfiguration {
 
     @Bean
-    public TaskProvider taskProvider(GetConsoleIdsAndPathsTask getConsoleIdsAndPathsTask, UpdateUnknownLibrariesTask updateUnknownLibrariesTask,
+    public TaskProvider taskProvider(IdentifyConnectedConsoleTask identifyConnectedConsoleTask, UpdateUnknownLibrariesTask updateUnknownLibrariesTask,
                                      LoadLibrariesTask loadLibrariesTask, CreateTempDataTask createTempDataTask, RsyncDataTask rsyncDataTask,
                                      ShowSplashScreenAndStopUiTask showSplashScreenAndStopUiTask, UnmountGamesTask unmountGamesTask,
                                      MountGamesAndStartUiTask mountGamesAndStartUiTask) {
-        return new TaskProvider(createTempDataTask, getConsoleIdsAndPathsTask, loadLibrariesTask,
+        return new TaskProvider(createTempDataTask, identifyConnectedConsoleTask, loadLibrariesTask,
                 updateUnknownLibrariesTask, rsyncDataTask, showSplashScreenAndStopUiTask, unmountGamesTask,
                 mountGamesAndStartUiTask);
     }
 
     @Bean
-    public GetConsoleIdsAndPathsTask getConsoleIdsAndPathsTask(ResourceBundle resourceBundle, NetworkManager networkManager,
-                                                               UserConfiguration userConfiguration, ConsoleDAO consoleDAO,
-                                                               HibernateManager hibernateManager) {
-        return new GetConsoleIdsAndPathsTask(resourceBundle, networkManager, userConfiguration, consoleDAO, hibernateManager);
+    public IdentifyConnectedConsoleTask getConsoleIdsAndPathsTask(ResourceBundle resourceBundle, NetworkManager networkManager,
+                                                                  UserConfiguration userConfiguration, ConsoleDAO consoleDAO,
+                                                                  HibernateManager hibernateManager) {
+        return new IdentifyConnectedConsoleTask(resourceBundle, networkManager, userConfiguration, consoleDAO, hibernateManager);
     }
 
     @Bean

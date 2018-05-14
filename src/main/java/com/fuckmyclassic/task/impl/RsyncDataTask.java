@@ -52,7 +52,7 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
     private final String sshExePath;
 
     @Autowired
-    public RsyncDataTask(final ResourceBundle resourceBundle) throws IOException {
+    public RsyncDataTask(final ResourceBundle resourceBundle) {
         this.resourceBundle = resourceBundle;
 
         // get the ssh.exe path

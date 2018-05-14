@@ -1,6 +1,7 @@
 package com.fuckmyclassic.network;
 
 import net.posick.mDNS.Browse;
+import net.posick.mDNS.MulticastDNSMulticastOnlyQuerier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ public class MdnsListener {
     public MdnsListener() throws IOException {
         this.advertisedAddresses = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
         this.browse = new Browse(new String[] { SERVICE_TYPE });
+        this.browse.setQuerier(new MulticastDNSMulticastOnlyQuerier(false));
     }
 
     /**

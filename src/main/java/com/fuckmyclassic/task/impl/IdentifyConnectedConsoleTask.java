@@ -7,9 +7,11 @@ import com.fuckmyclassic.model.ConsoleType;
 import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
+import com.fuckmyclassic.ui.util.PlatformUtils;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import com.jcraft.jsch.JSchException;
 import javafx.concurrent.Task;
+import javafx.scene.control.TextInputDialog;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -24,12 +27,18 @@ import java.util.ResourceBundle;
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Component
-public class GetConsoleIdsAndPathsTask extends AbstractTaskCreator<String> {
+public class IdentifyConnectedConsoleTask extends AbstractTaskCreator<String> {
 
-    static Logger LOG = LogManager.getLogger(GetConsoleIdsAndPathsTask.class.getName());
+    static Logger LOG = LogManager.getLogger(IdentifyConnectedConsoleTask.class.getName());
 
-    private final String IN_PROGRESS_MESSAGE_KEY = "GetConsoleIdsAndPathsTask.inProgressMessage";
-    private final String COMPLETE_MESSAGE_KEY = "GetConsoleIdsAndPathsTask.completeMessage";
+    // Resource keys for the dialog that ran this task
+    private final String IN_PROGRESS_MESSAGE_KEY = "IdentifyConnectedConsoleTask.inProgressMessage";
+    private final String COMPLETE_MESSAGE_KEY = "IdentifyConnectedConsoleTask.completeMessage";
+
+    // Resource keys for the dialog to let the user name a new console
+    private final String NEW_CONSOLE_DIALOG_TITLE_KEY = "IdentifyConnectedConsoleTask.newConsoleDialog.title";
+    private final String NEW_CONSOLE_DIALOG_HEADER_KEY = "IdentifyConnectedConsoleTask.newConsoleDialog.header";
+    private final String NEW_CONSOLE_DIALOG_CONTENT_KEY = "IdentifyConnectedConsoleTask.newConsoleDialog.content";
 
     /** The connection used for SSH commands. */
     private final NetworkManager networkManager;
@@ -45,11 +54,11 @@ public class GetConsoleIdsAndPathsTask extends AbstractTaskCreator<String> {
     private String dstAddress;
 
     @Autowired
-    public GetConsoleIdsAndPathsTask(final ResourceBundle resourceBundle,
-                                     final NetworkManager networkManager,
-                                     final UserConfiguration userConfiguration,
-                                     final ConsoleDAO consoleDAO,
-                                     final HibernateManager hibernateManager) {
+    public IdentifyConnectedConsoleTask(final ResourceBundle resourceBundle,
+                                        final NetworkManager networkManager,
+                                        final UserConfiguration userConfiguration,
+                                        final ConsoleDAO consoleDAO,
+                                        final HibernateManager hibernateManager) {
         this.resourceBundle = resourceBundle;
         this.networkManager = networkManager;
         this.userConfiguration = userConfiguration;
@@ -78,7 +87,30 @@ public class GetConsoleIdsAndPathsTask extends AbstractTaskCreator<String> {
                     LOG.info(String.format("Detected console type: %s", consoleType));
                     LOG.info(String.format("Detected console sync path: %s", syncPath));
 
-                    final Console console = consoleDAO.getOrCreateConsoleForSid(consoleSid);
+                    final Console console;
+
+                    // we've never seen this console before, ask the user for a name for it
+                    if (consoleDAO.getConsoleForSid(consoleSid) == null) {
+                        console = consoleDAO.createConsoleForSid(consoleSid);
+
+                        PlatformUtils.runAndWait(() -> {
+                            final TextInputDialog nameDialog = new TextInputDialog(SharedConstants.DEFAULT_CONSOLE_NICKNAME);
+                            nameDialog.setTitle(resourceBundle.getString(NEW_CONSOLE_DIALOG_TITLE_KEY));
+                            nameDialog.setHeaderText(resourceBundle.getString(NEW_CONSOLE_DIALOG_HEADER_KEY));
+                            nameDialog.setContentText(resourceBundle.getString(NEW_CONSOLE_DIALOG_CONTENT_KEY));
+                            nameDialog.setGraphic(null);
+                            final Optional<String> result = nameDialog.showAndWait();
+
+                            if (result.isPresent()) {
+                                console.setNickname(result.get().trim());
+                            } else {
+                                console.setNickname(SharedConstants.DEFAULT_CONSOLE_NICKNAME);
+                            }
+                        });
+                    } else {
+                        console = consoleDAO.getConsoleForSid(consoleSid);
+                    }
+
                     console.setConsoleSyncPath(syncPath);
                     console.setConsoleType(ConsoleType.fromCode(consoleType));
                     console.setLastKnownAddress(dstAddress);
@@ -100,13 +132,13 @@ public class GetConsoleIdsAndPathsTask extends AbstractTaskCreator<String> {
                     dstAddress = null;
                     return consoleSid;
                 } else {
-                    throw new RuntimeException("Destination address wasn't set for GetConsoleIdsAndPathsTask");
+                    throw new RuntimeException("Destination address wasn't set for IdentifyConnectedConsoleTask");
                 }
             }
         };
     }
 
-    public GetConsoleIdsAndPathsTask setDstAddress(String dstAddress) {
+    public IdentifyConnectedConsoleTask setDstAddress(String dstAddress) {
         this.dstAddress = dstAddress;
         return this;
     }

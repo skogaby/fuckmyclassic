@@ -187,7 +187,6 @@ public class MainWindow {
                     !newValue.equals(this.userConfiguration.getSelectedConsole())) {
                 try {
                     this.userConfiguration.setSelectedConsole(newValue);
-                    this.taskProvider.getConsoleIdsAndPathsTask.setDstAddress(newValue.getLastKnownAddress());
 
                     this.sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONSOLE_SWITCH_MESSAGE_KEY));
                     this.sequentialTaskRunnerDialog.setTaskCreators(taskProvider.loadLibrariesTask);

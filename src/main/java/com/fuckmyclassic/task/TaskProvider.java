@@ -1,7 +1,7 @@
 package com.fuckmyclassic.task;
 
 import com.fuckmyclassic.task.impl.CreateTempDataTask;
-import com.fuckmyclassic.task.impl.GetConsoleIdsAndPathsTask;
+import com.fuckmyclassic.task.impl.IdentifyConnectedConsoleTask;
 import com.fuckmyclassic.task.impl.LoadLibrariesTask;
 import com.fuckmyclassic.task.impl.MountGamesAndStartUiTask;
 import com.fuckmyclassic.task.impl.RsyncDataTask;
@@ -21,7 +21,7 @@ public class TaskProvider {
 
     // Tasks to provide
     public final CreateTempDataTask createTempDataTask;
-    public final GetConsoleIdsAndPathsTask getConsoleIdsAndPathsTask;
+    public final IdentifyConnectedConsoleTask identifyConnectedConsoleTask;
     public final LoadLibrariesTask loadLibrariesTask;
     public final UpdateUnknownLibrariesTask updateUnknownLibrariesTask;
     public final RsyncDataTask rsyncDataTask;
@@ -31,7 +31,7 @@ public class TaskProvider {
 
     @Autowired
     public TaskProvider(final CreateTempDataTask createTempDataTask,
-                        final GetConsoleIdsAndPathsTask getConsoleIdsAndPathsTask,
+                        final IdentifyConnectedConsoleTask identifyConnectedConsoleTask,
                         final LoadLibrariesTask loadLibrariesTask,
                         final UpdateUnknownLibrariesTask updateUnknownLibrariesTask,
                         final RsyncDataTask rsyncDataTask,
@@ -39,7 +39,7 @@ public class TaskProvider {
                         final UnmountGamesTask unmountGamesTask,
                         final MountGamesAndStartUiTask mountGamesAndStartUiTask) {
         this.createTempDataTask = createTempDataTask;
-        this.getConsoleIdsAndPathsTask = getConsoleIdsAndPathsTask;
+        this.identifyConnectedConsoleTask = identifyConnectedConsoleTask;
         this.loadLibrariesTask = loadLibrariesTask;
         this.updateUnknownLibrariesTask = updateUnknownLibrariesTask;
         this.rsyncDataTask = rsyncDataTask;

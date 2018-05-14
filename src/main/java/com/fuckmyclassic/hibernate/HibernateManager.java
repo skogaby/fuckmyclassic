@@ -5,6 +5,7 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -15,11 +16,17 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class HibernateManager {
 
+    private final int MINIMUM_RETRY_SLEEP = 300;
+    private final int MAXIMUM_RETRY_SLEEP = 500;
+
+    /** Random number generator for simple retry jitter on concurrent modifications */
+    private final Random random;
     /** The actual session handle to the database. */
     private final Session hibernateSession;
 
     @Autowired
     public HibernateManager(final Session hibernateSession) {
+        this.random = new Random(System.currentTimeMillis());
         this.hibernateSession = hibernateSession;
     }
 
@@ -46,7 +53,8 @@ public class HibernateManager {
                 if (e instanceof ExecutionException) {
                     // retry if this was due to multiple mutations happening at once
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(this.random.nextInt(MAXIMUM_RETRY_SLEEP - MINIMUM_RETRY_SLEEP) +
+                                MINIMUM_RETRY_SLEEP);
                         performMutation(entity, operation);
                     } catch (InterruptedException e1) {
                         e1.printStackTrace();

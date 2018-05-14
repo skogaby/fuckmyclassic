@@ -3,6 +3,7 @@ package com.fuckmyclassic.ui.controller;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.impl.RsyncDataTask;
 import com.fuckmyclassic.ui.util.PlatformUtils;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -64,7 +65,7 @@ public class RsyncRunnerDialog {
             LOG.info(output);
 
             if (output.contains("CLV-")) {
-                PlatformUtils.runAndWait(() -> lblSubTaskMessage.setText(output));
+                Platform.runLater(() -> lblSubTaskMessage.setText(output));
             }
 
             if (output.contains("to-check") ||
@@ -72,12 +73,12 @@ public class RsyncRunnerDialog {
                 final String index = output.trim().split("\\s+")[5].split("=")[1];
                 final int first = Integer.parseInt(index.split("/")[0]);
                 final int second = Integer.parseInt(index.split("/")[1].split("\\)")[0]);
-                PlatformUtils.runAndWait(() -> prgMainTaskProgress.setProgress(((double) second - first) / second));
+                Platform.runLater(() -> prgMainTaskProgress.setProgress(((double) second - first) / second));
             }
 
             if (output.contains("%")) {
                 int percentage = Integer.parseInt(output.trim().split("\\s+")[1].split("%")[0]);
-                PlatformUtils.runAndWait(() -> prgSubTaskProgress.setProgress(((double) percentage) / 100));
+                Platform.runLater(() -> prgSubTaskProgress.setProgress(((double) percentage) / 100));
             }
         });
 
@@ -85,6 +86,12 @@ public class RsyncRunnerDialog {
 
         // close this window after everything is done
         task.setOnSucceeded(event -> {
+            ((Stage) this.lblMainMessage.getScene().getWindow()).close();
+        });
+
+        task.setOnFailed(event -> {
+            LOG.error(event.getSource().getMessage());
+            event.getSource().getException().printStackTrace();
             ((Stage) this.lblMainMessage.getScene().getWindow()).close();
         });
 

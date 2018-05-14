@@ -30,6 +30,13 @@ public interface ConsoleDAO {
     Console getConsoleForSid(String consoleSid);
 
     /**
+     * Creates a new Console in the database for the given console SID
+     * @param consoleSid The SID of the new console
+     * @return The newly created Console
+     */
+    Console createConsoleForSid(String consoleSid);
+
+    /**
      * Fetch a console from the database based on its last known IP address,
      * or null if no such console exists.
      * @param lastKnownAddress The last known IP address of the console
