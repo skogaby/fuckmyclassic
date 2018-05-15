@@ -62,9 +62,8 @@ public class ShowSplashScreenAndStopUiTask extends AbstractTaskCreator<Void> {
 
                 LOG.info(String.format("Showing splash screen on \"%s\"", console.getNickname()));
 
-                networkManager.runCommand(console.getLastKnownAddress(), "uistop; usleep 500000");
-                int result = networkManager.runCommandWithStreams(console.getLastKnownAddress(),
-                        "gunzip -c - > /dev/fb0",
+                networkManager.runCommand("uistop; usleep 500000");
+                int result = networkManager.runCommandWithStreams("gunzip -c - > /dev/fb0",
                         new FileInputStream(SPLASH_SCREEN_PATH), null, null);
 
                 if (result != 0) {

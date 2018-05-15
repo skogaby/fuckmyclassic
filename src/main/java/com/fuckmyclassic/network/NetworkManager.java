@@ -171,6 +171,17 @@ public class NetworkManager {
     }
 
     /**
+     * Runs a command on the active console, throwing an exception if the exit code was non-zero.
+     * @param command The command to execute
+     * @return The output of the command
+     * @throws IOException
+     * @throws JSchException
+     */
+    public String runCommand(final String command) throws IOException, JSchException {
+        return runCommand(this.userConfiguration.getSelectedConsole().getLastKnownAddress(), command);
+    }
+
+    /**
      * Runs a command on the console, throwing an exception if the exit code was non-zero.
      * @param address The address of the console to run the command on
      * @param command The command to execute
@@ -180,6 +191,18 @@ public class NetworkManager {
      */
     public String runCommand(final String address, final String command) throws IOException, JSchException {
         return runCommand(address, command, true);
+    }
+
+    /**
+     * Runs a command on the console, optionally throwing an exception if the exit code was non-zero.
+     * @param command The command to execute
+     * @param throwOnNonZero Whether or not to throw an exception if the exit code was non-zero
+     * @return The output of the command
+     * @throws IOException
+     * @throws JSchException
+     */
+    public String runCommand(final String command, boolean throwOnNonZero) throws IOException, JSchException {
+        return runCommand(this.userConfiguration.getSelectedConsole().getLastKnownAddress(), command, throwOnNonZero);
     }
 
     /**
@@ -243,7 +266,7 @@ public class NetworkManager {
                     }
                 }
 
-                final SshCommandResult result = new SshCommandResult(channel.getExitStatus(), outputString.toString());
+                final SshCommandResult result = new SshCommandResult(channel.getExitStatus(), outputString.toString().trim());
 
                 LOG.debug(String.format("[SSH] %s # exit code: %d", command, result.getExitCode()));
                 LOG.trace(result.getOutput());
@@ -255,6 +278,24 @@ public class NetworkManager {
         } else {
             throw new RuntimeException("Cannot execute SSH command, the connection is null or terminated");
         }
+    }
+
+    /**
+     * Runs a command remotely through SSH on the active console, redirecting the stdin/stdout/stderr streams locally.
+     * @param command The remote command to run
+     * @param stdin The stdin stream to use for the command
+     * @param stdout The stdout stream to use for the command
+     * @param stderr The stderr stream to use for the command
+     * @return The exit status of the command
+     * @throws JSchException
+     * @throws IOException
+     */
+    public int runCommandWithStreams(final String command,
+                                     final InputStream stdin,
+                                     final OutputStream stdout,
+                                     final OutputStream stderr) throws IOException, JSchException {
+        return runCommandWithStreams(this.userConfiguration.getSelectedConsole().getLastKnownAddress(),
+                command, stdin, stdout, stderr);
     }
 
     /**

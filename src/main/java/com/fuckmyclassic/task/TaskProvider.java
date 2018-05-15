@@ -1,6 +1,7 @@
 package com.fuckmyclassic.task;
 
 import com.fuckmyclassic.task.impl.CreateTempDataTask;
+import com.fuckmyclassic.task.impl.DumpOriginalGamesTask;
 import com.fuckmyclassic.task.impl.IdentifyConnectedConsoleTask;
 import com.fuckmyclassic.task.impl.LoadLibrariesTask;
 import com.fuckmyclassic.task.impl.MountGamesAndStartUiTask;
@@ -28,6 +29,7 @@ public class TaskProvider {
     public final ShowSplashScreenAndStopUiTask showSplashScreenAndStopUiTask;
     public final UnmountGamesTask unmountGamesTask;
     public final MountGamesAndStartUiTask mountGamesAndStartUiTask;
+    public final DumpOriginalGamesTask dumpOriginalGamesTask;
 
     @Autowired
     public TaskProvider(final CreateTempDataTask createTempDataTask,
@@ -37,7 +39,8 @@ public class TaskProvider {
                         final RsyncDataTask rsyncDataTask,
                         final ShowSplashScreenAndStopUiTask showSplashScreenAndStopUiTask,
                         final UnmountGamesTask unmountGamesTask,
-                        final MountGamesAndStartUiTask mountGamesAndStartUiTask) {
+                        final MountGamesAndStartUiTask mountGamesAndStartUiTask,
+                        final DumpOriginalGamesTask dumpOriginalGamesTask) {
         this.createTempDataTask = createTempDataTask;
         this.identifyConnectedConsoleTask = identifyConnectedConsoleTask;
         this.loadLibrariesTask = loadLibrariesTask;
@@ -46,5 +49,6 @@ public class TaskProvider {
         this.showSplashScreenAndStopUiTask = showSplashScreenAndStopUiTask;
         this.unmountGamesTask = unmountGamesTask;
         this.mountGamesAndStartUiTask = mountGamesAndStartUiTask;
+        this.dumpOriginalGamesTask = dumpOriginalGamesTask;
     }
 }

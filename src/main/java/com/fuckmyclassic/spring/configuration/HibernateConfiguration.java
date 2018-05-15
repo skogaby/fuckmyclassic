@@ -83,7 +83,7 @@ public class HibernateConfiguration {
         // locate the database in the user directory, and replace backslashes with forward slashes so it works on
         // Windows correctly, per sqlite-jdbc's spec
         source.setUrl(String.format("jdbc:sqlite:%s",
-                Paths.get(pathConfiguration.getExternalDirectory(), SQLITE_DATABASE).toString().replace('\\', '/')));
+                Paths.get(pathConfiguration.externalDirectory, SQLITE_DATABASE).toString().replace('\\', '/')));
 
         return source;
     }

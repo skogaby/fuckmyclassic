@@ -40,14 +40,14 @@ public class PathConfiguration {
     /** The name of the pixelart folder for a game */
     public static final String PIXELART_DIR = "pixelart";
 
-    /** Directory where to store actual game data */
+    /** Directory where actual game data is stored */
     public static final String GAMES_DIRECTORY = "games";
+
+    /** Directory where the untouched data for the original games is stored */
+    public static final String ORIGINAL_GAMES_DIRECTORY = "original_games";
 
     /** Directory where boxart is stored */
     public static String BOXART_DIRECTORY = "boxart";
-
-    /** Temp direcfinal tory where we create the game structure and symlink the data to. */
-    public static final String TEMP_DIRECTORY = "temp";
 
     /** Directory where resource images are stored. */
     public static final String IMAGES_DIRECTORY = "images";
@@ -66,19 +66,22 @@ public class PathConfiguration {
     private final boolean portable;
 
     /** The directory of the running program itself */
-    private final String programDirectory;
+    public final String programDirectory;
 
     /** The directory where we store userdata -- for portable mode, this is the same as internalDirectory */
-    private final String externalDirectory;
+    public final String externalDirectory;
 
     /** Directory where the local games storage is */
-    private final String gamesDirectory;
+    public final String gamesDirectory;
 
     /** Directory where the local boxart storage is */
-    private final String boxartDirectory;
+    public final String boxartDirectory;
 
     /** The directory to use for temporary data */
-    private final String tempDirectory;
+    public final String tempDirectory;
+
+    /** The directory for the original games cache */
+    public final String originalGamesDirectory;
 
     @Autowired
     public PathConfiguration() throws IOException {
@@ -103,6 +106,7 @@ public class PathConfiguration {
         // setup the portable/non-portable dependent paths
         this.gamesDirectory = Paths.get(this.externalDirectory, GAMES_DIRECTORY).toString();
         this.boxartDirectory = Paths.get(this.externalDirectory, BOXART_DIRECTORY).toString();
+        this.originalGamesDirectory = Paths.get(this.externalDirectory, ORIGINAL_GAMES_DIRECTORY).toString();
 
         final File tempFolderFlag = new File(Paths.get(programDirectory, TEMP_FOLDER_FLAG).toString());
         this.tempDirectory = tempFolderFlag.exists() ?
@@ -112,25 +116,5 @@ public class PathConfiguration {
 
     public boolean isPortable() {
         return portable;
-    }
-
-    public String getProgramDirectory() {
-        return programDirectory;
-    }
-
-    public String getExternalDirectory() {
-        return externalDirectory;
-    }
-
-    public String getGamesDirectory() {
-        return gamesDirectory;
-    }
-
-    public String getBoxartDirectory() {
-        return boxartDirectory;
-    }
-
-    public String getTempDirectory() {
-        return tempDirectory;
     }
 }

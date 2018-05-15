@@ -160,7 +160,7 @@ public class LibraryManager {
                 if (!StringUtils.isEmpty(app.getBoxArtPath())) {
                     try {
                         mainWindow.imgBoxArtPreview.setImage(new Image(
-                                Paths.get(pathConfiguration.getBoxartDirectory(), app.getBoxArtPath()).toUri().toURL().toExternalForm()));
+                                Paths.get(pathConfiguration.boxartDirectory, app.getBoxArtPath()).toUri().toURL().toExternalForm()));
                     } catch (MalformedURLException e) {
                         LOG.error(e);
                     }
@@ -200,20 +200,20 @@ public class LibraryManager {
             BufferedImage inputImage = ImageIO.read(boxArt);
             BufferedImage resizedImage = this.imageResizer.resizeProportionally(inputImage,
                     SharedConstants.BOXART_SIZE, SharedConstants.BOXART_SIZE);
-            File outputFile = new File(Paths.get(this.pathConfiguration.getBoxartDirectory(), newBoxartFile).toUri());
+            File outputFile = new File(Paths.get(this.pathConfiguration.boxartDirectory, newBoxartFile).toUri());
             ImageIO.write(resizedImage, "png", outputFile);
 
             // now, do the thumbnail
             resizedImage = this.imageResizer.resizeProportionally(inputImage,
                     SharedConstants.THUMBNAIL_SIZE, SharedConstants.THUMBNAIL_SIZE);
-            outputFile = new File(Paths.get(this.pathConfiguration.getBoxartDirectory(), newThumbnailFile).toUri());
+            outputFile = new File(Paths.get(this.pathConfiguration.boxartDirectory, newThumbnailFile).toUri());
             ImageIO.write(resizedImage, "png", outputFile);
 
             // also update the Application itself
             this.currentApp.setBoxArtPath(newBoxartFile);
             this.hibernateManager.updateEntity(currentApp);
 
-            return new Image(Paths.get(this.pathConfiguration.getBoxartDirectory(), newBoxartFile).toUri().toURL().toExternalForm());
+            return new Image(Paths.get(this.pathConfiguration.boxartDirectory, newBoxartFile).toUri().toURL().toExternalForm());
         } else {
             return null;
         }

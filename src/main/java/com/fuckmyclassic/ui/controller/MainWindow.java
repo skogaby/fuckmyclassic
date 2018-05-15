@@ -355,7 +355,7 @@ public class MainWindow {
         sequentialTaskRunnerDialog.showDialog();
 
         // run the rsync task
-        rsyncRunnerDialog.setSource(this.pathConfiguration.getTempDirectory() + File.separator);
+        rsyncRunnerDialog.setSource(this.pathConfiguration.tempDirectory + File.separator);
         rsyncRunnerDialog.setDestination(String.format(
                 "%s@%s:%s/%s/", NetworkConstants.USER_NAME, selectedConsole.getLastKnownAddress(),
                 selectedConsole.getConsoleSyncPath(), selectedConsole.getConsoleType().getConsoleCode()));

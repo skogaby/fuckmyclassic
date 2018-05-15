@@ -69,7 +69,7 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
 
                 sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONNECT_TASK_MESSAGE_KEY));
                 sequentialTaskRunnerDialog.setTaskCreators(taskProvider.identifyConnectedConsoleTask,
-                        taskProvider.updateUnknownLibrariesTask, taskProvider.loadLibrariesTask);
+                        taskProvider.updateUnknownLibrariesTask, taskProvider.loadLibrariesTask, taskProvider.dumpOriginalGamesTask);
                 sequentialTaskRunnerDialog.showDialog();
             } catch (IOException e) {
                 LOG.error(e);

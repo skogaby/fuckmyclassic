@@ -1,5 +1,7 @@
 package com.fuckmyclassic;
 
+import com.fuckmyclassic.model.Console;
+import com.fuckmyclassic.model.ConsoleType;
 import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.network.SshConnectionListener;
 import com.fuckmyclassic.spring.configuration.ApplicationConfiguration;
@@ -109,24 +111,26 @@ public class Main extends Application {
     public static void setupRuntimeDirectories() throws URISyntaxException, IOException {
         // create the directories
         final PathConfiguration pathConfiguration = applicationContext.getBean(PathConfiguration.class);
-        final File gamesDir = new File(pathConfiguration.getGamesDirectory());
-        final File boxartDir = new File(pathConfiguration.getBoxartDirectory());
-        gamesDir.mkdirs();
-        boxartDir.mkdirs();
+        new File(pathConfiguration.gamesDirectory).mkdirs();
+        new File(pathConfiguration.boxartDirectory).mkdirs();
+
+        for (ConsoleType consoleType : ConsoleType.values()) {
+            new File(Paths.get(pathConfiguration.originalGamesDirectory, consoleType.getConsoleCode()).toString()).mkdirs();
+        }
 
         // prepopulate static assets
         URL warningResource = ClassLoader.getSystemResource(
                 Paths.get(PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString());
         Files.copy(
                 Paths.get(warningResource.toURI()).toFile().toPath(),
-                Paths.get(pathConfiguration.getBoxartDirectory(), SharedConstants.WARNING_IMAGE),
+                Paths.get(pathConfiguration.boxartDirectory, SharedConstants.WARNING_IMAGE),
                 StandardCopyOption.REPLACE_EXISTING);
 
         warningResource = ClassLoader.getSystemResource(
                 Paths.get(PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL).toString());
         Files.copy(
                 Paths.get(warningResource.toURI()).toFile().toPath(),
-                Paths.get(pathConfiguration.getBoxartDirectory(), SharedConstants.WARNING_IMAGE_THUMBNAIL),
+                Paths.get(pathConfiguration.boxartDirectory, SharedConstants.WARNING_IMAGE_THUMBNAIL),
                 StandardCopyOption.REPLACE_EXISTING);
     }
 

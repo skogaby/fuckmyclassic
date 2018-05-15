@@ -2,7 +2,6 @@ package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.impl.RsyncDataTask;
-import com.fuckmyclassic.ui.util.PlatformUtils;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;

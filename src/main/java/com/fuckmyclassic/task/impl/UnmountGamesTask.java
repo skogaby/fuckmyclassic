@@ -49,8 +49,7 @@ public class UnmountGamesTask extends AbstractTaskCreator<Void> {
                 updateProgress(0, 1);
 
                 LOG.info(String.format("Unmounting the games directory on \"%s\"", userConfiguration.getSelectedConsole().getNickname()));
-                networkManager.runCommand(userConfiguration.getSelectedConsole().getLastKnownAddress(),
-                        "hakchi eval 'umount \"$gamepath\"'");
+                networkManager.runCommand("hakchi eval 'umount \"$gamepath\"'");
                 LOG.info("Done unmounting the games directory");
 
                 updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));

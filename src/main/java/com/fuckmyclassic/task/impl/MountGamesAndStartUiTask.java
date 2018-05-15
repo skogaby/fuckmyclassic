@@ -51,8 +51,7 @@ public class MountGamesAndStartUiTask extends AbstractTaskCreator<Void> {
                 final Console console = userConfiguration.getSelectedConsole();
                 LOG.info(String.format("Overmounting the games directory and starting the UI on \"%s\"",
                         console.getNickname()));
-                networkManager.runCommand(userConfiguration.getSelectedConsole().getLastKnownAddress(),
-                        "hakchi overmount_games; uistart");
+                networkManager.runCommand("hakchi overmount_games; uistart");
                 LOG.info("Done unmounting the games directory");
 
                 updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));
