@@ -1,6 +1,8 @@
 package com.fuckmyclassic.task.impl;
 
 import com.fuckmyclassic.model.Console;
+import com.fuckmyclassic.model.DefaultGame;
+import com.fuckmyclassic.model.OriginalGameCodes;
 import com.fuckmyclassic.network.NetworkConstants;
 import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.task.AbstractTaskCreator;
@@ -8,6 +10,7 @@ import com.fuckmyclassic.ui.controller.RsyncRunnerDialog;
 import com.fuckmyclassic.ui.util.PlatformUtils;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import com.fuckmyclassic.util.FileUtils;
 import com.jcraft.jsch.JSchException;
 import javafx.concurrent.Task;
 import org.apache.logging.log4j.LogManager;
@@ -16,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
@@ -62,24 +66,30 @@ public class DumpOriginalGamesTask extends AbstractTaskCreator<Void> {
 
                 // use rsync to make sure the squashfs games and the games cache are in sync
                 // for the running console type
-                // run the rsync task
                 final Console selectedConsole = userConfiguration.getSelectedConsole();
-                final String remoteGamesPath = networkManager.runCommand("hakchi eval 'echo \"$squashfs$gamepath\"'");
+                final Path dstDir = Paths.get(pathConfiguration.originalGamesDirectory, selectedConsole.getConsoleType().getConsoleCode());
+                final DefaultGame[] defaultGames = OriginalGameCodes.getGamesForConsoleType(selectedConsole.getConsoleType());
+                final int numLocalDirs = FileUtils.numFilesInDirectory(dstDir);
 
-                PlatformUtils.runAndWait(() -> {
-                    rsyncRunnerDialog.setSource(String.format("%s@%s:%s/", NetworkConstants.USER_NAME, selectedConsole.getLastKnownAddress(),
-                            remoteGamesPath));
-                    rsyncRunnerDialog.setDestination(
-                            Paths.get(pathConfiguration.originalGamesDirectory, selectedConsole.getConsoleType().getConsoleCode()).toString());
+                // only run rsync if the count of folders in the cache is different than the canonical count
+                if (numLocalDirs != defaultGames.length) {
+                    final String remoteGamesPath = networkManager.runCommand("hakchi eval 'echo \"$squashfs$gamepath\"'");
 
-                    try {
-                        rsyncRunnerDialog.showDialog();
-                    } catch (IOException e) {
-                        LOG.error(e);
-                        e.printStackTrace();
-                    }
-                });
+                    PlatformUtils.runAndWait(() -> {
+                        rsyncRunnerDialog.setSource(String.format("%s@%s:%s/", NetworkConstants.USER_NAME, selectedConsole.getLastKnownAddress(),
+                                remoteGamesPath));
+                        rsyncRunnerDialog.setDestination(dstDir.toString());
 
+                        try {
+                            rsyncRunnerDialog.showDialog();
+                        } catch (IOException e) {
+                            LOG.error(e);
+                            e.printStackTrace();
+                        }
+                    });
+                }
+
+                LOG.info("Local original games cache is in sync");
                 updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));
                 updateProgress(1, 1);
 
