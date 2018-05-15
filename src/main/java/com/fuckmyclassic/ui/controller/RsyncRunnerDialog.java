@@ -19,6 +19,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
+/**
+ * Dialog that's responsible for running rsync and showing the progress to the user.
+ * @author skogaby (skogabyskogaby@gmail.com)
+ */
 @Component
 public class RsyncRunnerDialog {
 

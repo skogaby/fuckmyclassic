@@ -8,6 +8,7 @@ import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.task.impl.RsyncDataTask;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
+import com.fuckmyclassic.ui.controller.LibraryManagementWindow;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
@@ -35,10 +36,16 @@ public class ApplicationConfiguration {
     public MainWindow mainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
                                  LibraryManager libraryManager, NetworkManager networkManager, ResourceBundle tasksResourceBundle,
                                  RsyncRunnerDialog rsyncRunnerDialog, SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider,
-                                 UiPropertyContainer uiPropertyContainer, PathConfiguration pathConfiguration, ConsoleDAO consoleDAO) {
+                                 UiPropertyContainer uiPropertyContainer, PathConfiguration pathConfiguration, ConsoleDAO consoleDAO,
+                                 LibraryManagementWindow libraryManagementWindow) {
         return new MainWindow(userConfiguration, pathConfiguration, membootHelper, kernelFlasher, libraryManager,
                 networkManager, tasksResourceBundle, sequentialTaskRunnerDialog, rsyncRunnerDialog, taskProvider,
-                uiPropertyContainer, consoleDAO);
+                uiPropertyContainer, consoleDAO, libraryManagementWindow);
+    }
+
+    @Bean
+    public LibraryManagementWindow libraryManagementWindow() {
+        return new LibraryManagementWindow();
     }
 
     @Bean

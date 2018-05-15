@@ -52,19 +52,22 @@
          <children>
             <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
                <children>
-                  <Label text="%MainWindow.lblCurrentConsole" />
+                  <Label text="%MainWindow.lblCurrentConsole">
+                     <font>
+                        <Font size="12.0" />
+                     </font></Label>
                    <ComboBox fx:id="cmbCurrentConsole" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
-                  <Label text="%MainWindow.lblCurrentCollection">
+                  <Label text="%MainWindow.lblCurrentLibrary">
                      <font>
                         <Font size="12.0" />
                      </font>
                      <VBox.margin>
                         <Insets top="10.0" />
                      </VBox.margin></Label>
-                  <HBox fillHeight="false" maxWidth="1.7976931348623157E308" spacing="10.0" VBox.vgrow="NEVER">
+                  <HBox alignment="CENTER" fillHeight="false" maxWidth="1.7976931348623157E308" spacing="10.0" VBox.vgrow="NEVER">
                      <children>
                         <ComboBox fx:id="cmbCurrentCollection" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
-                        <Button fx:id="btnFolderOptions" mnemonicParsing="false" text="%MainWindow.btnStructureOptions">
+                        <Button fx:id="btnManageLibraries" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#onManageLibrariesAndConsolesClicked" text="%MainWindow.btnManageLibraries">
                            <font>
                               <Font size="12.0" />
                            </font></Button>

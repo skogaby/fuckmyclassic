@@ -120,6 +120,8 @@ public class MainWindow {
     private final UiPropertyContainer uiPropertyContainer;
     /** The DAO for accessing known consoles */
     private final ConsoleDAO consoleDAO;
+    /** Window for managing library and console metadata */
+    private final LibraryManagementWindow libraryManagementWindow;
 
     /**
      * Constructor.
@@ -136,7 +138,8 @@ public class MainWindow {
                       final RsyncRunnerDialog rsyncRunnerDialog,
                       final TaskProvider taskProvider,
                       final UiPropertyContainer uiPropertyContainer,
-                      final ConsoleDAO consoleDAO) {
+                      final ConsoleDAO consoleDAO,
+                      final LibraryManagementWindow libraryManagementWindow) {
         this.userConfiguration = userConfiguration;
         this.pathConfiguration = pathConfiguration;
         this.membootHelper = membootHelper;
@@ -149,6 +152,7 @@ public class MainWindow {
         this.taskProvider = taskProvider;
         this.uiPropertyContainer = uiPropertyContainer;
         this.consoleDAO = consoleDAO;
+        this.libraryManagementWindow = libraryManagementWindow;
     }
 
     /**
@@ -364,6 +368,14 @@ public class MainWindow {
         // start the console's UI back up
         sequentialTaskRunnerDialog.setTaskCreators(taskProvider.mountGamesAndStartUiTask);
         sequentialTaskRunnerDialog.showDialog();
+    }
+
+    /**
+     * Handler for clicking the button to manage games and consoles.
+     */
+    @FXML
+    private void onManageLibrariesAndConsolesClicked() throws IOException {
+        this.libraryManagementWindow.showWindow();
     }
 
     //////////////////////////////////////////////////////////////////////

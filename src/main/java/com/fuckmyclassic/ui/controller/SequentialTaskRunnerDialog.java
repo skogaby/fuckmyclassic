@@ -43,10 +43,9 @@ public class SequentialTaskRunnerDialog {
 
     /**
      * Run the designated tasks on window creation.
-     * @throws InterruptedException
      */
     @FXML
-    public void initialize() throws InterruptedException {
+    public void initialize() {
         if (this.taskCreators != null && this.taskCreators.length != 0) {
             final SequentialTaskRunner taskRunner = new SequentialTaskRunner();
             taskRunner.setTaskCreators(taskCreators);
@@ -65,6 +64,7 @@ public class SequentialTaskRunnerDialog {
 
             taskRunner.setOnFailed(event -> {
                 LOG.error(event.getSource().getMessage());
+                ((Stage) this.lblMainMessage.getScene().getWindow()).close();
             });
 
             final Thread thread = new Thread(taskRunner);
