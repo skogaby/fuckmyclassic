@@ -40,16 +40,18 @@ public interface LibraryDAO {
      * @param parentFolder The folder to load the applications from
      * @param library The metadata for the library that needs to be loaded.
      * @param useCheckboxes Whether or not to make the tree items CheckBoxTreeItems
+     * @param onlySelected Whether or not to load only the selected library items
      */
-    int loadApplicationsForFolder(TreeItem<LibraryItem> parentFolder, Library library, boolean useCheckboxes);
+    int loadApplicationsForFolder(TreeItem<LibraryItem> parentFolder, Library library, boolean useCheckboxes, boolean onlySelected);
 
     /**
      * Loads a library from the database, given the library's metadata.
      * @param library The metadata for the library that needs to be loaded.
      * @param useCheckboxes Whether or not to make the tree items CheckBoxTreeItems
+     * @param onlySelected Whether or not to load only the selected library items
      * @return A tree representing the requested library.
      */
-    TreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library, boolean useCheckboxes);
+    TreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library, boolean useCheckboxes, boolean onlySelected);
 
     /**
      * Gets the number of selected items for a given library.

@@ -105,12 +105,18 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param parentFolder The folder to load the applications from and insert the nodes under
      * @param library The metadata for the library that needs to be loaded.
      * @param useCheckboxes Whether or not to make the tree items CheckBoxTreeItems
+     * @param onlySelected Whether or not to load only the selected library items
      */
     @Override
-    public int loadApplicationsForFolder(TreeItem<LibraryItem> parentFolder, Library library, boolean useCheckboxes) {
+    public int loadApplicationsForFolder(TreeItem<LibraryItem> parentFolder, Library library, boolean useCheckboxes, boolean onlySelected) {
         // get all the applications in the top-level folder
-        final Query<LibraryItem> query = session.createQuery(
-                "from LibraryItem l where l.library = :library and l.folder = :folder");
+        String queryString = "from LibraryItem l where l.library = :library and l.folder = :folder";
+
+        if (onlySelected) {
+            queryString += " and l.selected = true";
+        }
+
+        final Query<LibraryItem> query = session.createQuery(queryString);
         query.setParameter("library", library);
         query.setParameter("folder", parentFolder.getValue().getApplication());
 
@@ -137,7 +143,7 @@ public class LibraryDAOImpl implements LibraryDAO {
         for (TreeItem<LibraryItem> itemResult : itemResults) {
             if (itemResult.getValue().getApplication() instanceof Folder) {
                 itemResult.setExpanded(true);
-                numNodes += 1 + loadApplicationsForFolder(itemResult, library, useCheckboxes);
+                numNodes += 1 + loadApplicationsForFolder(itemResult, library, useCheckboxes, onlySelected);
             } else {
                 numNodes++;
             }
@@ -169,10 +175,11 @@ public class LibraryDAOImpl implements LibraryDAO {
      * Loads a library from the database, given a console SID and a library ID.
      * @param library The metadata for the library that needs to be loaded.
      * @param useCheckboxes Whether or not to make the tree items CheckBoxTreeItems
+     * @param onlySelected Whether or not to load only the selected library items
      * @return A tree representing the requested library.
      */
     @Override
-    public TreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library, boolean useCheckboxes) {
+    public TreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library, boolean useCheckboxes, boolean onlySelected) {
         // check if the HOME folder exists, create one if it doesn't
         Application homeFolder = this.applicationDAO.loadApplicationByAppId(SharedConstants.HOME_FOLDER_ID);
 
@@ -207,7 +214,7 @@ public class LibraryDAOImpl implements LibraryDAO {
         }
 
         homeItem.setExpanded(true);
-        homeItem.getValue().setNumNodes(loadApplicationsForFolder(homeItem, library, useCheckboxes) + 1);
+        homeItem.getValue().setNumNodes(loadApplicationsForFolder(homeItem, library, useCheckboxes, onlySelected) + 1);
         this.uiPropertyContainer.numSelected.set(getNumSelectedForLibrary(library));
 
         return homeItem;

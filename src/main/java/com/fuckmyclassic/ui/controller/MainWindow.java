@@ -122,6 +122,8 @@ public class MainWindow {
     private final ConsoleDAO consoleDAO;
     /** Window for managing library and console metadata */
     private final LibraryManagementWindow libraryManagementWindow;
+    /** Says whether or not we've already initialized this window once before */
+    public boolean initialized;
 
     /**
      * Constructor.
@@ -153,6 +155,7 @@ public class MainWindow {
         this.uiPropertyContainer = uiPropertyContainer;
         this.consoleDAO = consoleDAO;
         this.libraryManagementWindow = libraryManagementWindow;
+        this.initialized = false;
     }
 
     /**
@@ -162,18 +165,25 @@ public class MainWindow {
     public void initialize() {
         LOG.info("Main window initializing");
 
-        this.initializeSaveCountSpinner();
-        this.initializeBoxartImageView();
+        if (!initialized) {
+            this.initializeSaveCountSpinner();
+            this.initializeBoxartImageView();
+        }
+
         this.initializeConsoleSelection();
         this.libraryManager.initializeLibrarySelection(this);
         this.libraryManager.initializeApplicationTreeView(this);
-        this.initializePlayerCountSelection();
-        this.initializeConnectionBoundProperties();
-        this.initializeMenuBar();
-        this.initializeNumSelectedLabel();
+
+        if (!initialized) {
+            this.initializePlayerCountSelection();
+            this.initializeConnectionBoundProperties();
+            this.initializeMenuBar();
+            this.initializeNumSelectedLabel();
+        }
 
         // small hack to remove a circular dependency in the Spring dependency graph
         this.taskProvider.loadLibrariesTask.setMainWindow(this);
+        this.initialized = true;
     }
 
     /**
@@ -185,24 +195,26 @@ public class MainWindow {
         this.cmbCurrentConsole.setItems(items);
         this.cmbCurrentConsole.setValue(userConfiguration.getSelectedConsole());
 
-        this.cmbCurrentConsole.valueProperty().addListener((observable, oldValue, newValue) -> {
-            if (oldValue != null &&
-                    newValue != null &&
-                    !newValue.equals(this.userConfiguration.getSelectedConsole())) {
-                try {
-                    this.userConfiguration.setSelectedConsole(newValue);
+        if (!this.initialized) {
+            this.cmbCurrentConsole.valueProperty().addListener((observable, oldValue, newValue) -> {
+                if (oldValue != null &&
+                        newValue != null &&
+                        !newValue.equals(this.userConfiguration.getSelectedConsole())) {
+                    try {
+                        this.userConfiguration.setSelectedConsole(newValue);
 
-                    this.sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONSOLE_SWITCH_MESSAGE_KEY));
-                    this.sequentialTaskRunnerDialog.setTaskCreators(taskProvider.loadLibrariesTask);
-                    this.sequentialTaskRunnerDialog.showDialog();
+                        this.sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONSOLE_SWITCH_MESSAGE_KEY));
+                        this.sequentialTaskRunnerDialog.setTaskCreators(taskProvider.loadLibrariesTask);
+                        this.sequentialTaskRunnerDialog.showDialog();
 
-                    this.uiPropertyContainer.setConnectedProperties(
-                            this.networkManager.isConnected(newValue.getLastKnownAddress()));
-                } catch (IOException e) {
-                    LOG.error(e);
+                        this.uiPropertyContainer.setConnectedProperties(
+                                this.networkManager.isConnected(newValue.getLastKnownAddress()));
+                    } catch (IOException e) {
+                        LOG.error(e);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     /**
@@ -282,14 +294,16 @@ public class MainWindow {
         this.radTwoPlayerSim.setToggleGroup(this.maxPlayersToggleGroup);
         this.radTwoPlayerSim.setUserData(userDataSimMultiplayer);
 
-        this.maxPlayersToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null) {
-                final String userData = (String) newValue.getUserData();
-                this.libraryManager.getCurrentApp().setSinglePlayer(userData.equals(userDataSinglePlayer));
-                this.libraryManager.getCurrentApp().setNonSimultaneousMultiplayer(userData.equals(userDataNoSimMultiplayer));
-                this.libraryManager.getCurrentApp().setSimultaneousMultiplayer(userData.equals(userDataSimMultiplayer));
-            }
-        });
+        if (!this.initialized) {
+            this.maxPlayersToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    final String userData = (String) newValue.getUserData();
+                    this.libraryManager.getCurrentApp().setSinglePlayer(userData.equals(userDataSinglePlayer));
+                    this.libraryManager.getCurrentApp().setNonSimultaneousMultiplayer(userData.equals(userDataNoSimMultiplayer));
+                    this.libraryManager.getCurrentApp().setSimultaneousMultiplayer(userData.equals(userDataSimMultiplayer));
+                }
+            });
+        }
     }
 
     /**
@@ -376,6 +390,7 @@ public class MainWindow {
     @FXML
     private void onManageLibrariesAndConsolesClicked() throws IOException {
         this.libraryManagementWindow.showWindow();
+        initialize();
     }
 
     //////////////////////////////////////////////////////////////////////

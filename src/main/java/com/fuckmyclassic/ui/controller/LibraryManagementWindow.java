@@ -17,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
@@ -25,6 +26,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,9 +48,6 @@ public class LibraryManagementWindow {
     private static final String TITLE_STRING_KEY = "LibraryManagementWindow.titleBar";
 
     public ComboBox<Console> cmbCurrentConsole;
-    public Button btnAddLibrary;
-    public Button btnRemoveLibrary;
-    public Button btnCopyLibrary;
     public ListView<Library> lstLibraries;
     public TextField txtLibraryName;
     public TextField txtConsoleName;
@@ -56,9 +55,6 @@ public class LibraryManagementWindow {
     public Label lblConsoleIp;
     public Label lblConsoleSid;
     public TreeView<LibraryItem> treeViewGames;
-    public Button btnCancel;
-    public Button btnApply;
-    public Button btnOK;
 
     /** The configuration object for user options and session settings */
     private final UserConfiguration userConfiguration;
@@ -68,41 +64,48 @@ public class LibraryManagementWindow {
     private final LibraryDAO libraryDAO;
     /** Manager for persisting entities to the database */
     private final HibernateManager hibernateManager;
+    /** Hibernate session, for purging the context after the window closes */
+    private final Session session;
     /** The set of Consoles and Libraries that have been edited that need to be saved if the user chooses to */
     private final Set<Object> editedEntities;
     /** The selected console for this window */
     private Console selectedConsole;
     /** The currently selected library for this window */
     private Library selectedLibrary;
-    /** Says whether or not the current library has been edited so we can persist it before changing items */
-    private boolean libraryEdited;
-    /** Says whether or not the current console has been edited so we can persist it before changing items */
-    private boolean consoleEdited;
-    /** Says whether we've already initialized our listeners for the console list */
-    private boolean consoleListenerAdded;
-    /** Says whether we've already initialized our listeners for the library list */
-    private boolean libraryListenerAdded;
+    /** The list of consoles that we display in the dropdown */
+    private ObservableList<Console> displayedConsoles;
+    /** The list of libraries that we display in the list */
+    private ObservableList<Library> displayedLibraries;
 
     @Autowired
     public LibraryManagementWindow(final UserConfiguration userConfiguration,
                                    final ConsoleDAO consoleDAO,
                                    final LibraryDAO libraryDAO,
-                                   final HibernateManager hibernateManager) {
+                                   final HibernateManager hibernateManager,
+                                   final Session session) {
         this.userConfiguration = userConfiguration;
         this.consoleDAO = consoleDAO;
         this.libraryDAO = libraryDAO;
         this.hibernateManager = hibernateManager;
         this.editedEntities = new HashSet<>();
+        this.session = session;
     }
 
     @FXML
     public void initialize() {
         this.selectedConsole = null;
-        this.libraryEdited = false;
-        this.consoleEdited = false;
-        this.consoleListenerAdded = false;
-        this.libraryListenerAdded = false;
+        this.selectedLibrary = null;
         this.editedEntities.clear();
+        this.cmbCurrentConsole.setItems(null);
+        this.lstLibraries.setItems(null);
+
+        if (this.displayedConsoles != null) {
+            this.displayedConsoles.clear();
+        }
+
+        if (this.displayedLibraries != null) {
+            this.displayedLibraries.clear();
+        }
 
         initializeConsoleDropdown();
     }
@@ -116,33 +119,31 @@ public class LibraryManagementWindow {
         }
 
         final List<Console> consoles = this.consoleDAO.getAllConsoles();
-        final ObservableList<Console> items = FXCollections.observableArrayList(consoles);
-        this.cmbCurrentConsole.setItems(items);
+        this.displayedConsoles = FXCollections.observableArrayList(consoles);
+        this.cmbCurrentConsole.setItems(this.displayedConsoles);
 
-        if (!this.consoleListenerAdded) {
-            this.cmbCurrentConsole.valueProperty().addListener((observable, oldValue, newValue) -> {
-                if (newValue != null) {
-                    this.selectedConsole = newValue;
+        // add the combobox listener
+        this.cmbCurrentConsole.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                this.selectedConsole = newValue;
+                initializeConsoleInfoPanel(oldValue, newValue);
+                initializeLibraryList();
+            }
+        });
 
-                    if (this.consoleEdited && oldValue != null) {
-                        this.editedEntities.add(oldValue);
-                        // refresh the console dropdown
-                        this.cmbCurrentConsole.setItems(this.cmbCurrentConsole.getItems());
-                        this.consoleEdited = false;
+        // add the console name textfield listener
+        this.txtConsoleName.focusedProperty().addListener(((observable, oldValue, newValue) -> {
+            // if we had focus and lost it, update the view and add the entity to the list
+            if (oldValue && !newValue) {
+                this.editedEntities.add(this.selectedConsole);
+
+                this.displayedConsoles.forEach(console -> {
+                    if (console.getConsoleSid().equals(this.selectedConsole.getConsoleSid())) {
+                        console.setNickname(this.selectedConsole.getNickname());
                     }
-
-                    if (this.libraryEdited) {
-                        this.editedEntities.add(this.selectedLibrary);
-                        this.libraryEdited = false;
-                    }
-
-                    initializeConsoleInfoPanel(oldValue, newValue);
-                    initializeLibraryList();
-                }
-            });
-
-            this.consoleListenerAdded = true;
-        }
+                });
+            }
+        }));
 
         this.cmbCurrentConsole.getSelectionModel().select(this.selectedConsole);
     }
@@ -165,37 +166,33 @@ public class LibraryManagementWindow {
      */
     private void initializeLibraryList() {
         final List<Library> libraries = this.libraryDAO.getLibrariesForConsole(this.selectedConsole.getConsoleSid());
-        final ObservableList<Library> items = FXCollections.observableArrayList(libraries);
-        this.selectedLibrary = libraries.get(0);
-        this.lstLibraries.setItems(items);
+        displayedLibraries = FXCollections.observableArrayList(libraries);
+        this.lstLibraries.setItems(displayedLibraries);
 
-        if (!this.libraryListenerAdded) {
-            this.lstLibraries.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
-                if (newValue != null) {
-                    if (this.libraryEdited &&
-                            oldValue != null) {
-                        this.editedEntities.add(oldValue);
-                        // refresh the console dropdown
-                        this.cmbCurrentConsole.setItems(this.cmbCurrentConsole.getItems());
-                        this.consoleEdited = false;
+        // add the listview listener
+        this.lstLibraries.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                initializeLibraryInfoPanel(this.selectedLibrary, newValue);
+                this.selectedLibrary = newValue;
+            }
+        }));
+
+        // add the library name textview listener
+        this.txtLibraryName.focusedProperty().addListener(((observable, oldValue, newValue) -> {
+            // if we had focus and lost it, update the view and add the entity to the list
+            if (oldValue && !newValue) {
+                this.editedEntities.add(this.selectedLibrary);
+
+                this.displayedLibraries.forEach(library -> {
+                    if (library.getId() == this.selectedLibrary.getId()) {
+                        library.setLibraryName(this.selectedLibrary.getLibraryName());
+                        this.lstLibraries.refresh();
                     }
+                });
+            }
+        }));
 
-                    if (this.consoleEdited &&
-                            oldValue != null) {
-                        this.editedEntities.add(this.selectedConsole);
-                        this.cmbCurrentConsole.setItems(this.cmbCurrentConsole.getItems());
-                        this.consoleEdited = false;
-                    }
-
-                    this.selectedLibrary = newValue;
-                    initializeLibraryInfoPanel(oldValue, newValue);
-                }
-            }));
-
-            this.libraryListenerAdded = true;
-        }
-
-        this.lstLibraries.getSelectionModel().select(this.selectedLibrary);
+        this.lstLibraries.getSelectionModel().select(libraries.get(0));
     }
 
     /**
@@ -207,8 +204,52 @@ public class LibraryManagementWindow {
         BindingHelper.bindPropertyBidirectional(oldLibrary == null ? null : oldLibrary.libraryNameProperty(),
                 newLibrary.libraryNameProperty(), this.txtLibraryName.textProperty());
 
-        final TreeItem<LibraryItem> applications = libraryDAO.loadApplicationTreeForLibrary(this.selectedLibrary, false);
+        final TreeItem<LibraryItem> applications = libraryDAO.loadApplicationTreeForLibrary(newLibrary, false, true);
         this.treeViewGames.setRoot(applications);
+    }
+
+    /**
+     * Saves all the edited entities and clears the set.
+     */
+    private void saveEditedEntities() {
+        this.session.clear();
+        this.editedEntities.forEach(object -> {
+            this.hibernateManager.updateEntity(object);
+        });
+
+        this.editedEntities.clear();
+    }
+
+    /**
+     * Closes this dialog window.
+     */
+    private void closeWindow() {
+        ((Stage) this.cmbCurrentConsole.getScene().getWindow()).close();
+    }
+
+    /**
+     * OnClick handler for the Cancel button.
+     */
+    @FXML
+    private void onCancelClick() {
+        this.closeWindow();
+    }
+
+    /**
+     * OnClick handler for the Apply button.
+     */
+    @FXML
+    private void onApplyClick() {
+        this.saveEditedEntities();
+    }
+
+    /**
+     * OnClick handler for the OK button.
+     */
+    @FXML
+    private void onOKClick() {
+        this.saveEditedEntities();
+        this.closeWindow();
     }
 
     /**
@@ -226,5 +267,9 @@ public class LibraryManagementWindow {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setTitle(resourceBundle.getString(TITLE_STRING_KEY));
         stage.showAndWait();
+
+        // clear out the Hibernate context, just in case we edited data that we never saved,
+        // we don't want Hibernate returning it in subsequent queries
+        this.session.clear();
     }
 }

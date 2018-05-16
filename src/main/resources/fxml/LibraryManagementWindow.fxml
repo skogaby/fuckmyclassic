@@ -196,17 +196,17 @@
                   <Insets />
                </VBox.margin>
                <children>
-                  <Button fx:id="btnCancel" mnemonicParsing="false" text="%LibraryManagementWindow.btnCancel" HBox.hgrow="NEVER">
+                  <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#onCancelClick" text="%LibraryManagementWindow.btnCancel" HBox.hgrow="NEVER">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </Button>
-                  <Button fx:id="btnApply" mnemonicParsing="false" text="%LibraryManagementWindow.btnApply" HBox.hgrow="NEVER">
+                  <Button fx:id="btnApply" mnemonicParsing="false" onAction="#onApplyClick" text="%LibraryManagementWindow.btnApply" HBox.hgrow="NEVER">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </Button>
-                  <Button fx:id="btnOK" mnemonicParsing="false" text="%LibraryManagementWindow.btnOK" HBox.hgrow="NEVER">
+                  <Button fx:id="btnOK" mnemonicParsing="false" onAction="#onOKClick" text="%LibraryManagementWindow.btnOK" HBox.hgrow="NEVER">
                      <font>
                         <Font size="12.0" />
                      </font>

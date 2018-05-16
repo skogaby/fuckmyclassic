@@ -175,7 +175,7 @@ public class Console implements Externalizable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Console console = (Console) o;
-        return Objects.equals(consoleSid, console.consoleSid);
+        return consoleSid.equals(console.consoleSid);
     }
 
     @Override

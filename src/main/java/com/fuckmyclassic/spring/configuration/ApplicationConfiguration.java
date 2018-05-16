@@ -17,6 +17,7 @@ import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import org.hibernate.Session;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -47,8 +48,9 @@ public class ApplicationConfiguration {
     public LibraryManagementWindow libraryManagementWindow(UserConfiguration userConfiguration,
                                                            ConsoleDAO consoleDAO,
                                                            LibraryDAO libraryDAO,
-                                                           HibernateManager hibernateManager) {
-        return new LibraryManagementWindow(userConfiguration, consoleDAO, libraryDAO, hibernateManager);
+                                                           HibernateManager hibernateManager,
+                                                           Session session) {
+        return new LibraryManagementWindow(userConfiguration, consoleDAO, libraryDAO, hibernateManager, session);
     }
 
     @Bean
