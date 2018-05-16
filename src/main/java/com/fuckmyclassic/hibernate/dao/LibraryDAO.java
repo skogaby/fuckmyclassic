@@ -3,7 +3,7 @@ package com.fuckmyclassic.hibernate.dao;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
-import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.TreeItem;
 
 import java.util.List;
 
@@ -39,15 +39,17 @@ public interface LibraryDAO {
      * Loads all the applications that are in a given folder (in the given library)
      * @param parentFolder The folder to load the applications from
      * @param library The metadata for the library that needs to be loaded.
+     * @param useCheckboxes Whether or not to make the tree items CheckBoxTreeItems
      */
-    int loadApplicationsForFolder(CheckBoxTreeItem<LibraryItem> parentFolder, Library library);
+    int loadApplicationsForFolder(TreeItem<LibraryItem> parentFolder, Library library, boolean useCheckboxes);
 
     /**
      * Loads a library from the database, given the library's metadata.
      * @param library The metadata for the library that needs to be loaded.
+     * @param useCheckboxes Whether or not to make the tree items CheckBoxTreeItems
      * @return A tree representing the requested library.
      */
-    CheckBoxTreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library);
+    TreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library, boolean useCheckboxes);
 
     /**
      * Gets the number of selected items for a given library.

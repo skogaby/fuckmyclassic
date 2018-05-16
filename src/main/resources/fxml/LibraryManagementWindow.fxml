@@ -15,7 +15,7 @@
 
 <SplitPane dividerPositions="0.4" prefHeight="800.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
    <items>
-      <VBox fx:id="lstLibraries" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+      <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
          <children>
             <Label text="%LibraryManagementWindow.lblCurrentConsole">
                <font>
@@ -54,7 +54,7 @@
                      </font></Button>
                </children>
             </HBox>
-            <ListView maxHeight="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+            <ListView fx:id="lstLibraries" maxHeight="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                <VBox.margin>
                   <Insets top="10.0" />
                </VBox.margin>
@@ -84,7 +84,7 @@
                               <Font size="12.0" />
                            </font>
                         </Label>
-                        <TextField maxWidth="1.7976931348623157E308" promptText="%LibraryManagementWindow.txtLibraryNamePrompt" VBox.vgrow="ALWAYS">
+                        <TextField fx:id="txtLibraryName" maxWidth="1.7976931348623157E308" promptText="%LibraryManagementWindow.txtLibraryNamePrompt" VBox.vgrow="ALWAYS">
                            <VBox.margin>
                               <Insets top="5.0" />
                            </VBox.margin>
@@ -180,7 +180,10 @@
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Label>
-                        <TreeView fx:id="treeViewGames" maxHeight="1.7976931348623157E308" VBox.vgrow="ALWAYS" />
+                        <TreeView fx:id="treeViewGames" maxHeight="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+                           <VBox.margin>
+                              <Insets top="5.0" />
+                           </VBox.margin></TreeView>
                      </children>
                   </VBox>
                </content>

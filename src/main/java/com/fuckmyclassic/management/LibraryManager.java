@@ -13,11 +13,10 @@ import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -59,7 +58,7 @@ public class LibraryManager {
     /** The current library we're viewing */
     private Library currentLibrary;
     /** A reference to the current library's actual tree structure data. */
-    private CheckBoxTreeItem<LibraryItem> currentLibraryTree;
+    private TreeItem<LibraryItem> currentLibraryTree;
     /** Container for UI properties we need to update */
     private final UiPropertyContainer uiPropertyContainer;
 
@@ -106,7 +105,7 @@ public class LibraryManager {
         mainWindow.cmbCurrentCollection.valueProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 this.currentLibrary = newValue;
-                this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary);
+                this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary, true);
                 mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
                 this.userConfiguration.setSelectedLibraryID(this.currentLibrary.getId());
             }
@@ -177,7 +176,7 @@ public class LibraryManager {
 
         // load the library items for the current console and library
         LOG.info(String.format("Loading library for console %s from the database", this.userConfiguration.getLastConsoleSID()));
-        this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary);
+        this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary, true);
         mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
     }
 
@@ -237,11 +236,11 @@ public class LibraryManager {
         return this;
     }
 
-    public CheckBoxTreeItem<LibraryItem> getCurrentLibraryTree() {
+    public TreeItem<LibraryItem> getCurrentLibraryTree() {
         return currentLibraryTree;
     }
 
-    public LibraryManager setCurrentLibraryTree(CheckBoxTreeItem<LibraryItem> currentLibraryTree) {
+    public LibraryManager setCurrentLibraryTree(TreeItem<LibraryItem> currentLibraryTree) {
         this.currentLibraryTree = currentLibraryTree;
         return this;
     }

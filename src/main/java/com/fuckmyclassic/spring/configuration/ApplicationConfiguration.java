@@ -44,8 +44,11 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    public LibraryManagementWindow libraryManagementWindow() {
-        return new LibraryManagementWindow();
+    public LibraryManagementWindow libraryManagementWindow(UserConfiguration userConfiguration,
+                                                           ConsoleDAO consoleDAO,
+                                                           LibraryDAO libraryDAO,
+                                                           HibernateManager hibernateManager) {
+        return new LibraryManagementWindow(userConfiguration, consoleDAO, libraryDAO, hibernateManager);
     }
 
     @Bean

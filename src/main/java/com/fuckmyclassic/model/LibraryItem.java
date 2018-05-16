@@ -142,4 +142,9 @@ public class LibraryItem implements Externalizable {
         this.numNodes = numNodes;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return this.application.getApplicationName();
+    }
 }

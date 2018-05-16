@@ -11,6 +11,7 @@ import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
 import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.TreeItem;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,19 +104,27 @@ public class LibraryDAOImpl implements LibraryDAO {
      * them into the given Tree structure represented by parentFolder.
      * @param parentFolder The folder to load the applications from and insert the nodes under
      * @param library The metadata for the library that needs to be loaded.
+     * @param useCheckboxes Whether or not to make the tree items CheckBoxTreeItems
      */
     @Override
-    public int loadApplicationsForFolder(CheckBoxTreeItem<LibraryItem> parentFolder, Library library) {
+    public int loadApplicationsForFolder(TreeItem<LibraryItem> parentFolder, Library library, boolean useCheckboxes) {
         // get all the applications in the top-level folder
         final Query<LibraryItem> query = session.createQuery(
                 "from LibraryItem l where l.library = :library and l.folder = :folder");
         query.setParameter("library", library);
         query.setParameter("folder", parentFolder.getValue().getApplication());
 
-        final List<CheckBoxTreeItem<LibraryItem>> itemResults = query.getResultStream()
+        final List<TreeItem<LibraryItem>> itemResults = query.getResultStream()
                 .map(r -> {
-                    final CheckBoxTreeItem<LibraryItem> item = new CheckBoxTreeItem<>(r, null, r.isSelected(), false);
-                    CheckBoxTreeItemUtils.setCheckListenerOnTreeItem(item, this.hibernateManager, this.uiPropertyContainer);
+                    final TreeItem<LibraryItem> item;
+
+                    if (useCheckboxes) {
+                        item = new CheckBoxTreeItem<>(r, null, r.isSelected(), false);
+                        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem((CheckBoxTreeItem) item, this.hibernateManager, this.uiPropertyContainer);
+                    } else {
+                        item = new TreeItem<>(r);
+                    }
+
                     return item;
                 })
                 .collect(Collectors.toList());
@@ -125,29 +134,32 @@ public class LibraryDAOImpl implements LibraryDAO {
         int numNodes = 0;
         int numSelected = 0;
 
-        for (CheckBoxTreeItem<LibraryItem> itemResult : itemResults) {
+        for (TreeItem<LibraryItem> itemResult : itemResults) {
             if (itemResult.getValue().getApplication() instanceof Folder) {
                 itemResult.setExpanded(true);
-                numNodes += 1 + loadApplicationsForFolder(itemResult, library);
+                numNodes += 1 + loadApplicationsForFolder(itemResult, library, useCheckboxes);
             } else {
                 numNodes++;
             }
 
             // set indeterminate values for checkboxes properly
-            if (itemResult.isSelected()) {
+            if (useCheckboxes &&
+                    ((CheckBoxTreeItem) itemResult).isSelected()) {
                 numSelected++;
             }
         }
 
         // if less than all the items were selected, the parent is indeterminant
-        if (numSelected > 0 &&
-                numSelected < itemResults.size()) {
-            // small hack to change the value of the parent without altering
-            // the values of what's below it
-            parentFolder.setIndependent(true);
-            parentFolder.setSelected(false);
-            parentFolder.setIndeterminate(true);
-            parentFolder.setIndependent(false);
+        if (useCheckboxes){
+            if (numSelected > 0 &&
+                    numSelected < itemResults.size()) {
+                // small hack to change the value of the parent without altering
+                // the values of what's below it
+                ((CheckBoxTreeItem) parentFolder).setIndependent(true);
+                ((CheckBoxTreeItem) parentFolder).setSelected(false);
+                ((CheckBoxTreeItem) parentFolder).setIndeterminate(true);
+                ((CheckBoxTreeItem) parentFolder).setIndependent(false);
+            }
         }
 
         return numNodes;
@@ -156,10 +168,11 @@ public class LibraryDAOImpl implements LibraryDAO {
     /**
      * Loads a library from the database, given a console SID and a library ID.
      * @param library The metadata for the library that needs to be loaded.
+     * @param useCheckboxes Whether or not to make the tree items CheckBoxTreeItems
      * @return A tree representing the requested library.
      */
     @Override
-    public CheckBoxTreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library) {
+    public TreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library, boolean useCheckboxes) {
         // check if the HOME folder exists, create one if it doesn't
         Application homeFolder = this.applicationDAO.loadApplicationByAppId(SharedConstants.HOME_FOLDER_ID);
 
@@ -183,11 +196,18 @@ public class LibraryDAOImpl implements LibraryDAO {
         }
 
         // now select all items in the home folder and recurse down for any folders
-        final CheckBoxTreeItem<LibraryItem> homeItem = new CheckBoxTreeItem<>(homeFolderItem, null,
-                homeFolderItem.isSelected(), false);
-        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem(homeItem, this.hibernateManager, this.uiPropertyContainer);
+        final TreeItem<LibraryItem> homeItem;
+
+        if (useCheckboxes) {
+            homeItem = new CheckBoxTreeItem<>(homeFolderItem, null,
+                    homeFolderItem.isSelected(), false);
+            CheckBoxTreeItemUtils.setCheckListenerOnTreeItem((CheckBoxTreeItem) homeItem, this.hibernateManager, this.uiPropertyContainer);
+        } else {
+            homeItem = new TreeItem<>(homeFolderItem, null);
+        }
+
         homeItem.setExpanded(true);
-        homeItem.getValue().setNumNodes(loadApplicationsForFolder(homeItem, library) + 1);
+        homeItem.getValue().setNumNodes(loadApplicationsForFolder(homeItem, library, useCheckboxes) + 1);
         this.uiPropertyContainer.numSelected.set(getNumSelectedForLibrary(library));
 
         return homeItem;
