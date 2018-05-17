@@ -59,4 +59,12 @@ public interface LibraryDAO {
      * @return The number of selected items in the library.
      */
     long getNumSelectedForLibrary(Library library);
+
+    /**
+     * Returns a list of all LibraryItems belonging to the given library.
+     * @param library The library to query
+     * @param onlySelected Whether or not to include only selected items
+     * @return A list of all LibraryItems belonging to the given Library
+     */
+    List<LibraryItem> getApplicationsForLibrary(Library library, boolean onlySelected);
 }

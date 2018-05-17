@@ -114,7 +114,7 @@ public class IdentifyConnectedConsoleTask extends AbstractTaskCreator<String> {
                     console.setConsoleSyncPath(syncPath);
                     console.setConsoleType(ConsoleType.fromCode(consoleType));
                     console.setLastKnownAddress(dstAddress);
-                    hibernateManager.updateEntity(console);
+                    hibernateManager.updateEntities(console);
                     userConfiguration.setSelectedConsole(console);
                     userConfiguration.addConnectedConsole(console);
 
@@ -122,7 +122,7 @@ public class IdentifyConnectedConsoleTask extends AbstractTaskCreator<String> {
                     final Console defaultConsole = consoleDAO.getConsoleForSid(SharedConstants.DEFAULT_CONSOLE_SID);
 
                     if (defaultConsole != null) {
-                        hibernateManager.deleteEntity(defaultConsole);
+                        hibernateManager.deleteEntities(defaultConsole);
                     }
 
                     updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));

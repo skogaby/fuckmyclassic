@@ -172,7 +172,7 @@ public class LibraryManager {
                     }
 
                     // persist the item to the database and refresh the application view
-                    this.hibernateManager.updateEntity(oldApp);
+                    this.hibernateManager.updateEntities(oldApp);
                     mainWindow.treeViewGames.refresh();
                 }
             });
@@ -214,7 +214,7 @@ public class LibraryManager {
 
             // also update the Application itself
             this.currentApp.setBoxArtPath(newBoxartFile);
-            this.hibernateManager.updateEntity(currentApp);
+            this.hibernateManager.updateEntities(currentApp);
 
             return new Image(Paths.get(this.pathConfiguration.boxartDirectory, newBoxartFile).toUri().toURL().toExternalForm());
         } else {

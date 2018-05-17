@@ -66,7 +66,7 @@ public class UpdateUnknownLibrariesTask extends AbstractTaskCreator<Void> {
 
                         libraries.forEach(l -> {
                             l.setConsoleSid(userConfiguration.getSelectedConsole().getConsoleSid());
-                            hibernateManager.updateEntity(l);
+                            hibernateManager.updateEntities(l);
                         });
                     }
                 }

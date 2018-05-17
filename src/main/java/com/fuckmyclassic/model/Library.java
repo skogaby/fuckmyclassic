@@ -15,6 +15,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Objects;
 
 /**
  * Class to represent the metadata about a library.
@@ -103,5 +104,19 @@ public class Library implements Externalizable {
     public Library setLibraryName(String libraryName) {
         this.libraryName.set(libraryName);
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Library library = (Library) o;
+        return Objects.equals(id, library.id) &&
+                Objects.equals(consoleSid, library.consoleSid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, consoleSid);
     }
 }

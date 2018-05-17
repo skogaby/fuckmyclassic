@@ -58,7 +58,7 @@ public class LibraryDAOImpl implements LibraryDAO {
         // create a default library if none exists
         if (results.isEmpty()) {
             final Library defaultLibrary = new Library(consoleSid, SharedConstants.DEFAULT_LIBRARY_NAME);
-            hibernateManager.saveEntity(defaultLibrary);
+            hibernateManager.saveEntities(defaultLibrary);
             results.add(defaultLibrary);
         }
 
@@ -83,6 +83,7 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param library The Library that corresponds to the item
      * @return The LibraryItem corresponding to the given data
      */
+    @Override
     public LibraryItem loadLibraryItemByApplication(Application application, Library library) {
         final Query<LibraryItem> query = session.createQuery(
                 "from LibraryItem l where l.application = :application and l.library = :library");
@@ -187,7 +188,7 @@ public class LibraryDAOImpl implements LibraryDAO {
             homeFolder = new Folder();
             homeFolder.setApplicationName(SharedConstants.HOME_FOLDER_NAME);
             homeFolder.setApplicationId(SharedConstants.HOME_FOLDER_ID);
-            hibernateManager.saveEntity(homeFolder);
+            hibernateManager.saveEntities(homeFolder);
         }
 
         // create a LibraryItem for the home folder if one doesn't exist
@@ -199,7 +200,7 @@ public class LibraryDAOImpl implements LibraryDAO {
                     .setApplication(homeFolder)
                     .setLibrary(library)
                     .setSelected(true);
-            hibernateManager.saveEntity(homeFolderItem);
+            hibernateManager.saveEntities(homeFolderItem);
         }
 
         // now select all items in the home folder and recurse down for any folders
@@ -225,10 +226,31 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param library The library to query for.
      * @return The number of selected items in the library (excluding folders).
      */
+    @Override
     public long getNumSelectedForLibrary(Library library) {
         final Query query = session.createQuery(
                 "select count(*) from LibraryItem l where l.library = :library and l.selected = true and l.application.class = Application");
         query.setParameter("library", library);
         return (Long) query.uniqueResult();
+    }
+
+    /**
+     * Returns a list of all LibraryItems belonging to the given library.
+     * @param library The library to query
+     * @param onlySelected Whether or not to include only selected items
+     * @return A list of all LibraryItems belonging to the given Library
+     */
+    @Override
+    public List<LibraryItem> getApplicationsForLibrary(Library library, boolean onlySelected) {
+        String queryString = "from LibraryItem l where l.library = :library";
+
+        if (onlySelected) {
+            queryString += " and l.selected = true";
+        }
+
+        final Query<LibraryItem> query = session.createQuery(queryString);
+        query.setParameter("library", library);
+
+        return query.getResultList();
     }
 }

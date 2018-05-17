@@ -238,12 +238,11 @@ public class LibraryManagementWindow {
      */
     private void saveEditedEntities() {
         this.session.clear();
-        this.editedEntities.forEach(object -> {
-            this.hibernateManager.updateEntity(object);
-        });
+        this.hibernateManager.updateEntities(this.editedEntities.toArray());
 
         this.editedEntities.clear();
         this.addedLibraryData.clear();
+        this.removedLibraryData.clear();
     }
 
     /**
@@ -261,7 +260,7 @@ public class LibraryManagementWindow {
         final Library defaultLibrary = new Library(this.selectedConsole.getConsoleSid(),
                 SharedConstants.DEFAULT_LIBRARY_NAME);
         this.addedLibraryData.add(defaultLibrary);
-        this.hibernateManager.saveEntity(defaultLibrary);
+        this.hibernateManager.saveEntities(defaultLibrary);
 
         final Application homeFolder = this.applicationDAO.loadApplicationByAppId(SharedConstants.HOME_FOLDER_ID);
         final LibraryItem homeFolderItem = new LibraryItem()
@@ -270,7 +269,7 @@ public class LibraryManagementWindow {
                 .setLibrary(defaultLibrary)
                 .setSelected(true);
         this.addedLibraryData.add(homeFolderItem);
-        this.hibernateManager.saveEntity(homeFolderItem);
+        this.hibernateManager.saveEntities(homeFolderItem);
 
         // update the list
         this.displayedLibraries.add(defaultLibrary);
@@ -282,7 +281,23 @@ public class LibraryManagementWindow {
      */
     @FXML
     private void onRemoveLibraryClick() {
+        // remove the library items from the database
+        final List<LibraryItem> libraryItems = this.libraryDAO.getApplicationsForLibrary(this.selectedLibrary, false);
+        this.removedLibraryData.add(libraryItems);
+        this.hibernateManager.deleteEntities(libraryItems.toArray());
 
+        // remove the library from the database
+        this.removedLibraryData.add(this.selectedLibrary);
+        this.hibernateManager.deleteEntities(this.selectedLibrary);
+
+        // remove the library from the collections
+        this.editedEntities.remove(this.selectedLibrary);
+        this.addedLibraryData.remove(this.selectedLibrary);
+        this.displayedLibraries.remove(this.selectedLibrary);
+
+        // refresh the list and select the first item
+        this.lstLibraries.refresh();
+        this.lstLibraries.getSelectionModel().selectFirst();
     }
 
     /**
@@ -343,9 +358,8 @@ public class LibraryManagementWindow {
 
         // if we didn't save the edited entities, we need to remove the new libraries that were created as well
         if (!this.shouldSave) {
-            this.addedLibraryData.forEach(object -> {
-                this.hibernateManager.deleteEntity(object);
-            });
+            this.hibernateManager.deleteEntities(this.addedLibraryData.toArray());
+            this.hibernateManager.saveEntities(this.removedLibraryData.toArray());
         }
     }
 }

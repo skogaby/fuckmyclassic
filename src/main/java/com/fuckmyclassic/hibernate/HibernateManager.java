@@ -16,8 +16,9 @@ import java.util.concurrent.ExecutionException;
 @Component
 public class HibernateManager {
 
-    private final int MINIMUM_RETRY_SLEEP = 300;
+    private final int MINIMUM_RETRY_SLEEP = 50;
     private final int MAXIMUM_RETRY_SLEEP = 500;
+    private final int BATCH_SIZE = 20;
 
     /** Random number generator for simple retry jitter on concurrent modifications */
     private final Random random;
@@ -31,19 +32,26 @@ public class HibernateManager {
     }
 
     /**
-     * Performs the given mutation on the given entity in the database.
-     * @param entity Entity to operate on
+     * Perform a persistence operation on one or more given entities.
      * @param operation The operation to perform
+     * @param entities The entities to act upon
      */
-    public void performMutation(final Object entity, PersistenceOperation operation) {
-        if (entity != null) {
+    public void performMutation(final PersistenceOperation operation, final Object... entities) {
+        if (entities != null) {
             Transaction tx = null;
 
             try {
                 tx = this.hibernateSession.beginTransaction();
-                operation.call(entity);
-                this.hibernateSession.flush();
-                this.hibernateSession.clear();
+
+                for (int i = 0; i < entities.length; i++) {
+                    operation.call(entities[i]);
+
+                    if (i % BATCH_SIZE == 0) {
+                        this.hibernateSession.flush();
+                        this.hibernateSession.clear();
+                    }
+                }
+
                 tx.commit();
             } catch (Exception e) {
                 if (tx != null) {
@@ -55,7 +63,7 @@ public class HibernateManager {
                     try {
                         Thread.sleep(this.random.nextInt(MAXIMUM_RETRY_SLEEP - MINIMUM_RETRY_SLEEP) +
                                 MINIMUM_RETRY_SLEEP);
-                        performMutation(entity, operation);
+                        performMutation(operation, entities);
                     } catch (InterruptedException e1) {
                         e1.printStackTrace();
                     }
@@ -67,26 +75,26 @@ public class HibernateManager {
     }
 
     /**
-     * Saves a new entity.
-     * @param entity
+     * Saves a new entity or entities.
+     * @param entities
      */
-    public void saveEntity(final Object entity) {
-        performMutation(entity, x -> this.hibernateSession.saveOrUpdate(x));
+    public void saveEntities(final Object... entities) {
+        performMutation(x -> this.hibernateSession.saveOrUpdate(x), entities);
     }
 
     /**
-     * Updates an existing entity.
-     * @param entity
+     * Updates an existing entity or entities.
+     * @param entities
      */
-    public void updateEntity(final Object entity) {
-        performMutation(entity, x -> this.hibernateSession.saveOrUpdate(x));
+    public void updateEntities(final Object... entities) {
+        performMutation(x -> this.hibernateSession.saveOrUpdate(x), entities);
     }
 
     /**
-     * Deletes an existing entity.
-     * @param entity
+     * Deletes an existing entity or entities.
+     * @param entities
      */
-    public void deleteEntity(final Object entity) {
-        performMutation(entity, x -> this.hibernateSession.delete(x));
+    public void deleteEntities(final Object... entities) {
+        performMutation(x -> this.hibernateSession.delete(x), entities);
     }
 }

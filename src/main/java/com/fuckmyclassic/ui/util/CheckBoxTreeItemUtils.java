@@ -30,7 +30,7 @@ public class CheckBoxTreeItemUtils {
 
             if (newVal != oldVal) {
                 libraryItem.setSelected(newVal);
-                hibernateManager.updateEntity(libraryItem);
+                hibernateManager.updateEntities(libraryItem);
 
                 // only update the counts for games, not folders
                 if (!(libraryItem.getApplication() instanceof Folder)) {

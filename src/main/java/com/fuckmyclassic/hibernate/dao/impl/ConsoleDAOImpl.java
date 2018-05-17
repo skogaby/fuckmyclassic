@@ -42,7 +42,7 @@ public class ConsoleDAOImpl implements ConsoleDAO {
             console.setNickname(SharedConstants.DEFAULT_CONSOLE_NICKNAME);
             console.setConsoleSid(SharedConstants.DEFAULT_CONSOLE_SID);
             consoles.add(console);
-            this.hibernateManager.saveEntity(console);
+            this.hibernateManager.saveEntities(console);
         }
 
         return consoles;
@@ -88,7 +88,7 @@ public class ConsoleDAOImpl implements ConsoleDAO {
             console = new Console();
             console.setNickname(SharedConstants.DEFAULT_CONSOLE_NICKNAME);
             console.setConsoleSid(consoleSid);
-            this.hibernateManager.saveEntity(console);
+            this.hibernateManager.saveEntities(console);
         }
 
         return console;
@@ -104,7 +104,7 @@ public class ConsoleDAOImpl implements ConsoleDAO {
         final Console console = new Console();
         console.setNickname(SharedConstants.DEFAULT_CONSOLE_NICKNAME);
         console.setConsoleSid(consoleSid);
-        this.hibernateManager.saveEntity(console);
+        this.hibernateManager.saveEntities(console);
         return console;
     }
 

@@ -18,6 +18,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Objects;
 
 /**
  * Class to represent an item in a library. Each item belongs to
@@ -146,5 +147,19 @@ public class LibraryItem implements Externalizable {
     @Override
     public String toString() {
         return this.application.getApplicationName();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LibraryItem that = (LibraryItem) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(library, that.library);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, library);
     }
 }

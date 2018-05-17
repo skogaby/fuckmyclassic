@@ -4,7 +4,6 @@ import com.fuckmyclassic.hibernate.HibernateManager;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
-import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
 import com.fuckmyclassic.userconfig.PathConfiguration;
@@ -128,14 +127,14 @@ public class AppImporter {
                 .setSinglePlayer(true)
                 .setApplicationSize(applicationSize)
                 .setCompressed(false);
-        this.hibernateManager.saveEntity(newApp);
+        this.hibernateManager.saveEntities(newApp);
 
         final LibraryItem newLibraryItem = new LibraryItem()
                 .setLibrary(this.libraryManager.getCurrentLibrary())
                 .setApplication(newApp)
                 .setFolder((Folder) importFolder.getValue().getApplication())
                 .setSelected(true);
-        this.hibernateManager.saveEntity(newLibraryItem);
+        this.hibernateManager.saveEntities(newLibraryItem);
 
         // create the new CheckBoxTreeItem and insert it
         final CheckBoxTreeItem<LibraryItem> newItem = new CheckBoxTreeItem<>(newLibraryItem, null, true, false);
