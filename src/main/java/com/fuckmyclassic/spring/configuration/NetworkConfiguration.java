@@ -1,6 +1,6 @@
 package com.fuckmyclassic.spring.configuration;
 
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAO;
 import com.fuckmyclassic.network.MdnsListener;
 import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.network.SshConnectionListener;
@@ -40,7 +40,8 @@ public class NetworkConfiguration {
     public SshConnectionListener sshConnectionListener(ResourceBundle resourceBundle, SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
                                                        TaskProvider taskProvider, ConsoleDAO consoleDAO, UserConfiguration userConfiguration,
                                                        NetworkManager networkManager) {
-        return new SshConnectionListenerImpl(resourceBundle, sequentialTaskRunnerDialog, taskProvider, consoleDAO, userConfiguration, networkManager);
+        return new SshConnectionListenerImpl(resourceBundle, sequentialTaskRunnerDialog, taskProvider, consoleDAO,
+                userConfiguration, networkManager);
     }
 
     @Bean

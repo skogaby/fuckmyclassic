@@ -1,6 +1,6 @@
 package com.fuckmyclassic.userconfig;
 
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAO;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.moandjiezana.toml.Toml;

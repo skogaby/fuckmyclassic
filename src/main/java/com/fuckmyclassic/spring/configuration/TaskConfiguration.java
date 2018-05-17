@@ -1,8 +1,7 @@
 package com.fuckmyclassic.spring.configuration;
 
-import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
-import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.task.TaskProvider;
@@ -46,17 +45,15 @@ public class TaskConfiguration {
 
     @Bean
     public IdentifyConnectedConsoleTask getConsoleIdsAndPathsTask(ResourceBundle resourceBundle, NetworkManager networkManager,
-                                                                  UserConfiguration userConfiguration, ConsoleDAO consoleDAO,
-                                                                  HibernateManager hibernateManager) {
-        return new IdentifyConnectedConsoleTask(resourceBundle, networkManager, userConfiguration, consoleDAO, hibernateManager);
+                                                                  UserConfiguration userConfiguration, ConsoleDAO consoleDAO) {
+        return new IdentifyConnectedConsoleTask(resourceBundle, networkManager, userConfiguration, consoleDAO);
     }
 
     @Bean
     public UpdateUnknownLibrariesTask updateUnknownLibrariesTask(UserConfiguration userConfiguration,
-                                                                 HibernateManager hibernateManager,
                                                                  LibraryDAO libraryDAO,
                                                                  ResourceBundle resourceBundle) {
-        return new UpdateUnknownLibrariesTask(userConfiguration, hibernateManager, libraryDAO, resourceBundle);
+        return new UpdateUnknownLibrariesTask(userConfiguration, libraryDAO, resourceBundle);
     }
 
     @Bean
@@ -71,7 +68,7 @@ public class TaskConfiguration {
     }
 
     @Bean
-    public RsyncDataTask rsyncDataTask(ResourceBundle resourceBundle) throws IOException {
+    public RsyncDataTask rsyncDataTask(ResourceBundle resourceBundle) {
         return new RsyncDataTask(resourceBundle);
     }
 

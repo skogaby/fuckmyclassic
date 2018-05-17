@@ -1,10 +1,9 @@
 package com.fuckmyclassic.hibernate.dao.impl;
 
-import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.AbstractHibernateDAO;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.shared.SharedConstants;
-import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -12,39 +11,35 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 /**
- * Implementation of the ConsoleDAO interface using MySQL and Hibernate.
+ * DAO for accessing Console data.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
 @Repository
-public class ConsoleDAOImpl implements ConsoleDAO {
-
-    /** Hibernate manager, for making new entities */
-    private final HibernateManager hibernateManager;
-    /** Hibernate session for database interaction at a low level. */
-    private final Session session;
+public class ConsoleDAO extends AbstractHibernateDAO<Console> {
 
     @Autowired
-    public ConsoleDAOImpl(final HibernateManager hibernateManager,
-                              final Session session) {
-        this.hibernateManager = hibernateManager;
-        this.session = session;
+    public ConsoleDAO(final SessionFactory sessionFactory) {
+        super(sessionFactory);
+        setClazz(Console.class);
     }
 
     /**
      * Get a list of all known consoles (or the default console if none exist)
      */
-    @Override
     public List<Console> getAllConsoles() {
-        final List<Console> consoles = session.createQuery("from Console").getResultList();
+        this.openCurrentSessionWithTransaction();
+
+        final List<Console> consoles = this.currentSession.createQuery("from Console").getResultList();
 
         if (consoles.isEmpty()) {
             final Console console = new Console();
             console.setNickname(SharedConstants.DEFAULT_CONSOLE_NICKNAME);
             console.setConsoleSid(SharedConstants.DEFAULT_CONSOLE_SID);
             consoles.add(console);
-            this.hibernateManager.saveEntities(console);
+            super.create(console);
         }
 
+        this.closeCurrentSessionwithTransaction();
         return consoles;
     }
 
@@ -53,9 +48,10 @@ public class ConsoleDAOImpl implements ConsoleDAO {
      * @param consoleSid The SID of the console to fetch
      * @return The Console corresponding to the given SID
      */
-    @Override
     public Console getConsoleForSid(String consoleSid) {
-        final Query<Console> query = session.createQuery("from Console where console_sid = :sid");
+        this.openCurrentSession();
+
+        final Query<Console> query = this.currentSession.createQuery("from Console where console_sid = :sid");
         query.setParameter("sid", consoleSid);
         final List<Console> results = query.getResultList();
         Console console = null;
@@ -64,6 +60,7 @@ public class ConsoleDAOImpl implements ConsoleDAO {
             console = results.get(0);
         }
 
+        this.closeCurrentSession();
         return console;
     }
 
@@ -72,9 +69,10 @@ public class ConsoleDAOImpl implements ConsoleDAO {
      * @param consoleSid The SID of the console to fetch
      * @return The Console corresponding to the given SID
      */
-    @Override
     public Console getOrCreateConsoleForSid(String consoleSid) {
-        final Query<Console> query = session.createQuery("from Console where console_sid = :sid");
+        this.openCurrentSessionWithTransaction();
+
+        final Query<Console> query = this.currentSession.createQuery("from Console where console_sid = :sid");
         query.setParameter("sid", consoleSid);
         final List<Console> results = query.getResultList();
         Console console = null;
@@ -88,9 +86,10 @@ public class ConsoleDAOImpl implements ConsoleDAO {
             console = new Console();
             console.setNickname(SharedConstants.DEFAULT_CONSOLE_NICKNAME);
             console.setConsoleSid(consoleSid);
-            this.hibernateManager.saveEntities(console);
+            super.create(console);
         }
 
+        this.closeCurrentSessionwithTransaction();
         return console;
     }
 
@@ -99,12 +98,15 @@ public class ConsoleDAOImpl implements ConsoleDAO {
      * @param consoleSid The SID of the new console
      * @return The newly created Console
      */
-    @Override
     public Console createConsoleForSid(String consoleSid) {
+        this.openCurrentSessionWithTransaction();
+
         final Console console = new Console();
         console.setNickname(SharedConstants.DEFAULT_CONSOLE_NICKNAME);
         console.setConsoleSid(consoleSid);
-        this.hibernateManager.saveEntities(console);
+        super.create(console);
+
+        this.closeCurrentSessionwithTransaction();
         return console;
     }
 
@@ -114,9 +116,10 @@ public class ConsoleDAOImpl implements ConsoleDAO {
      * @param lastKnownAddress The last known IP address of the console
      * @return The requested Console, or null if it doesn't exist
      */
-    @Override
     public Console getConsoleForLastKnownAddress(String lastKnownAddress) {
-        final Query<Console> query = session.createQuery("from Console where last_known_address = :address");
+        this.openCurrentSession();
+
+        final Query<Console> query = this.currentSession.createQuery("from Console where last_known_address = :address");
         query.setParameter("address", lastKnownAddress);
         final List<Console> results = query.getResultList();
         Console console = null;
@@ -125,6 +128,7 @@ public class ConsoleDAOImpl implements ConsoleDAO {
             console = results.get(0);
         }
 
+        this.closeCurrentSession();
         return console;
     }
 }

@@ -1,7 +1,6 @@
 package com.fuckmyclassic.task.impl;
 
-import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAO;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.ConsoleType;
 import com.fuckmyclassic.network.NetworkManager;
@@ -46,8 +45,6 @@ public class IdentifyConnectedConsoleTask extends AbstractTaskCreator<String> {
     private final UserConfiguration userConfiguration;
     /** Bundle for getting localized strings. */
     private final ResourceBundle resourceBundle;
-    /** Manager to save Console updates */
-    private final HibernateManager hibernateManager;
     /** DAO for interacting with the Consoles table */
     private final ConsoleDAO consoleDAO;
     /** The address to send commands to */
@@ -57,13 +54,11 @@ public class IdentifyConnectedConsoleTask extends AbstractTaskCreator<String> {
     public IdentifyConnectedConsoleTask(final ResourceBundle resourceBundle,
                                         final NetworkManager networkManager,
                                         final UserConfiguration userConfiguration,
-                                        final ConsoleDAO consoleDAO,
-                                        final HibernateManager hibernateManager) {
+                                        final ConsoleDAO consoleDAO) {
         this.resourceBundle = resourceBundle;
         this.networkManager = networkManager;
         this.userConfiguration = userConfiguration;
         this.consoleDAO = consoleDAO;
-        this.hibernateManager = hibernateManager;
     }
 
     @Override
@@ -114,7 +109,7 @@ public class IdentifyConnectedConsoleTask extends AbstractTaskCreator<String> {
                     console.setConsoleSyncPath(syncPath);
                     console.setConsoleType(ConsoleType.fromCode(consoleType));
                     console.setLastKnownAddress(dstAddress);
-                    hibernateManager.updateEntities(console);
+                    consoleDAO.update(console);
                     userConfiguration.setSelectedConsole(console);
                     userConfiguration.addConnectedConsole(console);
 
@@ -122,7 +117,7 @@ public class IdentifyConnectedConsoleTask extends AbstractTaskCreator<String> {
                     final Console defaultConsole = consoleDAO.getConsoleForSid(SharedConstants.DEFAULT_CONSOLE_SID);
 
                     if (defaultConsole != null) {
-                        hibernateManager.deleteEntities(defaultConsole);
+                        consoleDAO.delete(defaultConsole);
                     }
 
                     updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));

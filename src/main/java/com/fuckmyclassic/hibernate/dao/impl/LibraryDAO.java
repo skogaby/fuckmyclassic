@@ -1,8 +1,6 @@
 package com.fuckmyclassic.hibernate.dao.impl;
 
-import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
-import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.AbstractHibernateDAO;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.Library;
@@ -12,36 +10,41 @@ import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
 import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.TreeItem;
-import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Implementation of the LibraryDAO interface using MySQL and Hibernate.
+ * DAO for accessing library data.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 @Repository
-public class LibraryDAOImpl implements LibraryDAO {
+public class LibraryDAO extends AbstractHibernateDAO<Library> {
 
-    /** Hibernate manager for higher level interactions. */
-    private final HibernateManager hibernateManager;
-    /** Hibernate session for database interaction at a low level. */
-    private final Session session;
-    /** DAO to load application data. */
+    /** DAO to load application data */
     private final ApplicationDAO applicationDAO;
+    /** DAO to load library item data */
+    private final LibraryItemDAO libraryItemDAO;
     /** Container for UI properties we need to update */
     private final UiPropertyContainer uiPropertyContainer;
 
     @Autowired
-    public LibraryDAOImpl(final HibernateManager hibernateManager, final Session session,
-                          final ApplicationDAO applicationDAO, final UiPropertyContainer uiPropertyContainer) {
-        this.hibernateManager = hibernateManager;
-        this.session = session;
+    public LibraryDAO(final SessionFactory sessionFactory,
+                      final ApplicationDAO applicationDAO,
+                      final LibraryItemDAO libraryItemDAO,
+                      final UiPropertyContainer uiPropertyContainer) {
+        super(sessionFactory);
+        setClazz(Library.class);
+
         this.applicationDAO = applicationDAO;
+        this.libraryItemDAO = libraryItemDAO;
         this.uiPropertyContainer = uiPropertyContainer;
     }
 
@@ -51,17 +54,18 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param consoleSid The console SID to fetch the libraries for
      * @return The list of Library metadata items for the given console
      */
-    @Override
-    public List<Library> getOrCreateLibrariesForConsole(String consoleSid) {
+    public List<Library> getOrCreateLibrariesForConsole(final String consoleSid) {
+        this.openCurrentSessionWithTransaction();
         List<Library> results = getLibrariesForConsole(consoleSid);
 
         // create a default library if none exists
         if (results.isEmpty()) {
             final Library defaultLibrary = new Library(consoleSid, SharedConstants.DEFAULT_LIBRARY_NAME);
-            hibernateManager.saveEntities(defaultLibrary);
+            super.create(defaultLibrary);
             results.add(defaultLibrary);
         }
 
+        this.closeCurrentSessionwithTransaction();
         return results;
     }
 
@@ -70,11 +74,15 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param consoleSid The console SID to fetch the libraries for
      * @return The list of Library metadata items for the given console
      */
-    @Override
-    public List<Library> getLibrariesForConsole(String consoleSid) {
-        final Query<Library> query = session.createQuery("from Library where console_sid = :console_sid");
+    public List<Library> getLibrariesForConsole(final String consoleSid) {
+        this.openCurrentSession();
+
+        final Query<Library> query = this.currentSession.createQuery("from Library where console_sid = :console_sid");
         query.setParameter("console_sid", consoleSid);
-        return query.getResultList();
+        final List<Library> libraries = query.getResultList();
+
+        this.closeCurrentSession();
+        return libraries;
     }
 
     /**
@@ -83,9 +91,10 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param library The Library that corresponds to the item
      * @return The LibraryItem corresponding to the given data
      */
-    @Override
-    public LibraryItem loadLibraryItemByApplication(Application application, Library library) {
-        final Query<LibraryItem> query = session.createQuery(
+    public LibraryItem loadLibraryItemByApplication(final Application application, final Library library) {
+        this.openCurrentSession();
+
+        final Query<LibraryItem> query = this.currentSession.createQuery(
                 "from LibraryItem l where l.application = :application and l.library = :library");
         query.setParameter("application", application);
         query.setParameter("library", library);
@@ -97,6 +106,7 @@ public class LibraryDAOImpl implements LibraryDAO {
             item = results.get(0);
         }
 
+        this.closeCurrentSession();
         return item;
     }
 
@@ -108,7 +118,6 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param useCheckboxes Whether or not to make the tree items CheckBoxTreeItems
      * @param onlySelected Whether or not to load only the selected library items
      */
-    @Override
     public int loadApplicationsForFolder(TreeItem<LibraryItem> parentFolder, Library library, boolean useCheckboxes, boolean onlySelected) {
         // get all the applications in the top-level folder
         String queryString = "from LibraryItem l where l.library = :library and l.folder = :folder";
@@ -117,7 +126,8 @@ public class LibraryDAOImpl implements LibraryDAO {
             queryString += " and l.selected = true";
         }
 
-        final Query<LibraryItem> query = session.createQuery(queryString);
+        this.openCurrentSession();
+        final Query<LibraryItem> query = this.currentSession.createQuery(queryString);
         query.setParameter("library", library);
         query.setParameter("folder", parentFolder.getValue().getApplication());
 
@@ -127,7 +137,7 @@ public class LibraryDAOImpl implements LibraryDAO {
 
                     if (useCheckboxes) {
                         item = new CheckBoxTreeItem<>(r, null, r.isSelected(), false);
-                        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem((CheckBoxTreeItem) item, this.hibernateManager, this.uiPropertyContainer);
+                        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem((CheckBoxTreeItem) item, this.libraryItemDAO, this.uiPropertyContainer);
                     } else {
                         item = new TreeItem<>(r);
                     }
@@ -169,6 +179,7 @@ public class LibraryDAOImpl implements LibraryDAO {
             }
         }
 
+        this.closeCurrentSession();
         return numNodes;
     }
 
@@ -179,8 +190,9 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param onlySelected Whether or not to load only the selected library items
      * @return A tree representing the requested library.
      */
-    @Override
     public TreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library, boolean useCheckboxes, boolean onlySelected) {
+        this.openCurrentSessionWithTransaction();
+
         // check if the HOME folder exists, create one if it doesn't
         Application homeFolder = this.applicationDAO.loadApplicationByAppId(SharedConstants.HOME_FOLDER_ID);
 
@@ -188,7 +200,7 @@ public class LibraryDAOImpl implements LibraryDAO {
             homeFolder = new Folder();
             homeFolder.setApplicationName(SharedConstants.HOME_FOLDER_NAME);
             homeFolder.setApplicationId(SharedConstants.HOME_FOLDER_ID);
-            hibernateManager.saveEntities(homeFolder);
+            this.applicationDAO.create(homeFolder);
         }
 
         // create a LibraryItem for the home folder if one doesn't exist
@@ -200,7 +212,7 @@ public class LibraryDAOImpl implements LibraryDAO {
                     .setApplication(homeFolder)
                     .setLibrary(library)
                     .setSelected(true);
-            hibernateManager.saveEntities(homeFolderItem);
+            this.libraryItemDAO.create(homeFolderItem);
         }
 
         // now select all items in the home folder and recurse down for any folders
@@ -209,7 +221,7 @@ public class LibraryDAOImpl implements LibraryDAO {
         if (useCheckboxes) {
             homeItem = new CheckBoxTreeItem<>(homeFolderItem, null,
                     homeFolderItem.isSelected(), false);
-            CheckBoxTreeItemUtils.setCheckListenerOnTreeItem((CheckBoxTreeItem) homeItem, this.hibernateManager, this.uiPropertyContainer);
+            CheckBoxTreeItemUtils.setCheckListenerOnTreeItem((CheckBoxTreeItem) homeItem, this.libraryItemDAO, this.uiPropertyContainer);
         } else {
             homeItem = new TreeItem<>(homeFolderItem, null);
         }
@@ -218,6 +230,7 @@ public class LibraryDAOImpl implements LibraryDAO {
         homeItem.getValue().setNumNodes(loadApplicationsForFolder(homeItem, library, useCheckboxes, onlySelected) + 1);
         this.uiPropertyContainer.numSelected.set(getNumSelectedForLibrary(library));
 
+        this.closeCurrentSessionwithTransaction();
         return homeItem;
     }
 
@@ -226,12 +239,16 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param library The library to query for.
      * @return The number of selected items in the library (excluding folders).
      */
-    @Override
     public long getNumSelectedForLibrary(Library library) {
-        final Query query = session.createQuery(
+        this.openCurrentSession();
+
+        final Query query = this.currentSession.createQuery(
                 "select count(*) from LibraryItem l where l.library = :library and l.selected = true and l.application.class = Application");
         query.setParameter("library", library);
-        return (Long) query.uniqueResult();
+        final long result = (Long) query.uniqueResult();
+
+        this.closeCurrentSession();
+        return result;
     }
 
     /**
@@ -240,17 +257,20 @@ public class LibraryDAOImpl implements LibraryDAO {
      * @param onlySelected Whether or not to include only selected items
      * @return A list of all LibraryItems belonging to the given Library
      */
-    @Override
     public List<LibraryItem> getApplicationsForLibrary(Library library, boolean onlySelected) {
+        this.openCurrentSession();
+
         String queryString = "from LibraryItem l where l.library = :library";
 
         if (onlySelected) {
             queryString += " and l.selected = true";
         }
 
-        final Query<LibraryItem> query = session.createQuery(queryString);
+        final Query<LibraryItem> query = this.currentSession.createQuery(queryString);
         query.setParameter("library", library);
+        final List<LibraryItem> results = query.getResultList();
 
-        return query.getResultList();
+        this.closeCurrentSession();
+        return results;
     }
 }

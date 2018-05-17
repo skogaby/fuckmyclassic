@@ -1,6 +1,6 @@
 package com.fuckmyclassic.ui.util;
 
-import com.fuckmyclassic.hibernate.HibernateManager;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
@@ -9,6 +9,7 @@ import javafx.scene.control.CheckBoxTreeItem;
 /**
  * Small helper class to setup listeners and event handlers on
  * CheckBoxTreeItems since we instantiate these from multiple places
+ * @author skogaby (skogabyskogaby@gmail.com)
  */
 public class CheckBoxTreeItemUtils {
 
@@ -16,11 +17,11 @@ public class CheckBoxTreeItemUtils {
      * Creates the checkbox listeners for the tree items that update the entity's
      * selection status and also update the UI's view of number of selected games.
      * @param item The item to set the listeners on
-     * @param hibernateManager The HibernateManager for persisting entity updates
+     * @param libraryItemDAO The DAO for persisting entity updates
      * @param uiPropertyContainer The UI property container for showing number of selected games
      */
     public static void setCheckListenerOnTreeItem(final CheckBoxTreeItem<LibraryItem> item,
-                                                  final HibernateManager hibernateManager,
+                                                  final LibraryItemDAO libraryItemDAO,
                                                   final UiPropertyContainer uiPropertyContainer) {
         item.addEventHandler(CheckBoxTreeItem.<LibraryItem> checkBoxSelectionChangedEvent(), (event -> {
             final CheckBoxTreeItem<LibraryItem> treeItem = event.getTreeItem();
@@ -30,7 +31,7 @@ public class CheckBoxTreeItemUtils {
 
             if (newVal != oldVal) {
                 libraryItem.setSelected(newVal);
-                hibernateManager.updateEntities(libraryItem);
+                libraryItemDAO.update(libraryItem);
 
                 // only update the counts for games, not folders
                 if (!(libraryItem.getApplication() instanceof Folder)) {

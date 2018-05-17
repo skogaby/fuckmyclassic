@@ -1,10 +1,11 @@
 package com.fuckmyclassic.management;
 
+import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.controller.MainWindow;
-import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.shared.SharedConstants;
@@ -47,10 +48,12 @@ public class LibraryManager {
     private final UserConfiguration userConfiguration;
     /** Path configuration for runtime operations */
     private final PathConfiguration pathConfiguration;
-    /** Manager for interacting with the Hibernate session */
-    private final HibernateManager hibernateManager;
     /** DAO for library metadata */
     private final LibraryDAO libraryDAO;
+    /** DAO for application metadata */
+    private final ApplicationDAO applicationDAO;
+    /** DAO for library item metadata */
+    private final LibraryItemDAO libraryItemDAO;
     /** For resizing boxart images we import. */
     private final ImageResizer imageResizer;
     /** The currently selected application in the TreeView */
@@ -62,18 +65,19 @@ public class LibraryManager {
     /** Container for UI properties we need to update */
     private final UiPropertyContainer uiPropertyContainer;
 
-
     @Autowired
     public LibraryManager(final UserConfiguration userConfiguration,
                           final PathConfiguration pathConfiguration,
-                          final HibernateManager hibernateManager,
                           final LibraryDAO libraryDAO,
+                          final ApplicationDAO applicationDAO,
+                          final LibraryItemDAO libraryItemDAO,
                           final ImageResizer imageResizer,
                           final UiPropertyContainer uiPropertyContainer) {
         this.userConfiguration = userConfiguration;
         this.pathConfiguration = pathConfiguration;
-        this.hibernateManager = hibernateManager;
         this.libraryDAO = libraryDAO;
+        this.applicationDAO = applicationDAO;
+        this.libraryItemDAO = libraryItemDAO;
         this.imageResizer = imageResizer;
         this.currentApp = null;
         this.currentLibrary = null;
@@ -124,7 +128,8 @@ public class LibraryManager {
 
         // initialize the cell factory so we can control theming, drag and drop, etc.
         mainWindow.treeViewGames.setCellFactory(param ->
-                new ApplicationTreeCell(new AppImporter(this.hibernateManager, this, this.uiPropertyContainer, this.pathConfiguration)));
+                new ApplicationTreeCell(new AppImporter(this.applicationDAO, this.libraryItemDAO, this,
+                        this.uiPropertyContainer, this.pathConfiguration)));
 
         // whenever an item is selected, we'll bind the data to the UI and save whatever app
         // was being viewed previously to the database
@@ -173,7 +178,7 @@ public class LibraryManager {
 
                     // persist the item to the database and refresh the application view
                     if (oldApp != null) {
-                        this.hibernateManager.updateEntities(oldApp);
+                        this.applicationDAO.update(oldApp);
                     }
 
                     mainWindow.treeViewGames.refresh();
@@ -217,7 +222,7 @@ public class LibraryManager {
 
             // also update the Application itself
             this.currentApp.setBoxArtPath(newBoxartFile);
-            this.hibernateManager.updateEntities(currentApp);
+            this.applicationDAO.update(currentApp);
 
             return new Image(Paths.get(this.pathConfiguration.boxartDirectory, newBoxartFile).toUri().toURL().toExternalForm());
         } else {

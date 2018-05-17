@@ -1,6 +1,6 @@
 package com.fuckmyclassic.network;
 
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAO;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;

@@ -1,15 +1,13 @@
 package com.fuckmyclassic.spring.configuration;
 
-import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
-import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAOImpl;
-import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.dao.LibraryDAO;
-import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAOImpl;
-import com.fuckmyclassic.hibernate.dao.impl.LibraryDAOImpl;
+import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -69,11 +67,6 @@ public class HibernateConfiguration {
     }
 
     @Bean
-    public Session session(LocalSessionFactoryBean sessionFactory) {
-        return sessionFactory.getObject().openSession();
-    }
-
-    @Bean
     public DriverManagerDataSource dataSource(PathConfiguration pathConfiguration) {
         final DriverManagerDataSource source = new DriverManagerDataSource();
         source.setDriverClassName(this.driverClassName);
@@ -89,23 +82,25 @@ public class HibernateConfiguration {
     }
 
     @Bean
-    public HibernateManager hibernateManager(Session session) {
-        return new HibernateManager(session);
+    public ApplicationDAO applicationDAO(SessionFactory sessionFactory) {
+        return new ApplicationDAO(sessionFactory);
     }
 
     @Bean
-    public ApplicationDAO applicationDAO(Session session) {
-        return new ApplicationDAOImpl(session);
-    }
-
-    @Bean
-    public LibraryDAO libraryDAO(HibernateManager hibernateManager, Session session, ApplicationDAO applicationDAO,
+    public LibraryDAO libraryDAO(SessionFactory sessionFactory,
+                                 ApplicationDAO applicationDAO,
+                                 LibraryItemDAO libraryItemDAO,
                                  UiPropertyContainer uiPropertyContainer) {
-        return new LibraryDAOImpl(hibernateManager, session, applicationDAO, uiPropertyContainer);
+        return new LibraryDAO(sessionFactory, applicationDAO, libraryItemDAO, uiPropertyContainer);
     }
 
     @Bean
-    public ConsoleDAO consoleDAO(HibernateManager hibernateManager, Session session) {
-        return new ConsoleDAOImpl(hibernateManager, session);
+    public ConsoleDAO consoleDAO(SessionFactory sessionFactory) {
+        return new ConsoleDAO(sessionFactory);
+    }
+
+    @Bean
+    public LibraryItemDAO libraryItemDAO(SessionFactory sessionFactory) {
+        return new LibraryItemDAO(sessionFactory);
     }
 }

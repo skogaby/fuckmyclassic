@@ -2,8 +2,10 @@ package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.task.TaskProvider;
@@ -11,8 +13,6 @@ import com.fuckmyclassic.task.impl.RsyncDataTask;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.controller.LibraryManagementWindow;
 import com.fuckmyclassic.ui.controller.MainWindow;
-import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.dao.LibraryDAO;
 import com.fuckmyclassic.ui.controller.RsyncRunnerDialog;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
 import com.fuckmyclassic.ui.util.ImageResizer;
@@ -50,9 +50,8 @@ public class ApplicationConfiguration {
                                                            ConsoleDAO consoleDAO,
                                                            LibraryDAO libraryDAO,
                                                            ApplicationDAO applicationDAO,
-                                                           HibernateManager hibernateManager,
-                                                           Session session) {
-        return new LibraryManagementWindow(userConfiguration, consoleDAO, libraryDAO, applicationDAO, hibernateManager, session);
+                                                           LibraryItemDAO libraryItemDAO) {
+        return new LibraryManagementWindow(userConfiguration, consoleDAO, libraryDAO, applicationDAO, libraryItemDAO);
     }
 
     @Bean
@@ -65,9 +64,11 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    public LibraryManager libraryManager(UserConfiguration userConfiguration, PathConfiguration pathConfiguration, HibernateManager hibernateManager,
-                                         LibraryDAO libraryDAO, ImageResizer imageResizer, UiPropertyContainer uiPropertyContainer) {
-        return new LibraryManager(userConfiguration, pathConfiguration, hibernateManager, libraryDAO, imageResizer, uiPropertyContainer);
+    public LibraryManager libraryManager(UserConfiguration userConfiguration, PathConfiguration pathConfiguration, LibraryDAO libraryDAO,
+                                         ApplicationDAO applicationDAO, LibraryItemDAO libraryItemDAO, ImageResizer imageResizer,
+                                         UiPropertyContainer uiPropertyContainer) {
+        return new LibraryManager(userConfiguration, pathConfiguration, libraryDAO, applicationDAO, libraryItemDAO,
+                imageResizer, uiPropertyContainer);
     }
 
     @Bean

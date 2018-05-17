@@ -1,7 +1,6 @@
 package com.fuckmyclassic.task.impl;
 
-import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
@@ -31,8 +30,6 @@ public class UpdateUnknownLibrariesTask extends AbstractTaskCreator<Void> {
 
     /** Current user configuration */
     private final UserConfiguration userConfiguration;
-    /** Hibernate manager to update libraries */
-    private final HibernateManager hibernateManager;
     /** DAO for querying for libraries */
     private final LibraryDAO libraryDAO;
     /** Bundle for getting localized strings. */
@@ -40,11 +37,9 @@ public class UpdateUnknownLibrariesTask extends AbstractTaskCreator<Void> {
 
     @Autowired
     public UpdateUnknownLibrariesTask(final UserConfiguration userConfiguration,
-                                      final HibernateManager hibernateManager,
                                       final LibraryDAO libraryDAO,
                                       final ResourceBundle resourceBundle) {
         this.userConfiguration = userConfiguration;
-        this.hibernateManager = hibernateManager;
         this.libraryDAO = libraryDAO;
         this.resourceBundle = resourceBundle;
     }
@@ -66,7 +61,7 @@ public class UpdateUnknownLibrariesTask extends AbstractTaskCreator<Void> {
 
                         libraries.forEach(l -> {
                             l.setConsoleSid(userConfiguration.getSelectedConsole().getConsoleSid());
-                            hibernateManager.updateEntities(l);
+                            libraryDAO.update(l);
                         });
                     }
                 }

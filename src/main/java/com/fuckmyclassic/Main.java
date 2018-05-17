@@ -78,14 +78,7 @@ public class Main extends Application {
     @Override
     public void stop() throws IOException {
         if (applicationContext != null) {
-            // shut down the Hibernate session if one exists
-            final Session session = applicationContext.getBean(Session.class);
-
-            if (session != null && session.isOpen()) {
-                session.close();
-            }
-
-            // close the SSH connection if there is one
+            // close the SSH connections if there is one
             final NetworkManager networkManager = applicationContext.getBean(NetworkManager.class);
 
             if (networkManager != null) {

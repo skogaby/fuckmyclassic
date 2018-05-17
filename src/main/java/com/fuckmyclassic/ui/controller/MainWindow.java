@@ -2,7 +2,7 @@ package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAO;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Library;

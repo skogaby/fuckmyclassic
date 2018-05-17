@@ -1,7 +1,7 @@
 package com.fuckmyclassic.task.impl;
 
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
-import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.shared.SharedConstants;

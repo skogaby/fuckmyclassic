@@ -1,6 +1,7 @@
 package com.fuckmyclassic.management;
 
-import com.fuckmyclassic.hibernate.HibernateManager;
+import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
@@ -29,8 +30,10 @@ public class AppImporter {
 
     static Logger LOG = LogManager.getLogger(AppImporter.class.getName());
 
-    /** Instance to help with persisting new apps and library items to the database. */
-    private final HibernateManager hibernateManager;
+    /** DAO for creating new Applications */
+    private final ApplicationDAO applicationDAO;
+    /** DAO for creating new LibraryItems */
+    private final LibraryItemDAO libraryItemDAO;
     /** Instance to help with creating new library items. */
     private final LibraryManager libraryManager;
     /** Container for UI properties we need to update */
@@ -38,11 +41,13 @@ public class AppImporter {
     /** Paths for runtime operations */
     private final PathConfiguration pathConfiguration;
 
-    public AppImporter(final HibernateManager hibernateManager,
+    public AppImporter(final ApplicationDAO applicationDAO,
+                       final LibraryItemDAO libraryItemDAO,
                        final LibraryManager libraryManager,
                        final UiPropertyContainer uiPropertyContainer,
                        final PathConfiguration pathConfiguration) {
-        this.hibernateManager = hibernateManager;
+        this.applicationDAO = applicationDAO;
+        this.libraryItemDAO = libraryItemDAO;
         this.libraryManager = libraryManager;
         this.uiPropertyContainer = uiPropertyContainer;
         this.pathConfiguration = pathConfiguration;
@@ -127,18 +132,18 @@ public class AppImporter {
                 .setSinglePlayer(true)
                 .setApplicationSize(applicationSize)
                 .setCompressed(false);
-        this.hibernateManager.saveEntities(newApp);
+        this.applicationDAO.create(newApp);
 
         final LibraryItem newLibraryItem = new LibraryItem()
                 .setLibrary(this.libraryManager.getCurrentLibrary())
                 .setApplication(newApp)
                 .setFolder((Folder) importFolder.getValue().getApplication())
                 .setSelected(true);
-        this.hibernateManager.saveEntities(newLibraryItem);
+        this.libraryItemDAO.create(newLibraryItem);
 
         // create the new CheckBoxTreeItem and insert it
         final CheckBoxTreeItem<LibraryItem> newItem = new CheckBoxTreeItem<>(newLibraryItem, null, true, false);
-        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem(newItem, this.hibernateManager, this.uiPropertyContainer);
+        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem(newItem, this.libraryItemDAO, this.uiPropertyContainer);
 
         importFolder.getChildren().add(newItem);
     }

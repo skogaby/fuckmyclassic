@@ -1,27 +1,28 @@
 package com.fuckmyclassic.hibernate.dao.impl;
 
-import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
+import com.fuckmyclassic.hibernate.dao.AbstractHibernateDAO;
 import com.fuckmyclassic.model.Application;
-import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
- * Implementation of the ApplicationDAO interface using MySQL and Hibernate.
+ * DAO for accessing Application data.
  * @author skogaby (skogabyskogaby@gmail.com)
  */
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 @Repository
-public class ApplicationDAOImpl implements ApplicationDAO {
-
-    /** Hibernate session for database interaction at a low level. */
-    private final Session session;
+public class ApplicationDAO extends AbstractHibernateDAO<Application> {
 
     @Autowired
-    public ApplicationDAOImpl(final Session session) {
-        this.session = session;
+    public ApplicationDAO(final SessionFactory sessionFactory) {
+        super(sessionFactory);
+        setClazz(Application.class);
     }
 
     /**
@@ -29,11 +30,13 @@ public class ApplicationDAOImpl implements ApplicationDAO {
      * @param applicationId The ID string of the application (ex. CLV-S-00000)
      * @return The Application corresponding to the ID
      */
-    @Override
-    public Application loadApplicationByAppId(String applicationId) {
-        final Query<Application> query = session.createQuery("from Application where application_id = :id");
+    public Application loadApplicationByAppId(final String applicationId) {
+        this.openCurrentSession();
+        final Query<Application> query = this.currentSession.createQuery("from Application where application_id = :id");
         query.setParameter("id", applicationId);
         final List<Application> results = query.getResultList();
+        this.closeCurrentSession();
+
         Application app = null;
 
         if (!results.isEmpty()) {

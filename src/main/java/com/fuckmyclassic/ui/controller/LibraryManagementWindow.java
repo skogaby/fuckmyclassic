@@ -1,9 +1,9 @@
 package com.fuckmyclassic.ui.controller;
 
-import com.fuckmyclassic.hibernate.HibernateManager;
-import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
-import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
-import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAO;
+import com.fuckmyclassic.hibernate.dao.impl.ConsoleDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Library;
@@ -66,16 +66,20 @@ public class LibraryManagementWindow {
     private final LibraryDAO libraryDAO;
     /** DAO for application metadata */
     private final ApplicationDAO applicationDAO;
-    /** Manager for persisting entities to the database */
-    private final HibernateManager hibernateManager;
-    /** Hibernate session, for purging the context after the window closes */
-    private final Session session;
-    /** The set of Consoles and Libraries that have been edited that need to be saved if the user chooses to */
-    private final Set<Object> editedEntities;
-    /** The set of Libraries and LibraryItems that have been added */
-    private final Set<Object> addedLibraryData;
-    /** The set of Libraries and LibraryItems that have been removed */
-    private final Set<Object> removedLibraryData;
+    /** DAO for library item metadata */
+    private final LibraryItemDAO libraryItemDAO;
+    /** The set of Consoles that have been edited */
+    private final Set<Console> editedConsoles;
+    /** The set of Libraries that have been edited */
+    private final Set<Library> editedLibraries;
+    /** The set of Libraries that are newly created */
+    private final Set<Library> newLibraries;
+    /** The set of LibraryItems that are newly created */
+    private final Set<LibraryItem> newLibraryItems;
+    /** The set of Libraries that are newly deleted */
+    private final Set<Library> removedLibraries;
+    /** The set of LibraryItems that are newly deleted */
+    private final Set<LibraryItem> removedLibraryItems;
     /** The selected console for this window */
     private Console selectedConsole;
     /** The currently selected library for this window */
@@ -92,26 +96,30 @@ public class LibraryManagementWindow {
                                    final ConsoleDAO consoleDAO,
                                    final LibraryDAO libraryDAO,
                                    final ApplicationDAO applicationDAO,
-                                   final HibernateManager hibernateManager,
-                                   final Session session) {
+                                   final LibraryItemDAO libraryItemDAO) {
         this.userConfiguration = userConfiguration;
         this.consoleDAO = consoleDAO;
         this.libraryDAO = libraryDAO;
         this.applicationDAO = applicationDAO;
-        this.hibernateManager = hibernateManager;
-        this.editedEntities = new HashSet<>();
-        this.addedLibraryData = new HashSet<>();
-        this.removedLibraryData = new HashSet<>();
-        this.session = session;
+        this.libraryItemDAO = libraryItemDAO;
+        this.editedConsoles = new HashSet<>();
+        this.editedLibraries = new HashSet<>();
+        this.newLibraries = new HashSet<>();
+        this.newLibraryItems = new HashSet<>();
+        this.removedLibraries = new HashSet<>();
+        this.removedLibraryItems = new HashSet<>();
     }
 
     @FXML
     public void initialize() {
         this.selectedConsole = null;
         this.selectedLibrary = null;
-        this.editedEntities.clear();
-        this.addedLibraryData.clear();
-        this.removedLibraryData.clear();
+        this.editedConsoles.clear();
+        this.editedLibraries.clear();
+        this.newLibraries.clear();
+        this.newLibraryItems.clear();
+        this.removedLibraries.clear();
+        this.removedLibraryItems.clear();
         this.cmbCurrentConsole.setItems(null);
         this.lstLibraries.setItems(null);
         this.shouldSave = false;
@@ -152,7 +160,7 @@ public class LibraryManagementWindow {
         this.txtConsoleName.focusedProperty().addListener(((observable, oldValue, newValue) -> {
             // if we had focus and lost it, update the view and add the entity to the list
             if (oldValue && !newValue) {
-                this.editedEntities.add(this.selectedConsole);
+                this.editedConsoles.add(this.selectedConsole);
 
                 this.displayedConsoles.forEach(console -> {
                     if (console.getConsoleSid().equals(this.selectedConsole.getConsoleSid())) {
@@ -198,13 +206,11 @@ public class LibraryManagementWindow {
         this.txtLibraryName.focusedProperty().addListener(((observable, oldValue, newValue) -> {
             // if we had focus and lost it, update the view and add the entity to the list
             if (oldValue && !newValue) {
-                this.editedEntities.add(this.selectedLibrary);
+                this.editedLibraries.add(this.selectedLibrary);
 
-                this.addedLibraryData.forEach(library -> {
-                    if (library instanceof Library) {
-                        if (((Library) library).getId() == this.selectedLibrary.getId()) {
-                            ((Library) library).setLibraryName(this.selectedLibrary.getLibraryName());
-                        }
+                this.newLibraries.forEach(library -> {
+                    if (library.getId() == this.selectedLibrary.getId()) {
+                        library.setLibraryName(this.selectedLibrary.getLibraryName());
                     }
                 });
 
@@ -238,12 +244,15 @@ public class LibraryManagementWindow {
      * Saves all the edited entities and clears the set.
      */
     private void saveEditedEntities() {
-        this.session.clear();
-        this.hibernateManager.updateEntities(this.editedEntities.toArray());
+        this.libraryDAO.update(this.editedLibraries.toArray(new Library[this.editedLibraries.size()]));
+        this.consoleDAO.update(this.editedConsoles.toArray(new Console[this.editedConsoles.size()]));
 
-        this.editedEntities.clear();
-        this.addedLibraryData.clear();
-        this.removedLibraryData.clear();
+        this.editedConsoles.clear();
+        this.editedLibraries.clear();
+        this.newLibraries.clear();
+        this.newLibraryItems.clear();
+        this.removedLibraryItems.clear();
+        this.removedLibraries.clear();
     }
 
     /**
@@ -260,8 +269,8 @@ public class LibraryManagementWindow {
     private void onAddLibraryClick() {
         final Library defaultLibrary = new Library(this.selectedConsole.getConsoleSid(),
                 SharedConstants.DEFAULT_LIBRARY_NAME);
-        this.addedLibraryData.add(defaultLibrary);
-        this.hibernateManager.saveEntities(defaultLibrary);
+        this.newLibraries.add(defaultLibrary);
+        this.libraryDAO.create(defaultLibrary);
 
         final Application homeFolder = this.applicationDAO.loadApplicationByAppId(SharedConstants.HOME_FOLDER_ID);
         final LibraryItem homeFolderItem = new LibraryItem()
@@ -269,8 +278,8 @@ public class LibraryManagementWindow {
                 .setApplication(homeFolder)
                 .setLibrary(defaultLibrary)
                 .setSelected(true);
-        this.addedLibraryData.add(homeFolderItem);
-        this.hibernateManager.saveEntities(homeFolderItem);
+        this.newLibraryItems.add(homeFolderItem);
+        this.libraryItemDAO.create(homeFolderItem);
 
         // update the list
         this.displayedLibraries.add(defaultLibrary);
@@ -283,25 +292,25 @@ public class LibraryManagementWindow {
     @FXML
     private void onRemoveLibraryClick() {
         final Library libraryToDelete = new Library(this.selectedLibrary);
-        this.removedLibraryData.add(libraryToDelete);
+        this.removedLibraries.add(libraryToDelete);
 
         // remove the library items from the database. we add copies of the original
         // objects instead of the originals themselves, because if we cancel the window
         // and need to re-insert the records to the database, they have to have new IDs.
         // so we'll construct new objects and let Hibernate do its thing
         final List<LibraryItem> libraryItems = this.libraryDAO.getApplicationsForLibrary(this.selectedLibrary, false);
-        this.removedLibraryData.addAll(libraryItems.stream()
+        this.removedLibraryItems.addAll(libraryItems.stream()
                 .map(item -> new LibraryItem(libraryToDelete, item.getApplication(), item.getFolder(),
                         item.isSelected(), item.getNumNodes()))
                 .collect(Collectors.toList()));
-        this.hibernateManager.deleteEntities(libraryItems.toArray());
+        this.libraryItemDAO.delete(libraryItems.toArray(new LibraryItem[libraryItems.size()]));
 
         // remove the library from the database
-        this.hibernateManager.deleteEntities(this.selectedLibrary);
+        this.libraryDAO.delete(this.selectedLibrary);
 
         // remove the library from the collections
-        this.editedEntities.remove(this.selectedLibrary);
-        this.addedLibraryData.remove(this.selectedLibrary);
+        this.editedLibraries.remove(this.selectedLibrary);
+        this.newLibraries.remove(this.selectedLibrary);
         this.displayedLibraries.remove(this.selectedLibrary);
 
         // refresh the list and select the first item
@@ -361,14 +370,12 @@ public class LibraryManagementWindow {
         stage.setTitle(resourceBundle.getString(TITLE_STRING_KEY));
         stage.showAndWait();
 
-        // clear out the Hibernate context, just in case we edited data that we never saved,
-        // we don't want Hibernate returning it in subsequent queries
-        this.session.clear();
-
         // if we didn't save the edited entities, we need to remove the new libraries that were created as well
         if (!this.shouldSave) {
-            this.hibernateManager.deleteEntities(this.addedLibraryData.toArray());
-            this.hibernateManager.saveEntities(this.removedLibraryData.toArray());
+            this.libraryItemDAO.delete(this.newLibraryItems.toArray(new LibraryItem[this.newLibraryItems.size()]));
+            this.libraryDAO.delete(this.newLibraries.toArray(new Library[this.newLibraries.size()]));
+            this.libraryDAO.create(this.removedLibraries.toArray(new Library[this.removedLibraries.size()]));
+            this.libraryItemDAO.create(this.removedLibraryItems.toArray(new LibraryItem[this.removedLibraryItems.size()]));
         }
     }
 }
