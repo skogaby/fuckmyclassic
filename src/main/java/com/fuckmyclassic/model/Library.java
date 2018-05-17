@@ -36,7 +36,7 @@ public class Library implements Externalizable {
         this.libraryName = new SimpleStringProperty(null);
     }
 
-    public Library(final String consoleSid, final int libraryId, final String libraryName) {
+    public Library(final String consoleSid, final String libraryName) {
         this.id = new SimpleLongProperty(this, "id");
         this.consoleSid = new SimpleStringProperty(consoleSid);
         this.libraryName = new SimpleStringProperty(libraryName);

@@ -40,15 +40,15 @@
                   <Insets top="5.0" />
                </VBox.margin>
                <children>
-                  <Button fx:id="btnAddLibrary" mnemonicParsing="false" text="%LibraryManagementWindow.btnAddLibrary">
+                  <Button fx:id="btnAddLibrary" mnemonicParsing="false" onAction="#onAddLibraryClick" text="%LibraryManagementWindow.btnAddLibrary">
                      <font>
                         <Font size="12.0" />
                      </font></Button>
-                  <Button fx:id="btnRemoveLibrary" mnemonicParsing="false" text="%LibraryManagementWindow.btnRemoveLibrary">
+                  <Button fx:id="btnRemoveLibrary" mnemonicParsing="false" onAction="#onRemoveLibraryClick" text="%LibraryManagementWindow.btnRemoveLibrary">
                      <font>
                         <Font size="12.0" />
                      </font></Button>
-                  <Button fx:id="btnCopyLibrary" mnemonicParsing="false" text="%LibraryManagementWindow.btnCopyLibrary">
+                  <Button fx:id="btnCopyLibrary" mnemonicParsing="false" onAction="#onCopyLibraryClick" text="%LibraryManagementWindow.btnCopyLibrary">
                      <font>
                         <Font size="12.0" />
                      </font></Button>

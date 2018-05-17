@@ -1,11 +1,14 @@
 package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.hibernate.HibernateManager;
+import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
 import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
 import com.fuckmyclassic.hibernate.dao.LibraryDAO;
+import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
+import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.beans.property.ReadOnlyProperty;
@@ -14,10 +17,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
@@ -62,12 +63,18 @@ public class LibraryManagementWindow {
     private final ConsoleDAO consoleDAO;
     /** DAO for library metadata */
     private final LibraryDAO libraryDAO;
+    /** DAO for application metadata */
+    private final ApplicationDAO applicationDAO;
     /** Manager for persisting entities to the database */
     private final HibernateManager hibernateManager;
     /** Hibernate session, for purging the context after the window closes */
     private final Session session;
     /** The set of Consoles and Libraries that have been edited that need to be saved if the user chooses to */
     private final Set<Object> editedEntities;
+    /** The set of Libraries and LibraryItems that have been added */
+    private final Set<Object> addedLibraryData;
+    /** The set of Libraries and LibraryItems that have been removed */
+    private final Set<Object> removedLibraryData;
     /** The selected console for this window */
     private Console selectedConsole;
     /** The currently selected library for this window */
@@ -76,18 +83,24 @@ public class LibraryManagementWindow {
     private ObservableList<Console> displayedConsoles;
     /** The list of libraries that we display in the list */
     private ObservableList<Library> displayedLibraries;
+    /** Says whether or not we should save the edited items when the window closes */
+    private boolean shouldSave;
 
     @Autowired
     public LibraryManagementWindow(final UserConfiguration userConfiguration,
                                    final ConsoleDAO consoleDAO,
                                    final LibraryDAO libraryDAO,
+                                   final ApplicationDAO applicationDAO,
                                    final HibernateManager hibernateManager,
                                    final Session session) {
         this.userConfiguration = userConfiguration;
         this.consoleDAO = consoleDAO;
         this.libraryDAO = libraryDAO;
+        this.applicationDAO = applicationDAO;
         this.hibernateManager = hibernateManager;
         this.editedEntities = new HashSet<>();
+        this.addedLibraryData = new HashSet<>();
+        this.removedLibraryData = new HashSet<>();
         this.session = session;
     }
 
@@ -96,8 +109,11 @@ public class LibraryManagementWindow {
         this.selectedConsole = null;
         this.selectedLibrary = null;
         this.editedEntities.clear();
+        this.addedLibraryData.clear();
+        this.removedLibraryData.clear();
         this.cmbCurrentConsole.setItems(null);
         this.lstLibraries.setItems(null);
+        this.shouldSave = false;
 
         if (this.displayedConsoles != null) {
             this.displayedConsoles.clear();
@@ -183,12 +199,21 @@ public class LibraryManagementWindow {
             if (oldValue && !newValue) {
                 this.editedEntities.add(this.selectedLibrary);
 
+                this.addedLibraryData.forEach(library -> {
+                    if (library instanceof Library) {
+                        if (((Library) library).getId() == this.selectedLibrary.getId()) {
+                            ((Library) library).setLibraryName(this.selectedLibrary.getLibraryName());
+                        }
+                    }
+                });
+
                 this.displayedLibraries.forEach(library -> {
                     if (library.getId() == this.selectedLibrary.getId()) {
                         library.setLibraryName(this.selectedLibrary.getLibraryName());
-                        this.lstLibraries.refresh();
                     }
                 });
+
+                this.lstLibraries.refresh();
             }
         }));
 
@@ -218,6 +243,7 @@ public class LibraryManagementWindow {
         });
 
         this.editedEntities.clear();
+        this.addedLibraryData.clear();
     }
 
     /**
@@ -228,10 +254,51 @@ public class LibraryManagementWindow {
     }
 
     /**
+     * OnClick handler for the add library button.
+     */
+    @FXML
+    private void onAddLibraryClick() {
+        final Library defaultLibrary = new Library(this.selectedConsole.getConsoleSid(),
+                SharedConstants.DEFAULT_LIBRARY_NAME);
+        this.addedLibraryData.add(defaultLibrary);
+        this.hibernateManager.saveEntity(defaultLibrary);
+
+        final Application homeFolder = this.applicationDAO.loadApplicationByAppId(SharedConstants.HOME_FOLDER_ID);
+        final LibraryItem homeFolderItem = new LibraryItem()
+                .setFolder(null)
+                .setApplication(homeFolder)
+                .setLibrary(defaultLibrary)
+                .setSelected(true);
+        this.addedLibraryData.add(homeFolderItem);
+        this.hibernateManager.saveEntity(homeFolderItem);
+
+        // update the list
+        this.displayedLibraries.add(defaultLibrary);
+        this.lstLibraries.refresh();
+    }
+
+    /**
+     * OnClick handler for the remove library button.
+     */
+    @FXML
+    private void onRemoveLibraryClick() {
+
+    }
+
+    /**
+     * OnClick handler for the copy library button.
+     */
+    @FXML
+    private void onCopyLibraryClick() {
+
+    }
+
+    /**
      * OnClick handler for the Cancel button.
      */
     @FXML
     private void onCancelClick() {
+        this.shouldSave = false;
         this.closeWindow();
     }
 
@@ -240,6 +307,7 @@ public class LibraryManagementWindow {
      */
     @FXML
     private void onApplyClick() {
+        this.shouldSave = true;
         this.saveEditedEntities();
     }
 
@@ -248,6 +316,7 @@ public class LibraryManagementWindow {
      */
     @FXML
     private void onOKClick() {
+        this.shouldSave = true;
         this.saveEditedEntities();
         this.closeWindow();
     }
@@ -271,5 +340,12 @@ public class LibraryManagementWindow {
         // clear out the Hibernate context, just in case we edited data that we never saved,
         // we don't want Hibernate returning it in subsequent queries
         this.session.clear();
+
+        // if we didn't save the edited entities, we need to remove the new libraries that were created as well
+        if (!this.shouldSave) {
+            this.addedLibraryData.forEach(object -> {
+                this.hibernateManager.deleteEntity(object);
+            });
+        }
     }
 }

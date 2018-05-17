@@ -2,6 +2,7 @@ package com.fuckmyclassic.spring.configuration;
 
 import com.fuckmyclassic.boot.KernelFlasher;
 import com.fuckmyclassic.boot.MembootHelper;
+import com.fuckmyclassic.hibernate.dao.ApplicationDAO;
 import com.fuckmyclassic.hibernate.dao.ConsoleDAO;
 import com.fuckmyclassic.management.LibraryManager;
 import com.fuckmyclassic.network.NetworkManager;
@@ -48,9 +49,10 @@ public class ApplicationConfiguration {
     public LibraryManagementWindow libraryManagementWindow(UserConfiguration userConfiguration,
                                                            ConsoleDAO consoleDAO,
                                                            LibraryDAO libraryDAO,
+                                                           ApplicationDAO applicationDAO,
                                                            HibernateManager hibernateManager,
                                                            Session session) {
-        return new LibraryManagementWindow(userConfiguration, consoleDAO, libraryDAO, hibernateManager, session);
+        return new LibraryManagementWindow(userConfiguration, consoleDAO, libraryDAO, applicationDAO, hibernateManager, session);
     }
 
     @Bean

@@ -57,7 +57,7 @@ public class LibraryDAOImpl implements LibraryDAO {
 
         // create a default library if none exists
         if (results.isEmpty()) {
-            final Library defaultLibrary = new Library(consoleSid, 0, SharedConstants.DEFAULT_LIBRARY_NAME);
+            final Library defaultLibrary = new Library(consoleSid, SharedConstants.DEFAULT_LIBRARY_NAME);
             hibernateManager.saveEntity(defaultLibrary);
             results.add(defaultLibrary);
         }
