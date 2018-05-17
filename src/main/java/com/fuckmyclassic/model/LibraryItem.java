@@ -44,13 +44,22 @@ public class LibraryItem implements Externalizable {
         this.numNodes = 0;
     }
 
-    public LibraryItem(final Library library, final Application application, final Folder folder, final boolean selected) {
+    public LibraryItem(final LibraryItem other) {
+        this.id = new SimpleLongProperty(this, "id");
+        this.library = other.library;
+        this.application = other.application;
+        this.folder = other.folder;
+        this.selected = other.selected;
+        this.numNodes = other.numNodes;
+    }
+
+    public LibraryItem(final Library library, final Application application, final Folder folder, final boolean selected, final int numNodes) {
         this.id = new SimpleLongProperty(this, "id");
         this.library = library;
         this.application = application;
         this.folder = folder;
         this.selected = new SimpleBooleanProperty(selected);
-        this.numNodes = 0;
+        this.numNodes = numNodes;
     }
 
     @Override

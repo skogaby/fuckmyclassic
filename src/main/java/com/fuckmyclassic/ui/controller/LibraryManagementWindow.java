@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * The window to let the user manage libraries and see data about them.
@@ -281,13 +282,21 @@ public class LibraryManagementWindow {
      */
     @FXML
     private void onRemoveLibraryClick() {
-        // remove the library items from the database
+        final Library libraryToDelete = new Library(this.selectedLibrary);
+        this.removedLibraryData.add(libraryToDelete);
+
+        // remove the library items from the database. we add copies of the original
+        // objects instead of the originals themselves, because if we cancel the window
+        // and need to re-insert the records to the database, they have to have new IDs.
+        // so we'll construct new objects and let Hibernate do its thing
         final List<LibraryItem> libraryItems = this.libraryDAO.getApplicationsForLibrary(this.selectedLibrary, false);
-        this.removedLibraryData.add(libraryItems);
+        this.removedLibraryData.addAll(libraryItems.stream()
+                .map(item -> new LibraryItem(libraryToDelete, item.getApplication(), item.getFolder(),
+                        item.isSelected(), item.getNumNodes()))
+                .collect(Collectors.toList()));
         this.hibernateManager.deleteEntities(libraryItems.toArray());
 
         // remove the library from the database
-        this.removedLibraryData.add(this.selectedLibrary);
         this.hibernateManager.deleteEntities(this.selectedLibrary);
 
         // remove the library from the collections

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Helper class to manage Hibernate entities. Handles things
@@ -18,6 +17,7 @@ public class HibernateManager {
 
     private final int MINIMUM_RETRY_SLEEP = 50;
     private final int MAXIMUM_RETRY_SLEEP = 500;
+    private final int MAXIMUM_RETRIES = 4;
     private final int BATCH_SIZE = 20;
 
     /** Random number generator for simple retry jitter on concurrent modifications */
@@ -34,9 +34,10 @@ public class HibernateManager {
     /**
      * Perform a persistence operation on one or more given entities.
      * @param operation The operation to perform
+     * @param tries
      * @param entities The entities to act upon
      */
-    public void performMutation(final PersistenceOperation operation, final Object... entities) {
+    public void performMutation(final PersistenceOperation operation, int tries, final Object... entities) {
         if (entities != null) {
             Transaction tx = null;
 
@@ -58,18 +59,17 @@ public class HibernateManager {
                     tx.rollback();
                 }
 
-                if (e instanceof ExecutionException) {
-                    // retry if this was due to multiple mutations happening at once
+                if (tries < MAXIMUM_RETRIES) {
                     try {
                         Thread.sleep(this.random.nextInt(MAXIMUM_RETRY_SLEEP - MINIMUM_RETRY_SLEEP) +
                                 MINIMUM_RETRY_SLEEP);
-                        performMutation(operation, entities);
+                        performMutation(operation, tries + 1, entities);
                     } catch (InterruptedException e1) {
                         e1.printStackTrace();
                     }
+                } else {
+                    throw e;
                 }
-
-                throw e;
             }
         }
     }
@@ -79,7 +79,7 @@ public class HibernateManager {
      * @param entities
      */
     public void saveEntities(final Object... entities) {
-        performMutation(x -> this.hibernateSession.saveOrUpdate(x), entities);
+        performMutation(x -> this.hibernateSession.saveOrUpdate(x), 0, entities);
     }
 
     /**
@@ -87,7 +87,7 @@ public class HibernateManager {
      * @param entities
      */
     public void updateEntities(final Object... entities) {
-        performMutation(x -> this.hibernateSession.saveOrUpdate(x), entities);
+        performMutation(x -> this.hibernateSession.saveOrUpdate(x), 0, entities);
     }
 
     /**
@@ -95,6 +95,6 @@ public class HibernateManager {
      * @param entities
      */
     public void deleteEntities(final Object... entities) {
-        performMutation(x -> this.hibernateSession.delete(x), entities);
+        performMutation(x -> this.hibernateSession.delete(x), 0, entities);
     }
 }

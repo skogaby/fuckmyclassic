@@ -172,7 +172,10 @@ public class LibraryManager {
                     }
 
                     // persist the item to the database and refresh the application view
-                    this.hibernateManager.updateEntities(oldApp);
+                    if (oldApp != null) {
+                        this.hibernateManager.updateEntities(oldApp);
+                    }
+
                     mainWindow.treeViewGames.refresh();
                 }
             });
