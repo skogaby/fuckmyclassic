@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Random;
 
 /**
  * The abstract base class for the DAOs, to handle opening/closing sessions and
@@ -26,14 +25,12 @@ public abstract class AbstractHibernateDAO<T extends Serializable> {
 
     private Class<T> clazz;
 
-    protected final Random random;
     protected final SessionFactory sessionFactory;
     protected Session currentSession;
     protected Transaction currentTransaction;
 
     @Autowired
     public AbstractHibernateDAO(final SessionFactory sessionFactory) {
-        this.random = new Random(System.currentTimeMillis());
         this.sessionFactory = sessionFactory;
     }
 
@@ -76,16 +73,16 @@ public abstract class AbstractHibernateDAO<T extends Serializable> {
     }
 
     public void create(final T... entity) {
-        this.performMutation(x -> this.currentSession.saveOrUpdate(x), true, entity);
+        this.performMutation(x -> this.currentSession.saveOrUpdate(x), entity);
     }
 
     public T[] update(final T... entity) {
-        this.performMutation(x -> this.currentSession.saveOrUpdate(x), true, entity);
+        this.performMutation(x -> this.currentSession.saveOrUpdate(x), entity);
         return entity;
     }
 
     public void delete(final T... entity) {
-        this.performMutation(x -> this.currentSession.delete(x), true, entity);
+        this.performMutation(x -> this.currentSession.delete(x), entity);
     }
 
     public void deleteById(final long entityId) {
@@ -93,28 +90,18 @@ public abstract class AbstractHibernateDAO<T extends Serializable> {
         this.delete(entity);
     }
 
-    public void performMutation(final PersistenceOperation operation, boolean transactional, final T... entities) {
+    public void performMutation(final PersistenceOperation operation, final T... entities) {
         if (entities != null) {
             try {
-                if (transactional) {
-                    this.openCurrentSessionWithTransaction();
-                } else {
-                    this.openCurrentSession();
-                }
+                this.openCurrentSessionWithTransaction();
 
                 for (int i = 0; i < entities.length; i++) {
                     operation.call(entities[i]);
                 }
 
-                if (transactional) {
-                    this.closeCurrentSessionwithTransaction();
-                } else {
-                    this.closeCurrentSession();
-                }
+                this.closeCurrentSessionwithTransaction();
             } catch (Exception e) {
-                if (transactional) {
-                    this.currentTransaction.rollback();
-                }
+                this.currentTransaction.rollback();
             }
         }
     }
