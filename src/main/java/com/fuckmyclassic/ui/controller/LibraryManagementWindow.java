@@ -27,7 +27,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -283,6 +282,7 @@ public class LibraryManagementWindow {
 
         // update the list
         this.displayedLibraries.add(defaultLibrary);
+
         this.lstLibraries.refresh();
     }
 
@@ -293,6 +293,20 @@ public class LibraryManagementWindow {
     private void onRemoveLibraryClick() {
         final Library libraryToDelete = new Library(this.selectedLibrary);
         this.removedLibraries.add(libraryToDelete);
+
+        // make sure we didn't delete the selected console
+        if (this.selectedLibrary.getId() == this.userConfiguration.getSelectedLibraryID()) {
+            final Console c = this.displayedConsoles.get(0);
+            this.userConfiguration.setSelectedConsole(c);
+
+            for (Library l : this.displayedLibraries) {
+                if (l.getConsoleSid().equals(c.getConsoleSid()) &&
+                        !l.equals(this.selectedLibrary)) {
+                    this.userConfiguration.setSelectedLibraryID(l.getId());
+                    break;
+                }
+            }
+        }
 
         // remove the library items from the database. we add copies of the original
         // objects instead of the originals themselves, because if we cancel the window
@@ -323,7 +337,21 @@ public class LibraryManagementWindow {
      */
     @FXML
     private void onCopyLibraryClick() {
+        final Library libraryToAdd = new Library(this.selectedLibrary);
+        this.newLibraries.add(libraryToAdd);
+        this.libraryDAO.create(libraryToAdd);
 
+        final List<LibraryItem> newItems = this.libraryDAO.getApplicationsForLibrary(this.selectedLibrary, false)
+                .stream()
+                .map(item -> new LibraryItem(libraryToAdd, item.getApplication(), item.getFolder(),
+                        item.isSelected(), item.getNumNodes()))
+                .collect(Collectors.toList());
+        this.newLibraryItems.addAll(newItems);
+        this.libraryItemDAO.create(newItems.toArray(new LibraryItem[newItems.size()]));
+
+        // update the list
+        this.displayedLibraries.add(libraryToAdd);
+        this.lstLibraries.refresh();
     }
 
     /**
