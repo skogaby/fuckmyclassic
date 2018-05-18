@@ -41,6 +41,11 @@
               <MenuItem mnemonicParsing="false" onAction="#onFlashCustomKernelClicked" text="%MainWindow.mnuFlashCustomKernel" />
             </items>
           </Menu>
+            <Menu mnemonicParsing="false" text="%MainWindow.mnuTools">
+              <items>
+                <MenuItem fx:id="mnuTakeScreenshot" mnemonicParsing="false" onAction="#onTakeScreenshotClicked" text="%MainWindow.mnuTakeScreenshot" />
+              </items>
+            </Menu>
           <Menu mnemonicParsing="false" text="%MainWindow.mnuHelp">
             <items>
               <MenuItem mnemonicParsing="false" text="%MainWindow.mnuAbout" />

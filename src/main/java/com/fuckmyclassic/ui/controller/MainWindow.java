@@ -16,6 +16,7 @@ import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import com.jcraft.jsch.JSchException;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
@@ -27,6 +28,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -44,7 +46,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.imageio.ImageIO;
 import javax.usb.UsbException;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -95,6 +101,7 @@ public class MainWindow {
     public Button btnSyncGames;
     public MenuBar mainMenu;
     public Label lblNumGamesSelected;
+    public MenuItem mnuTakeScreenshot;
 
     /** The configuration object for user options and session settings */
     private final UserConfiguration userConfiguration;
@@ -316,6 +323,8 @@ public class MainWindow {
                 this.lblConnectionStatus.textProperty());
         BindingHelper.bindProperty(this.uiPropertyContainer.selectedConsoleDisconnected,
                 this.btnSyncGames.disableProperty());
+        BindingHelper.bindProperty(this.uiPropertyContainer.selectedConsoleDisconnected,
+                this.mnuTakeScreenshot.disableProperty());
     }
 
     /**
@@ -391,6 +400,46 @@ public class MainWindow {
     private void onManageLibrariesAndConsolesClicked() throws IOException {
         this.libraryManagementWindow.showWindow();
         initialize();
+    }
+
+    /**
+     * Event handler for the menu item to take a screenshot
+     */
+    @FXML
+    private void onTakeScreenshotClicked() throws IOException, JSchException {
+        final ByteArrayOutputStream fbData = new ByteArrayOutputStream();
+        this.networkManager.runCommand("hakchi uipause");
+        this.networkManager.runCommandWithStreams("cat /dev/fb0", null, fbData, null);
+        this.networkManager.runCommand("hakchi uiresume");
+
+        final int stride = Integer.parseInt(this.networkManager.runCommand("cat /sys/class/graphics/fb0/stride"));
+        final String[] virtualSize = this.networkManager.runCommand("cat /sys/class/graphics/fb0/virtual_size").split(",");
+        final int width = Integer.parseInt(virtualSize[0]);
+        final int height = Integer.parseInt(virtualSize[1]) / 2;
+        final byte[] rawData = fbData.toByteArray();
+        final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+
+        int rawOffset, red, green, blue;
+
+        try {
+            for (int y = 0; y < height; y++) {
+                rawOffset = y * stride;
+
+                for (int x = 0; x < width; x++) {
+                    blue = rawData[rawOffset] & 0xFF;
+                    green = rawData[rawOffset + 1] & 0xFF;
+                    red = rawData[rawOffset + 2] & 0xFF;
+                    rawOffset += 4;
+
+                    image.setRGB(x, y, new Color(red, green, blue).getRGB());
+                }
+            }
+
+            ImageIO.write(image, "PNG", new File("screenshot.png"));
+        } catch (Exception e) {
+            LOG.error(e);
+            throw e;
+        }
     }
 
     //////////////////////////////////////////////////////////////////////
