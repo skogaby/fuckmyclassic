@@ -12,6 +12,7 @@ import com.fuckmyclassic.task.impl.LoadLibrariesTask;
 import com.fuckmyclassic.task.impl.MountGamesAndStartUiTask;
 import com.fuckmyclassic.task.impl.RsyncDataTask;
 import com.fuckmyclassic.task.impl.ShowSplashScreenAndStopUiTask;
+import com.fuckmyclassic.task.impl.TakeScreenshotTask;
 import com.fuckmyclassic.task.impl.UnmountGamesTask;
 import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
 import com.fuckmyclassic.ui.controller.RsyncRunnerDialog;
@@ -21,7 +22,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ResourceBundle;
 
@@ -37,10 +37,11 @@ public class TaskConfiguration {
     public TaskProvider taskProvider(IdentifyConnectedConsoleTask identifyConnectedConsoleTask, UpdateUnknownLibrariesTask updateUnknownLibrariesTask,
                                      LoadLibrariesTask loadLibrariesTask, CreateTempDataTask createTempDataTask, RsyncDataTask rsyncDataTask,
                                      ShowSplashScreenAndStopUiTask showSplashScreenAndStopUiTask, UnmountGamesTask unmountGamesTask,
-                                     MountGamesAndStartUiTask mountGamesAndStartUiTask, DumpOriginalGamesTask dumpOriginalGamesTask) {
+                                     MountGamesAndStartUiTask mountGamesAndStartUiTask, DumpOriginalGamesTask dumpOriginalGamesTask,
+                                     TakeScreenshotTask takeScreenshotTask) {
         return new TaskProvider(createTempDataTask, identifyConnectedConsoleTask, loadLibrariesTask,
                 updateUnknownLibrariesTask, rsyncDataTask, showSplashScreenAndStopUiTask, unmountGamesTask,
-                mountGamesAndStartUiTask, dumpOriginalGamesTask);
+                mountGamesAndStartUiTask, dumpOriginalGamesTask, takeScreenshotTask);
     }
 
     @Bean
@@ -96,5 +97,10 @@ public class TaskConfiguration {
                                                        NetworkManager networkManager, ResourceBundle resourceBundle,
                                                        RsyncRunnerDialog rsyncRunnerDialog) {
         return new DumpOriginalGamesTask(userConfiguration, pathConfiguration, networkManager, resourceBundle, rsyncRunnerDialog);
+    }
+
+    @Bean
+    public TakeScreenshotTask takeScreenshotTask(NetworkManager networkManager, ResourceBundle resourceBundle, UserConfiguration userConfiguration) {
+        return new TakeScreenshotTask(networkManager, resourceBundle, userConfiguration);
     }
 }

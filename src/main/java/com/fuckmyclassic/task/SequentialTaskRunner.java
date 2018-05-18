@@ -117,7 +117,7 @@ public class SequentialTaskRunner extends Task<Void> {
         return taskCreators;
     }
 
-    public SequentialTaskRunner setTaskCreators(TaskCreator[] taskCreators) {
+    public SequentialTaskRunner setTaskCreators(TaskCreator... taskCreators) {
         this.taskCreators = taskCreators;
         return this;
     }

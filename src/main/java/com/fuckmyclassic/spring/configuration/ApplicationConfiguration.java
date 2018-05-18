@@ -15,10 +15,10 @@ import com.fuckmyclassic.ui.controller.LibraryManagementWindow;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.ui.controller.RsyncRunnerDialog;
 import com.fuckmyclassic.ui.controller.SequentialTaskRunnerDialog;
+import com.fuckmyclassic.ui.controller.SingleTaskRunnerDialog;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
-import org.hibernate.Session;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -37,11 +37,12 @@ public class ApplicationConfiguration {
     @Bean
     public MainWindow mainWindow(UserConfiguration userConfiguration, MembootHelper membootHelper, KernelFlasher kernelFlasher,
                                  LibraryManager libraryManager, NetworkManager networkManager, ResourceBundle tasksResourceBundle,
-                                 RsyncRunnerDialog rsyncRunnerDialog, SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider,
+                                 RsyncRunnerDialog rsyncRunnerDialog, SingleTaskRunnerDialog singleTaskRunnerDialog,
+                                 SequentialTaskRunnerDialog sequentialTaskRunnerDialog, TaskProvider taskProvider,
                                  UiPropertyContainer uiPropertyContainer, PathConfiguration pathConfiguration, ConsoleDAO consoleDAO,
                                  LibraryManagementWindow libraryManagementWindow) {
         return new MainWindow(userConfiguration, pathConfiguration, membootHelper, kernelFlasher, libraryManager,
-                networkManager, tasksResourceBundle, sequentialTaskRunnerDialog, rsyncRunnerDialog, taskProvider,
+                networkManager, tasksResourceBundle, singleTaskRunnerDialog, sequentialTaskRunnerDialog, rsyncRunnerDialog, taskProvider,
                 uiPropertyContainer, consoleDAO, libraryManagementWindow);
     }
 
@@ -52,6 +53,11 @@ public class ApplicationConfiguration {
                                                            ApplicationDAO applicationDAO,
                                                            LibraryItemDAO libraryItemDAO) {
         return new LibraryManagementWindow(userConfiguration, consoleDAO, libraryDAO, applicationDAO, libraryItemDAO);
+    }
+
+    @Bean
+    public SingleTaskRunnerDialog singleTaskRunnerDialog() {
+        return new SingleTaskRunnerDialog();
     }
 
     @Bean

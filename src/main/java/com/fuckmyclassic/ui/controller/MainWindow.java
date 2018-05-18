@@ -16,7 +16,6 @@ import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
-import com.jcraft.jsch.JSchException;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
@@ -48,9 +47,7 @@ import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
 import javax.usb.UsbException;
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -76,6 +73,7 @@ public class MainWindow {
     private static final String RESOURCE_BUNDLE_PATH = "i18n/MainWindow";
     private static final String SYNC_TASK_TITLE_KEY = "SyncTaskLabel";
     private static final String CONNECTED_GAMES_LABEL_KEY = "MainWindow.lblNumGamesSelected";
+    private static final String SAVE_SCREENSHOT_DIALOG_TITLE_KEY = "TakeScreenshotTask.saveFileDialogTitle";
 
     // References to all of the UI objects that we need to manipulate
     public ComboBox<Console> cmbCurrentConsole;
@@ -117,6 +115,8 @@ public class MainWindow {
     private final NetworkManager networkManager;
     /** Resource bundle for internationalized task strings */
     private final ResourceBundle tasksResourceBundle;
+    /** The dialog to run single tasks */
+    private final SingleTaskRunnerDialog singleTaskRunnerDialog;
     /** The dialog to run sequential tasks */
     private final SequentialTaskRunnerDialog sequentialTaskRunnerDialog;
     /** Rsync runner dialog for game syncing */
@@ -143,6 +143,7 @@ public class MainWindow {
                       final LibraryManager libraryManager,
                       final NetworkManager networkManager,
                       final ResourceBundle tasksResourceBundle,
+                      final SingleTaskRunnerDialog singleTaskRunnerDialog,
                       final SequentialTaskRunnerDialog sequentialTaskRunnerDialog,
                       final RsyncRunnerDialog rsyncRunnerDialog,
                       final TaskProvider taskProvider,
@@ -156,6 +157,7 @@ public class MainWindow {
         this.libraryManager = libraryManager;
         this.networkManager = networkManager;
         this.tasksResourceBundle = tasksResourceBundle;
+        this.singleTaskRunnerDialog = singleTaskRunnerDialog;
         this.sequentialTaskRunnerDialog = sequentialTaskRunnerDialog;
         this.rsyncRunnerDialog = rsyncRunnerDialog;
         this.taskProvider = taskProvider;
@@ -389,6 +391,7 @@ public class MainWindow {
         rsyncRunnerDialog.showDialog();
 
         // start the console's UI back up
+        sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
         sequentialTaskRunnerDialog.setTaskCreators(taskProvider.mountGamesAndStartUiTask);
         sequentialTaskRunnerDialog.showDialog();
     }
@@ -406,39 +409,27 @@ public class MainWindow {
      * Event handler for the menu item to take a screenshot
      */
     @FXML
-    private void onTakeScreenshotClicked() throws IOException, JSchException {
-        final ByteArrayOutputStream fbData = new ByteArrayOutputStream();
-        this.networkManager.runCommand("hakchi uipause");
-        this.networkManager.runCommandWithStreams("cat /dev/fb0", null, fbData, null);
-        this.networkManager.runCommand("hakchi uiresume");
+    private void onTakeScreenshotClicked() throws IOException {
+        this.singleTaskRunnerDialog.setTaskCreator(this.taskProvider.takeScreenshotTask);
+        this.singleTaskRunnerDialog.setTitle(this.tasksResourceBundle.getString(SAVE_SCREENSHOT_DIALOG_TITLE_KEY));
+        this.singleTaskRunnerDialog.showDialog();
 
-        final int stride = Integer.parseInt(this.networkManager.runCommand("cat /sys/class/graphics/fb0/stride"));
-        final String[] virtualSize = this.networkManager.runCommand("cat /sys/class/graphics/fb0/virtual_size").split(",");
-        final int width = Integer.parseInt(virtualSize[0]);
-        final int height = Integer.parseInt(virtualSize[1]) / 2;
-        final byte[] rawData = fbData.toByteArray();
-        final BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        if (this.userConfiguration.getLastScreenshot() != null) {
+            final FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle(this.tasksResourceBundle.getString(SAVE_SCREENSHOT_DIALOG_TITLE_KEY));
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
 
-        int rawOffset, red, green, blue;
-
-        try {
-            for (int y = 0; y < height; y++) {
-                rawOffset = y * stride;
-
-                for (int x = 0; x < width; x++) {
-                    blue = rawData[rawOffset] & 0xFF;
-                    green = rawData[rawOffset + 1] & 0xFF;
-                    red = rawData[rawOffset + 2] & 0xFF;
-                    rawOffset += 4;
-
-                    image.setRGB(x, y, new Color(red, green, blue).getRGB());
+            final File outputFile = fileChooser.showSaveDialog(this.treeViewGames.getScene().getWindow());
+            if (outputFile != null) {
+                try {
+                    ImageIO.write(this.userConfiguration.getLastScreenshot(), "png", outputFile);
+                    this.userConfiguration.setLastScreenshot(null);
+                    Desktop.getDesktop().open(outputFile);
+                } catch (IOException e) {
+                    LOG.error(e);
+                    throw e;
                 }
             }
-
-            ImageIO.write(image, "PNG", new File("screenshot.png"));
-        } catch (Exception e) {
-            LOG.error(e);
-            throw e;
         }
     }
 

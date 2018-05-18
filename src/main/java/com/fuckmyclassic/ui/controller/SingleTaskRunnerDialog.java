@@ -1,10 +1,8 @@
 package com.fuckmyclassic.ui.controller;
 
-import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.SequentialTaskRunner;
 import com.fuckmyclassic.task.TaskCreator;
 import com.fuckmyclassic.ui.util.BindingHelper;
-import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,42 +18,42 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/**
+ * Dialog window to run a single task on a background thread
+ * and display its progress to the user.
+ * @author skogaby (skogabyskogaby@gmail.com)
+ */
 @Component
-public class SequentialTaskRunnerDialog {
+public class SingleTaskRunnerDialog {
 
-    static Logger LOG = LogManager.getLogger(SequentialTaskRunnerDialog.class.getName());
+    static Logger LOG = LogManager.getLogger(SingleTaskRunnerDialog.class.getName());
 
     // FXML components
     public Label lblMainMessage;
-    public Label lblSubTaskMessage;
     public ProgressBar prgMainTaskProgress;
-    public ProgressBar prgSubTaskProgress;
 
-    /** The list of TaskCreators that should be run on the next invocation. */
-    private TaskCreator[] taskCreators;
-    /** The message to set for the main task. */
-    private String mainTaskMessage;
+    /** The TaskCreator that should be run on the next invocation */
+    private TaskCreator taskCreator;
+    /** The title of the window */
+    private String title;
 
     @Autowired
-    public SequentialTaskRunnerDialog() {
+    public SingleTaskRunnerDialog() {
 
     }
 
     /**
-     * Run the designated tasks on window creation.
+     * Run the designated task on window creation.
      */
     @FXML
     public void initialize() {
-        if (this.taskCreators != null && this.taskCreators.length != 0) {
+        if (this.taskCreator != null) {
             final SequentialTaskRunner taskRunner = new SequentialTaskRunner();
-            taskRunner.setTaskCreators(taskCreators);
-            taskRunner.setMainTaskMessage(mainTaskMessage);
+            taskRunner.setTaskCreators(taskCreator);
 
             // bind our properties and start the task runner
-            BindingHelper.bindProperty((StringExpression) taskRunner.messageProperty(), lblMainMessage.textProperty());
-            BindingHelper.bindProperty((ReadOnlyProperty<?>) taskRunner.subTaskMessageProperty(), lblSubTaskMessage.textProperty());
-            BindingHelper.bindProperty(taskRunner.progressProperty(), prgMainTaskProgress.progressProperty());
-            BindingHelper.bindProperty(taskRunner.subTaskProgressProperty(), prgSubTaskProgress.progressProperty());
+            BindingHelper.bindProperty((ReadOnlyProperty<?>) taskRunner.subTaskMessageProperty(), lblMainMessage.textProperty());
+            BindingHelper.bindProperty(taskRunner.subTaskProgressProperty(), prgMainTaskProgress.progressProperty());
 
             // close this window after everything is done
             taskRunner.setOnSucceeded(event -> {
@@ -78,25 +76,26 @@ public class SequentialTaskRunnerDialog {
      * @throws IOException
      */
     public void showDialog() throws IOException {
-        final FXMLLoader loader = new FXMLLoader(SequentialTaskRunnerDialog.class.getClassLoader()
-                .getResource("fxml/SequentialTaskRunnerDialog.fxml"));
+        final FXMLLoader loader = new FXMLLoader(SingleTaskRunnerDialog.class.getClassLoader()
+                .getResource("fxml/SingleTaskRunnerDialog.fxml"));
         loader.setController(this);
 
         final Stage stage = new Stage();
         final Scene scene = new Scene(loader.load());
         stage.setScene(scene);
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.setTitle(String.format("%s v%s", SharedConstants.APP_NAME, SharedConstants.APP_VERSION));
+        stage.setTitle(this.title);
         stage.showAndWait();
+        this.taskCreator = null;
     }
 
-    public SequentialTaskRunnerDialog setTaskCreators(TaskCreator... taskCreators) {
-        this.taskCreators = taskCreators;
+    public SingleTaskRunnerDialog setTaskCreator(TaskCreator taskCreator) {
+        this.taskCreator = taskCreator;
         return this;
     }
 
-    public SequentialTaskRunnerDialog setMainTaskMessage(String mainTaskMessage) {
-        this.mainTaskMessage = mainTaskMessage;
+    public SingleTaskRunnerDialog setTitle(String title) {
+        this.title = title;
         return this;
     }
 }

@@ -8,6 +8,7 @@ import com.moandjiezana.toml.TomlWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -40,6 +41,8 @@ public class UserConfiguration {
     private String lastConsoleSID;
     /** The ID of the last library that was selected for the console. */
     private long selectedLibraryID;
+    /** The last taken screenshot buffer, so we can save it from the main window thread */
+    private BufferedImage lastScreenshot;
 
     @Autowired
     public UserConfiguration(final ConsoleDAO consoleDAO) {
@@ -48,6 +51,7 @@ public class UserConfiguration {
         this.connectedConsoles = Collections.newSetFromMap(new ConcurrentHashMap<Console, Boolean>());
         this.lastConsoleSID = SharedConstants.DEFAULT_CONSOLE_SID;
         this.selectedLibraryID = -1L;
+        this.lastScreenshot = null;
     }
 
     /**
@@ -147,6 +151,15 @@ public class UserConfiguration {
 
     public UserConfiguration setLastConsoleSID(String lastConsoleSID) {
         this.lastConsoleSID = lastConsoleSID;
+        return this;
+    }
+
+    public BufferedImage getLastScreenshot() {
+        return lastScreenshot;
+    }
+
+    public UserConfiguration setLastScreenshot(BufferedImage lastScreenshot) {
+        this.lastScreenshot = lastScreenshot;
         return this;
     }
 }

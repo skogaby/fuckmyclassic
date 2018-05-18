@@ -7,6 +7,7 @@ import com.fuckmyclassic.task.impl.LoadLibrariesTask;
 import com.fuckmyclassic.task.impl.MountGamesAndStartUiTask;
 import com.fuckmyclassic.task.impl.RsyncDataTask;
 import com.fuckmyclassic.task.impl.ShowSplashScreenAndStopUiTask;
+import com.fuckmyclassic.task.impl.TakeScreenshotTask;
 import com.fuckmyclassic.task.impl.UnmountGamesTask;
 import com.fuckmyclassic.task.impl.UpdateUnknownLibrariesTask;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ public class TaskProvider {
     public final UnmountGamesTask unmountGamesTask;
     public final MountGamesAndStartUiTask mountGamesAndStartUiTask;
     public final DumpOriginalGamesTask dumpOriginalGamesTask;
+    public final TakeScreenshotTask takeScreenshotTask;
 
     @Autowired
     public TaskProvider(final CreateTempDataTask createTempDataTask,
@@ -40,7 +42,8 @@ public class TaskProvider {
                         final ShowSplashScreenAndStopUiTask showSplashScreenAndStopUiTask,
                         final UnmountGamesTask unmountGamesTask,
                         final MountGamesAndStartUiTask mountGamesAndStartUiTask,
-                        final DumpOriginalGamesTask dumpOriginalGamesTask) {
+                        final DumpOriginalGamesTask dumpOriginalGamesTask,
+                        final TakeScreenshotTask takeScreenshotTask) {
         this.createTempDataTask = createTempDataTask;
         this.identifyConnectedConsoleTask = identifyConnectedConsoleTask;
         this.loadLibrariesTask = loadLibrariesTask;
@@ -50,5 +53,6 @@ public class TaskProvider {
         this.unmountGamesTask = unmountGamesTask;
         this.mountGamesAndStartUiTask = mountGamesAndStartUiTask;
         this.dumpOriginalGamesTask = dumpOriginalGamesTask;
+        this.takeScreenshotTask = takeScreenshotTask;
     }
 }

@@ -23,7 +23,6 @@ public class UnmountGamesTask extends AbstractTaskCreator<Void> {
     private final String IN_PROGRESS_MESSAGE_KEY = "UnmountGamesTask.inProgressMessage";
     private final String COMPLETE_MESSAGE_KEY = "UnmountGamesTask.completeMessage";
 
-
     /** Network manager, to send commands to consoles */
     private final NetworkManager networkManager;
     /** User configuration for the current session */
