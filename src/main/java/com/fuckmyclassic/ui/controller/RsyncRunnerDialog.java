@@ -2,6 +2,7 @@ package com.fuckmyclassic.ui.controller;
 
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.impl.RsyncDataTask;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -26,7 +27,10 @@ import java.util.ResourceBundle;
 @Component
 public class RsyncRunnerDialog {
 
-    private final String IN_PROGRESS_MESSAGE_KEY = "RsyncDataTask.inProgressMessage";
+    public static final String IN_PROGRESS_MESSAGE_KEY = "RsyncDataTask.inProgressMessage";
+    public static final String RSYNC_MODULE_NAME = "root";
+    public static final String RSYNC_USER_NAME = "root";
+    public static final String RSYNC_PASSWORD_FILE = "rsync-password";
 
     static Logger LOG = LogManager.getLogger(RsyncRunnerDialog.class.getName());
 
@@ -118,6 +122,18 @@ public class RsyncRunnerDialog {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setTitle(String.format("%s v%s", SharedConstants.APP_NAME, SharedConstants.APP_VERSION));
         stage.showAndWait();
+    }
+
+    /**
+     * Takes the given remote
+     * @param remotePath
+     * @param userConfiguration
+     * @return
+     */
+    public String getConnectionPath(final String remotePath,
+                                    final UserConfiguration userConfiguration) {
+        return String.format("rsync://%s@%s/%s%s", RSYNC_USER_NAME, userConfiguration.getSelectedConsole().getLastKnownAddress(),
+                RSYNC_MODULE_NAME, remotePath);
     }
 
     public String getSource() {

@@ -69,8 +69,8 @@ public class TaskConfiguration {
     }
 
     @Bean
-    public RsyncDataTask rsyncDataTask(ResourceBundle resourceBundle) {
-        return new RsyncDataTask(resourceBundle);
+    public RsyncDataTask rsyncDataTask(ResourceBundle resourceBundle, PathConfiguration pathConfiguration) throws URISyntaxException {
+        return new RsyncDataTask(resourceBundle, pathConfiguration);
     }
 
     @Bean

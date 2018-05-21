@@ -385,9 +385,9 @@ public class MainWindow {
 
         // run the rsync task
         rsyncRunnerDialog.setSource(this.pathConfiguration.tempDirectory + File.separator);
-        rsyncRunnerDialog.setDestination(String.format(
-                "%s@%s:%s/%s/", NetworkConstants.USER_NAME, selectedConsole.getLastKnownAddress(),
-                selectedConsole.getConsoleSyncPath(), selectedConsole.getConsoleType().getConsoleCode()));
+        rsyncRunnerDialog.setDestination(rsyncRunnerDialog.getConnectionPath(String.format("%s/%s/",
+                selectedConsole.getConsoleSyncPath(), selectedConsole.getConsoleType().getConsoleCode()),
+                userConfiguration));
         rsyncRunnerDialog.showDialog();
 
         // start the console's UI back up

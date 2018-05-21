@@ -1,6 +1,5 @@
 package com.fuckmyclassic;
 
-import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.ConsoleType;
 import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.network.SshConnectionListener;
@@ -15,7 +14,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.io.File;

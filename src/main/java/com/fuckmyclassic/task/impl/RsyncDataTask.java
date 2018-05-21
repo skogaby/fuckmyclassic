@@ -3,7 +3,10 @@ package com.fuckmyclassic.task.impl;
 import com.fuckmyclassic.rsync.RsyncCompletionCallback;
 import com.fuckmyclassic.rsync.RsyncOutputCallback;
 import com.fuckmyclassic.rsync.RsyncOutputProcessor;
+import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
+import com.fuckmyclassic.ui.controller.RsyncRunnerDialog;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.github.fracpete.processoutput4j.output.StreamingProcessOutput;
 import com.github.fracpete.rsync4j.RSync;
 import javafx.concurrent.Task;
@@ -16,6 +19,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ResourceBundle;
 
@@ -36,6 +41,8 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
 
     /** The ResourceBundle for Task related strings */
     private final ResourceBundle resourceBundle;
+    /** Path configuration object */
+    private final PathConfiguration pathConfiguration;
     /** Private instance of the rsync wrapper */
     private RSync rSync;
     /** The source path to sync from */
@@ -48,28 +55,18 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
     private RsyncOutputCallback stderrCallback;
     /** Callback for rsync process completion */
     private RsyncCompletionCallback rsyncCompletionCallback;
-    /** Path to the SSH.exe file on Windows */
-    private final String sshExePath;
+    /** Path to the rsync password file */
+    private final String passwordFile;
 
     @Autowired
-    public RsyncDataTask(final ResourceBundle resourceBundle) {
+    public RsyncDataTask(final ResourceBundle resourceBundle,
+                         final PathConfiguration pathConfiguration) throws URISyntaxException {
         this.resourceBundle = resourceBundle;
+        this.pathConfiguration = pathConfiguration;
 
-        // get the ssh.exe path
-        String rsync4jHome = System.getProperty("user.home") + File.separator + "rsync4j";
-
-        if (SystemUtils.IS_OS_WINDOWS) {
-            if (System.getenv(WINDOWS_HOME_DIR) != null) {
-                final File dir = new File(System.getenv(WINDOWS_HOME_DIR));
-
-                if (!dir.exists() || dir.isDirectory()) {
-                    rsync4jHome = dir.getAbsolutePath();
-                }
-            }
-        }
-
-        final File sshExe = new File(Paths.get(rsync4jHome, "bin", "ssh.exe").toString());
-        this.sshExePath = sshExe.getAbsolutePath();
+        // get the password file path
+        final URL pass = ClassLoader.getSystemResource(Paths.get(RsyncRunnerDialog.RSYNC_PASSWORD_FILE).toString());
+        this.passwordFile = Paths.get(pass.toURI()).toFile().toPath().toString();
     }
 
     @Override
@@ -96,16 +93,11 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
                         .humanReadable(true)
                         .owner(false)
                         .group(false)
-                        .recursive(true);
-
-                // on Windows, we need to specify the path to the built-in ssh.exe in case
-                // there's something like git installed that's conflicting. on Mac/Linux, use the system
-                // built-in ssh
-                if (!SystemUtils.IS_OS_WINDOWS) {
-                    rSync.rsh("ssh -o StrictHostKeyChecking=no");
-                } else {
-                    rSync.rsh(String.format("%s -o StrictHostKeyChecking=no", sshExePath));
-                }
+                        .recursive(true)
+                        .perms(true)
+                        .executability(true)
+                        .compress(false)
+                        .passwordFile(passwordFile);
 
                 final RsyncOutputProcessor rsyncOutputProcessor = new RsyncOutputProcessor();
                 final StreamingProcessOutput processOutput = new StreamingProcessOutput(rsyncOutputProcessor);
