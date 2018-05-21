@@ -49,7 +49,6 @@ public class MdnsListener {
         // pre-populate the list with the likely IPs the console could have,
         // so we don't need to wait on MDNS for the average use case (USB,
         // no IP conflicts)
-        this.advertisedAddresses.add("10.234.137.10");
         this.advertisedAddresses.add("169.254.13.37");
     }
 

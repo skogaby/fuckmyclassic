@@ -1,0 +1,3 @@
+[submodule "mdnsjava"]
+	path = mdnsjava
+	url = https://github.com/skogaby/mdnsjava
