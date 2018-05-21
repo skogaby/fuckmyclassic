@@ -60,13 +60,19 @@ public class RsyncDataTask extends AbstractTaskCreator<Void> {
 
     @Autowired
     public RsyncDataTask(final ResourceBundle resourceBundle,
-                         final PathConfiguration pathConfiguration) throws URISyntaxException {
+                         final PathConfiguration pathConfiguration) throws URISyntaxException, IOException, InterruptedException {
         this.resourceBundle = resourceBundle;
         this.pathConfiguration = pathConfiguration;
 
         // get the password file path
         final URL pass = ClassLoader.getSystemResource(Paths.get(RsyncRunnerDialog.RSYNC_PASSWORD_FILE).toString());
         this.passwordFile = Paths.get(pass.toURI()).toFile().toPath().toString();
+
+        // set the permissions for the password file
+        // TODO: make this Windows-compatible somehow
+        if (!SystemUtils.IS_OS_WINDOWS) {
+            Runtime.getRuntime().exec(String.format("chmod 600 %s", this.passwordFile)).waitFor();
+        }
     }
 
     @Override
