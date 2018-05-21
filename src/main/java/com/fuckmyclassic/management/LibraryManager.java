@@ -3,6 +3,7 @@ package com.fuckmyclassic.management;
 import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAO;
 import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
 import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
+import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.controller.MainWindow;
@@ -141,8 +142,12 @@ public class LibraryManager {
                     this.currentApp = app;
 
                     BindingHelper.bindProperty((ReadOnlyProperty<?>) app.applicationIdProperty(), mainWindow.lblApplicationId.textProperty());
-                    BindingHelper.bindProperty(app.applicationSizeProperty().asString(), mainWindow.lblGameSize.textProperty());
 
+                    if (app instanceof Folder) {
+                        mainWindow.lblGameSize.setText(((Long) newValue.getValue().getTreeFilesize()).toString());
+                    } else {
+                        mainWindow.lblGameSize.setText(app.applicationSizeProperty().asString().getValue());
+                    }
 
                     BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.compressedProperty(),
                             app.compressedProperty(), mainWindow.chkCompressed.selectedProperty());

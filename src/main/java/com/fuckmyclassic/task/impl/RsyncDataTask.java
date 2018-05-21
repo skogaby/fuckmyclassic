@@ -3,7 +3,6 @@ package com.fuckmyclassic.task.impl;
 import com.fuckmyclassic.rsync.RsyncCompletionCallback;
 import com.fuckmyclassic.rsync.RsyncOutputCallback;
 import com.fuckmyclassic.rsync.RsyncOutputProcessor;
-import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.fuckmyclassic.ui.controller.RsyncRunnerDialog;
 import com.fuckmyclassic.userconfig.PathConfiguration;
@@ -17,14 +16,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.ResourceBundle;
-
-import static com.github.fracpete.rsync4j.Binaries.WINDOWS_HOME_DIR;
 
 /**
  * Task that will use rsync to sync data from a given source folder

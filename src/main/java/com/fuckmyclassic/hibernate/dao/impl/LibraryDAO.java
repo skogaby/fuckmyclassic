@@ -8,8 +8,10 @@ import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.TreeItem;
+import org.apache.commons.io.FileUtils;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,9 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Repository;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,18 +39,22 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
     private final LibraryItemDAO libraryItemDAO;
     /** Container for UI properties we need to update */
     private final UiPropertyContainer uiPropertyContainer;
+    /** Configuration object for local paths */
+    private final PathConfiguration pathConfiguration;
 
     @Autowired
     public LibraryDAO(final SessionFactory sessionFactory,
                       final ApplicationDAO applicationDAO,
                       final LibraryItemDAO libraryItemDAO,
-                      final UiPropertyContainer uiPropertyContainer) {
+                      final UiPropertyContainer uiPropertyContainer,
+                      final PathConfiguration pathConfiguration) {
         super(sessionFactory);
         setClazz(Library.class);
 
         this.applicationDAO = applicationDAO;
         this.libraryItemDAO = libraryItemDAO;
         this.uiPropertyContainer = uiPropertyContainer;
+        this.pathConfiguration = pathConfiguration;
     }
 
     /**
@@ -107,6 +116,7 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
         }
 
         this.closeCurrentSession();
+
         return item;
     }
 
@@ -142,6 +152,26 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
                         item = new TreeItem<>(r);
                     }
 
+                    final Application application =  item.getValue().getApplication();
+
+                    // calculate the current app size before we return it; it's calculated on
+                    // each start instead of saved to the database so that we can detect
+                    // manually added files
+                    if (!(application instanceof Folder)) {
+                        long appSize = FileUtils.sizeOfDirectory(new File(Paths.get(this.pathConfiguration.gamesDirectory,
+                                application.getApplicationId()).toString()));
+
+                        // if there's boxart, add the size for that too
+                        if (Files.exists(Paths.get(this.pathConfiguration.boxartDirectory, application.getBoxArtPath()))) {
+                            appSize += FileUtils.sizeOf(new File(Paths.get(this.pathConfiguration.boxartDirectory,
+                                    application.getBoxArtPath()).toString()));
+                            appSize += FileUtils.sizeOf(new File(Paths.get(this.pathConfiguration.boxartDirectory,
+                                    application.getBoxArtPath().replace(".png", "_small.png")).toString()));
+                        }
+
+                        application.setApplicationSize(appSize);
+                    }
+
                     return item;
                 })
                 .collect(Collectors.toList());
@@ -150,13 +180,24 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
         // iterate through the results and recurse down for any folders that are inside this one
         int numNodes = 0;
         int numSelected = 0;
+        long totalSize = 0;
 
         for (TreeItem<LibraryItem> itemResult : itemResults) {
             if (itemResult.getValue().getApplication() instanceof Folder) {
                 itemResult.setExpanded(true);
                 numNodes += 1 + loadApplicationsForFolder(itemResult, library, useCheckboxes, onlySelected);
+
+                if (!useCheckboxes || (((CheckBoxTreeItem) itemResult).isSelected() ||
+                        ((CheckBoxTreeItem) itemResult).isIndeterminate())) {
+                    totalSize += itemResult.getValue().getTreeFilesize();
+                }
             } else {
                 numNodes++;
+
+                if (!useCheckboxes || (((CheckBoxTreeItem) itemResult).isSelected() ||
+                        ((CheckBoxTreeItem) itemResult).isIndeterminate())) {
+                    totalSize += itemResult.getValue().getApplication().getApplicationSize();
+                }
             }
 
             // set indeterminate values for checkboxes properly
@@ -165,6 +206,8 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
                 numSelected++;
             }
         }
+
+        parentFolder.getValue().setTreeFilesize(totalSize);
 
         // if less than all the items were selected, the parent is indeterminant
         if (useCheckboxes){

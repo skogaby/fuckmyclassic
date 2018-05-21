@@ -315,7 +315,7 @@ public class LibraryManagementWindow {
         final List<LibraryItem> libraryItems = this.libraryDAO.getApplicationsForLibrary(this.selectedLibrary, false);
         this.removedLibraryItems.addAll(libraryItems.stream()
                 .map(item -> new LibraryItem(libraryToDelete, item.getApplication(), item.getFolder(),
-                        item.isSelected(), item.getNumNodes()))
+                        item.isSelected(), item.getNumNodes(), item.getTreeFilesize()))
                 .collect(Collectors.toList()));
         this.libraryItemDAO.delete(libraryItems.toArray(new LibraryItem[libraryItems.size()]));
 
@@ -344,7 +344,7 @@ public class LibraryManagementWindow {
         final List<LibraryItem> newItems = this.libraryDAO.getApplicationsForLibrary(this.selectedLibrary, false)
                 .stream()
                 .map(item -> new LibraryItem(libraryToAdd, item.getApplication(), item.getFolder(),
-                        item.isSelected(), item.getNumNodes()))
+                        item.isSelected(), item.getNumNodes(), item.getTreeFilesize()))
                 .collect(Collectors.toList());
         this.newLibraryItems.addAll(newItems);
         this.libraryItemDAO.create(newItems.toArray(new LibraryItem[newItems.size()]));

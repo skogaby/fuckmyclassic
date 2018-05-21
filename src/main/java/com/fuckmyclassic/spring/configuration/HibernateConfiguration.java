@@ -90,8 +90,9 @@ public class HibernateConfiguration {
     public LibraryDAO libraryDAO(SessionFactory sessionFactory,
                                  ApplicationDAO applicationDAO,
                                  LibraryItemDAO libraryItemDAO,
-                                 UiPropertyContainer uiPropertyContainer) {
-        return new LibraryDAO(sessionFactory, applicationDAO, libraryItemDAO, uiPropertyContainer);
+                                 UiPropertyContainer uiPropertyContainer,
+                                 PathConfiguration pathConfiguration) {
+        return new LibraryDAO(sessionFactory, applicationDAO, libraryItemDAO, uiPropertyContainer, pathConfiguration);
     }
 
     @Bean

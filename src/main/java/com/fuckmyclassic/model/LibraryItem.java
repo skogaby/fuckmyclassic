@@ -37,11 +37,13 @@ public class LibraryItem implements Externalizable {
     private Folder folder;
     private BooleanProperty selected;
     private int numNodes;
+    private long treeFilesize;
 
     public LibraryItem() {
         this.id = new SimpleLongProperty(this, "id");
         this.selected = new SimpleBooleanProperty(true);
         this.numNodes = 0;
+        this.treeFilesize = 0;
     }
 
     public LibraryItem(final LibraryItem other) {
@@ -51,15 +53,18 @@ public class LibraryItem implements Externalizable {
         this.folder = other.folder;
         this.selected = other.selected;
         this.numNodes = other.numNodes;
+        this.treeFilesize = other.treeFilesize;
     }
 
-    public LibraryItem(final Library library, final Application application, final Folder folder, final boolean selected, final int numNodes) {
+    public LibraryItem(final Library library, final Application application, final Folder folder, final boolean selected,
+                       final int numNodes, final long treeFilesize) {
         this.id = new SimpleLongProperty(this, "id");
         this.library = library;
         this.application = application;
         this.folder = folder;
         this.selected = new SimpleBooleanProperty(selected);
         this.numNodes = numNodes;
+        this.treeFilesize = treeFilesize;
     }
 
     @Override
@@ -150,6 +155,16 @@ public class LibraryItem implements Externalizable {
 
     public LibraryItem setNumNodes(int numNodes) {
         this.numNodes = numNodes;
+        return this;
+    }
+
+    @Transient
+    public long getTreeFilesize() {
+        return treeFilesize;
+    }
+
+    public LibraryItem setTreeFilesize(long treeFilesize) {
+        this.treeFilesize = treeFilesize;
         return this;
     }
 
