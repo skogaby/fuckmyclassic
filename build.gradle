@@ -8,24 +8,12 @@ sourceCompatibility = 1.8
 
 mainClassName = "com.fuckmyclassic.Main"
 
-sourceSets {
-    main {
-        java {
-            srcDirs = [ 'src/main/java',
-                        'mdnsjava/mdnsjava/src/main/java',
-                        'mdnsjava/mdnsjava-spi/src/main/java' ]
-        }
-
-        resources {
-            srcDirs = [ 'src/main/resources',
-                        'mdnsjava/mdnsjava/src/main/resources',
-                        'mdnsjava/mdnsjava-spi/src/main/resources' ]
-        }
-    }
-}
-
 repositories {
     mavenCentral()
+
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 dependencies {
@@ -66,7 +54,12 @@ dependencies {
     // Import for rsync support
     // https://mvnrepository.com/artifact/com.github.fracpete/rsync4j
     compile group: 'com.github.fracpete', name: 'rsync4j', version: '3.1.2-8'
-    
+
+    // Support for mdns queries for zeroconf discovery; the JAR is included
+    // locally as a shitty workaround to the fact that the dependency graph
+    // of this package in mavencentral is messed up, so Gradlecan't resolve
+    // the package from mavencentral
+    compile name: 'mdnsjava-2.2.0'
     // https://mvnrepository.com/artifact/dnsjava/dnsjava
     compile group: 'dnsjava', name: 'dnsjava', version: '2.1.8'
 
