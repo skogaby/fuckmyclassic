@@ -1,8 +1,11 @@
 package com.fuckmyclassic.ui.util;
 
+import javafx.beans.binding.Binding;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringExpression;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
+import javafx.util.StringConverter;
 
 /**
  * Simple class to cleanly bind properties to UI elements while ensuring

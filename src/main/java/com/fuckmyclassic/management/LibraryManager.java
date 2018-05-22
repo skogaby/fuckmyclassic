@@ -15,6 +15,7 @@ import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -141,14 +142,19 @@ public class LibraryManager {
                     final Application oldApp = oldValue == null ? null : oldValue.getValue().getApplication();
                     this.currentApp = app;
 
-                    BindingHelper.bindProperty((ReadOnlyProperty<?>) app.applicationIdProperty(), mainWindow.lblApplicationId.textProperty());
+                    Property oldGameSizeProperty = (oldApp == null) ? null :
+                                ((oldApp instanceof Folder) ? oldValue.getValue().treeFilesizeStringProperty() :
+                                        oldValue.getValue().getApplication().applicationSizeStringProperty());
 
                     if (app instanceof Folder) {
-                        mainWindow.lblGameSize.setText(((Long) newValue.getValue().getTreeFilesize()).toString());
+                        BindingHelper.bindPropertyBidirectional(oldGameSizeProperty, newValue.getValue().treeFilesizeStringProperty(),
+                                mainWindow.lblGameSize.textProperty());
                     } else {
-                        mainWindow.lblGameSize.setText(app.applicationSizeProperty().asString().getValue());
+                        BindingHelper.bindPropertyBidirectional(oldGameSizeProperty, app.applicationSizeStringProperty(),
+                                mainWindow.lblGameSize.textProperty());
                     }
 
+                    BindingHelper.bindProperty((ReadOnlyProperty<?>) app.applicationIdProperty(), mainWindow.lblApplicationId.textProperty());
                     BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.compressedProperty(),
                             app.compressedProperty(), mainWindow.chkCompressed.selectedProperty());
                     BindingHelper.bindPropertyBidirectional(oldApp == null ? null : oldApp.applicationNameProperty(),

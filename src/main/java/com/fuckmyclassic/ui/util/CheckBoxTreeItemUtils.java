@@ -5,6 +5,7 @@ import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.TreeItem;
 
 /**
  * Small helper class to setup listeners and event handlers on
@@ -17,7 +18,7 @@ public class CheckBoxTreeItemUtils {
      * Creates the checkbox listeners for the tree items that update the entity's
      * selection status and also update the UI's view of number of selected games.
      * @param item The item to set the listeners on
-     * @param libraryItemDAO The DAO for persisting entity updates
+     * @param libraryItemDAO The DAO for persisting library updates
      * @param uiPropertyContainer The UI property container for showing number of selected games
      */
     public static void setCheckListenerOnTreeItem(final CheckBoxTreeItem<LibraryItem> item,
@@ -30,6 +31,7 @@ public class CheckBoxTreeItemUtils {
             boolean newVal = treeItem.isSelected() || treeItem.isIndeterminate();
 
             if (newVal != oldVal) {
+                long size = 0L;
                 libraryItem.setSelected(newVal);
                 libraryItemDAO.update(libraryItem);
 
@@ -42,6 +44,22 @@ public class CheckBoxTreeItemUtils {
                         uiPropertyContainer.numSelected.set(
                                 uiPropertyContainer.numSelected.get() - 1L);
                     }
+
+                    size = libraryItem.getApplication().getApplicationSize();
+                } else {
+                    size = libraryItem.getTreeFilesize();
+                }
+
+                // update the parent file tree sizes
+                if (!newVal) {
+                    size *= -1;
+                }
+
+                TreeItem<LibraryItem> parent = treeItem.getParent();
+
+                while (parent != null) {
+                    parent.getValue().setTreeFilesize(parent.getValue().getTreeFilesize() + size);
+                    parent = parent.getParent();
                 }
             }
         }));

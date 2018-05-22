@@ -1,9 +1,12 @@
 package com.fuckmyclassic.model;
 
+import com.fuckmyclassic.util.FileUtils;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,6 +22,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Objects;
+
+import static com.fuckmyclassic.shared.SharedConstants.SIZE_DICT;
 
 /**
  * Class to represent an item in a library. Each item belongs to
@@ -38,12 +43,14 @@ public class LibraryItem implements Externalizable {
     private BooleanProperty selected;
     private int numNodes;
     private long treeFilesize;
+    private StringProperty treeFilesizeString;
 
     public LibraryItem() {
         this.id = new SimpleLongProperty(this, "id");
         this.selected = new SimpleBooleanProperty(true);
         this.numNodes = 0;
         this.treeFilesize = 0;
+        this.treeFilesizeString = new SimpleStringProperty(null);
     }
 
     public LibraryItem(final LibraryItem other) {
@@ -54,6 +61,7 @@ public class LibraryItem implements Externalizable {
         this.selected = other.selected;
         this.numNodes = other.numNodes;
         this.treeFilesize = other.treeFilesize;
+        this.treeFilesizeString = other.treeFilesizeString;
     }
 
     public LibraryItem(final Library library, final Application application, final Folder folder, final boolean selected,
@@ -65,6 +73,7 @@ public class LibraryItem implements Externalizable {
         this.selected = new SimpleBooleanProperty(selected);
         this.numNodes = numNodes;
         this.treeFilesize = treeFilesize;
+        this.treeFilesizeString = new SimpleStringProperty(FileUtils.convertToHumanReadable(treeFilesize));
     }
 
     @Override
@@ -165,7 +174,18 @@ public class LibraryItem implements Externalizable {
 
     public LibraryItem setTreeFilesize(long treeFilesize) {
         this.treeFilesize = treeFilesize;
+        this.treeFilesizeString.setValue(FileUtils.convertToHumanReadable(treeFilesize));
+
         return this;
+    }
+
+    @Transient
+    public String getTreeFilesizeString() {
+        return treeFilesizeString.get();
+    }
+
+    public StringProperty treeFilesizeStringProperty() {
+        return treeFilesizeString;
     }
 
     @Override

@@ -40,4 +40,7 @@ public class SharedConstants {
 
     /** The size of each dimension for the game thumbnails */
     public static final int THUMBNAIL_SIZE = 40;
+
+    /** Suffixes for showing sizes in human readable format */
+    public static final String[] SIZE_DICT = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
 }

@@ -1,6 +1,7 @@
 package com.fuckmyclassic.model;
 
 import com.fuckmyclassic.userconfig.PathConfiguration;
+import com.fuckmyclassic.util.FileUtils;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.LongProperty;
@@ -59,6 +60,7 @@ public class Application implements Externalizable {
     private StringProperty copyright;
     private LongProperty applicationSize;
     private BooleanProperty compressed;
+    private StringProperty applicationSizeString;
 
     public Application() {
         this.id = new SimpleLongProperty(this, "id");
@@ -79,6 +81,7 @@ public class Application implements Externalizable {
         this.copyright = new SimpleStringProperty("fuckmyclassic 2018");
         this.applicationSize = new SimpleLongProperty(0);
         this.compressed = new SimpleBooleanProperty(false);
+        this.applicationSizeString = new SimpleStringProperty(null);
     }
 
     public Application(final String applicationId, final String applicationName, final String commandLine,
@@ -103,6 +106,7 @@ public class Application implements Externalizable {
         this.publisher = new SimpleStringProperty(publisher);
         this.copyright = new SimpleStringProperty(copyright);
         this.applicationSize = new SimpleLongProperty(applicationSize);
+        this.applicationSizeString = new SimpleStringProperty(FileUtils.convertToHumanReadable(applicationSize));
         this.compressed = new SimpleBooleanProperty(isCompressed);
     }
 
@@ -432,7 +436,18 @@ public class Application implements Externalizable {
 
     public Application setApplicationSize(long applicationSize) {
         this.applicationSize.set(applicationSize);
+        this.applicationSizeString.setValue(FileUtils.convertToHumanReadable(applicationSize));
+
         return this;
+    }
+
+    @Transient
+    public String getApplicationSizeString() {
+        return applicationSizeString.get();
+    }
+
+    public StringProperty applicationSizeStringProperty() {
+        return applicationSizeString;
     }
 
     @Column(name = "is_compressed")
