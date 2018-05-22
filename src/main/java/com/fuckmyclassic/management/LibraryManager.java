@@ -15,6 +15,7 @@ import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
@@ -34,6 +35,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +47,8 @@ import java.util.stream.Collectors;
 public class LibraryManager {
 
     static Logger LOG = LogManager.getLogger(LibraryManager.class.getName());
+
+    private static final String LIBRARY_SIZE_LABEL_KEY = "MainWindow.lblSizeOfLibrary";
 
     /** User configuration object. */
     private final UserConfiguration userConfiguration;
@@ -115,6 +119,11 @@ public class LibraryManager {
                     this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary, true, false);
                     mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
                     this.userConfiguration.setSelectedLibraryID(this.currentLibrary.getId());
+
+                    BindingHelper.bindProperty(Bindings.format(
+                            ResourceBundle.getBundle(MainWindow.RESOURCE_BUNDLE_PATH).getString(LIBRARY_SIZE_LABEL_KEY),
+                            this.currentLibraryTree.getValue().treeFilesizeStringProperty()),
+                            mainWindow.lblSizeOfLibrary.textProperty());
                 }
             }));
         }
@@ -201,6 +210,11 @@ public class LibraryManager {
         LOG.info(String.format("Loading library for console %s from the database", this.userConfiguration.getLastConsoleSID()));
         this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary, true, false);
         mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
+
+        BindingHelper.bindProperty(Bindings.format(
+                ResourceBundle.getBundle(MainWindow.RESOURCE_BUNDLE_PATH).getString(LIBRARY_SIZE_LABEL_KEY),
+                this.currentLibraryTree.getValue().treeFilesizeStringProperty()),
+                mainWindow.lblSizeOfLibrary.textProperty());
     }
 
     /**

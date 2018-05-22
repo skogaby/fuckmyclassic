@@ -356,10 +356,19 @@
             </ProgressBar>
          </center>
          <right>
-            <Label fx:id="lblNumGamesSelected" text="%MainWindow.lblNumGamesSelected" BorderPane.alignment="CENTER">
-               <font>
-                  <Font size="12.0" />
-               </font></Label>
+            <HBox BorderPane.alignment="CENTER">
+               <children>
+                  <Label fx:id="lblNumGamesSelected" text="%MainWindow.lblNumGamesSelected">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets right="5.0" />
+                     </HBox.margin>
+                  </Label>
+                  <Label fx:id="lblSizeOfLibrary" text="%MainWindow.lblSizeOfLibrary" />
+               </children>
+            </HBox>
          </right>
       </BorderPane>
    </children>

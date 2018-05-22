@@ -31,7 +31,6 @@ public class CheckBoxTreeItemUtils {
             boolean newVal = treeItem.isSelected() || treeItem.isIndeterminate();
 
             if (newVal != oldVal) {
-                long size = 0L;
                 libraryItem.setSelected(newVal);
                 libraryItemDAO.update(libraryItem);
 
@@ -45,21 +44,19 @@ public class CheckBoxTreeItemUtils {
                                 uiPropertyContainer.numSelected.get() - 1L);
                     }
 
-                    size = libraryItem.getApplication().getApplicationSize();
-                } else {
-                    size = libraryItem.getTreeFilesize();
-                }
+                    long size = libraryItem.getApplication().getApplicationSize();
 
-                // update the parent file tree sizes
-                if (!newVal) {
-                    size *= -1;
-                }
+                    // update the parent file tree sizes
+                    if (!newVal) {
+                        size *= -1;
+                    }
 
-                TreeItem<LibraryItem> parent = treeItem.getParent();
+                    TreeItem<LibraryItem> parent = treeItem.getParent();
 
-                while (parent != null) {
-                    parent.getValue().setTreeFilesize(parent.getValue().getTreeFilesize() + size);
-                    parent = parent.getParent();
+                    while (parent != null) {
+                        parent.getValue().setTreeFilesize(parent.getValue().getTreeFilesize() + size);
+                        parent = parent.getParent();
+                    }
                 }
             }
         }));

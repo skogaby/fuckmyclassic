@@ -70,7 +70,7 @@ public class MainWindow {
 
     static Logger LOG = LogManager.getLogger(MainWindow.class.getName());
 
-    private static final String RESOURCE_BUNDLE_PATH = "i18n/MainWindow";
+    public static final String RESOURCE_BUNDLE_PATH = "i18n/MainWindow";
     private static final String SYNC_TASK_TITLE_KEY = "SyncTaskLabel";
     private static final String CONNECTED_GAMES_LABEL_KEY = "MainWindow.lblNumGamesSelected";
     private static final String SAVE_SCREENSHOT_DIALOG_TITLE_KEY = "TakeScreenshotTask.saveFileDialogTitle";
@@ -100,6 +100,7 @@ public class MainWindow {
     public MenuBar mainMenu;
     public Label lblNumGamesSelected;
     public MenuItem mnuTakeScreenshot;
+    public Label lblSizeOfLibrary;
 
     /** The configuration object for user options and session settings */
     private final UserConfiguration userConfiguration;
