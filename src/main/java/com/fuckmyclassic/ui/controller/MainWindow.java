@@ -178,38 +178,34 @@ public class MainWindow {
         if (!initialized) {
             this.initializeSaveCountSpinner();
             this.initializeBoxartImageView();
-        }
-
-        this.initializeConsoleSelection();
-        this.libraryManager.initializeLibrarySelection(this);
-        this.libraryManager.initializeApplicationTreeView(this);
-
-        if (!initialized) {
             this.initializePlayerCountSelection();
             this.initializeConnectionBoundProperties();
             this.initializeMenuBar();
             this.initializeNumSelectedLabel();
+            this.initializeConsoleSelection();
+            this.libraryManager.initializeLibrarySelection(this);
+            this.libraryManager.initializeApplicationTreeView(this);
+
+            // small hack to remove a circular dependency in the Spring dependency graph
+            this.taskProvider.loadLibrariesTask.setMainWindow(this);
+            this.initialized = true;
         }
 
-        // small hack to remove a circular dependency in the Spring dependency graph
-        this.taskProvider.loadLibrariesTask.setMainWindow(this);
-        this.initialized = true;
+        // once all the listeners, etc. are initialized, load the console
+        // and library data
+        final List<Console> consoles = this.consoleDAO.getAllConsoles();
+        final ObservableList<Console> items = FXCollections.observableArrayList(consoles);
+        this.cmbCurrentConsole.setItems(items);
+        this.cmbCurrentConsole.setValue(userConfiguration.getSelectedConsole());
     }
 
     /**
      * Initialize the combo box for console selection.
      */
     private void initializeConsoleSelection() {
-        final List<Console> consoles = this.consoleDAO.getAllConsoles();
-        final ObservableList<Console> items = FXCollections.observableArrayList(consoles);
-        this.cmbCurrentConsole.setItems(items);
-        this.cmbCurrentConsole.setValue(userConfiguration.getSelectedConsole());
-
         if (!this.initialized) {
             this.cmbCurrentConsole.valueProperty().addListener((observable, oldValue, newValue) -> {
-                if (oldValue != null &&
-                        newValue != null &&
-                        !newValue.equals(this.userConfiguration.getSelectedConsole())) {
+                if (newValue != null) {
                     try {
                         this.userConfiguration.setSelectedConsole(newValue);
 
@@ -231,80 +227,84 @@ public class MainWindow {
      * Initializes the save count spinner's value factory.
      */
     private void initializeSaveCountSpinner() {
-        LOG.debug("Initializing the spinner for save count");
+        if (!this.initialized) {
+            LOG.debug("Initializing the spinner for save count");
 
-        this.spnSaveCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 4));
+            this.spnSaveCount.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 4));
+        }
     }
 
     /**
      * Initialized the ImageView that shows the boxart preview.
      */
     private void initializeBoxartImageView() {
-        this.imgBoxArtPreview.setFitWidth(SharedConstants.BOXART_SIZE);
-        this.imgBoxArtPreview.setPreserveRatio(true);
-        this.imgBoxArtPreview.setSmooth(true);
-        this.imgBoxArtPreview.setCache(true);
+        if (!this.initialized) {
+            this.imgBoxArtPreview.setFitWidth(SharedConstants.BOXART_SIZE);
+            this.imgBoxArtPreview.setPreserveRatio(true);
+            this.imgBoxArtPreview.setSmooth(true);
+            this.imgBoxArtPreview.setCache(true);
 
-        // enable drag 'n' drop to change the boxart image
-        this.imgBoxArtPreview.setOnDragOver(event -> {
-            final Dragboard db = event.getDragboard();
+            // enable drag 'n' drop to change the boxart image
+            this.imgBoxArtPreview.setOnDragOver(event -> {
+                final Dragboard db = event.getDragboard();
 
-            if (db.hasFiles() && db.getFiles().size() == 1) {
-                final String filename = db.getFiles().get(0).getName().toLowerCase(Locale.getDefault());
+                if (db.hasFiles() && db.getFiles().size() == 1) {
+                    final String filename = db.getFiles().get(0).getName().toLowerCase(Locale.getDefault());
 
-                // make sure it's an image file
-                if (ImageResizer.isImageFile(filename)) {
-                    event.acceptTransferModes(TransferMode.COPY);
-                }
-            }
-
-            event.consume();
-        });
-
-        this.imgBoxArtPreview.setOnDragDropped(event -> {
-            Dragboard db = event.getDragboard();
-            boolean success = false;
-
-            if (db.hasFiles() && db.getFiles().size() == 1) {
-                final File boxart = db.getFiles().get(0);
-
-                // make sure it's an image file
-                if (ImageResizer.isImageFile(boxart.getName())) {
-                    try {
-                        final Image previewImage = this.libraryManager.importBoxartForCurrentApp(boxart);
-                        this.imgBoxArtPreview.setImage(previewImage);
-                        success = true;
-                    } catch (IOException e) {
-                        LOG.error("Unable to import new boxart for the current app", e);
-                        success = false;
+                    // make sure it's an image file
+                    if (ImageResizer.isImageFile(filename)) {
+                        event.acceptTransferModes(TransferMode.COPY);
                     }
                 }
-            }
 
-            event.setDropCompleted(success);
-            event.consume();
-        });
+                event.consume();
+            });
+
+            this.imgBoxArtPreview.setOnDragDropped(event -> {
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+
+                if (db.hasFiles() && db.getFiles().size() == 1) {
+                    final File boxart = db.getFiles().get(0);
+
+                    // make sure it's an image file
+                    if (ImageResizer.isImageFile(boxart.getName())) {
+                        try {
+                            final Image previewImage = this.libraryManager.importBoxartForCurrentApp(boxart);
+                            this.imgBoxArtPreview.setImage(previewImage);
+                            success = true;
+                        } catch (IOException e) {
+                            LOG.error("Unable to import new boxart for the current app", e);
+                            success = false;
+                        }
+                    }
+                }
+
+                event.setDropCompleted(success);
+                event.consume();
+            });
+        }
     }
 
     /**
      * Sets up the radio buttons to select player count for an app.
      */
     private void initializePlayerCountSelection() {
-        LOG.debug("Initializing the radio buttons for player count selection");
-
-        final String userDataSinglePlayer = "single";
-        final String userDataNoSimMultiplayer = "multi";
-        final String userDataSimMultiplayer = "simul";
-        this.maxPlayersToggleGroup = new ToggleGroup();
-
-        this.radOnePlayer.setToggleGroup(this.maxPlayersToggleGroup);
-        this.radOnePlayer.setUserData(userDataSinglePlayer);
-        this.radTwoPlayerNoSim.setToggleGroup(this.maxPlayersToggleGroup);
-        this.radTwoPlayerNoSim.setUserData(userDataNoSimMultiplayer);
-        this.radTwoPlayerSim.setToggleGroup(this.maxPlayersToggleGroup);
-        this.radTwoPlayerSim.setUserData(userDataSimMultiplayer);
-
         if (!this.initialized) {
+            LOG.debug("Initializing the radio buttons for player count selection");
+
+            final String userDataSinglePlayer = "single";
+            final String userDataNoSimMultiplayer = "multi";
+            final String userDataSimMultiplayer = "simul";
+            this.maxPlayersToggleGroup = new ToggleGroup();
+
+            this.radOnePlayer.setToggleGroup(this.maxPlayersToggleGroup);
+            this.radOnePlayer.setUserData(userDataSinglePlayer);
+            this.radTwoPlayerNoSim.setToggleGroup(this.maxPlayersToggleGroup);
+            this.radTwoPlayerNoSim.setUserData(userDataNoSimMultiplayer);
+            this.radTwoPlayerSim.setToggleGroup(this.maxPlayersToggleGroup);
+            this.radTwoPlayerSim.setUserData(userDataSimMultiplayer);
+
             this.maxPlayersToggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) {
                     final String userData = (String) newValue.getUserData();
@@ -320,14 +320,38 @@ public class MainWindow {
      * Bind all the properties that are disabled/enabled depending on the presence on a console
      */
     private void initializeConnectionBoundProperties() {
-        BindingHelper.bindProperty(this.uiPropertyContainer.connectionStatusColor,
-                this.shpConnectionStatus.fillProperty());
-        BindingHelper.bindProperty((ReadOnlyProperty<?>) this.uiPropertyContainer.selectedConsoleConnectionStatus,
-                this.lblConnectionStatus.textProperty());
-        BindingHelper.bindProperty(this.uiPropertyContainer.selectedConsoleDisconnected,
-                this.btnSyncGames.disableProperty());
-        BindingHelper.bindProperty(this.uiPropertyContainer.selectedConsoleDisconnected,
-                this.mnuTakeScreenshot.disableProperty());
+        if (!this.initialized) {
+            BindingHelper.bindProperty(this.uiPropertyContainer.connectionStatusColor,
+                    this.shpConnectionStatus.fillProperty());
+            BindingHelper.bindProperty((ReadOnlyProperty<?>) this.uiPropertyContainer.selectedConsoleConnectionStatus,
+                    this.lblConnectionStatus.textProperty());
+            BindingHelper.bindProperty(this.uiPropertyContainer.selectedConsoleDisconnected,
+                    this.btnSyncGames.disableProperty());
+            BindingHelper.bindProperty(this.uiPropertyContainer.selectedConsoleDisconnected,
+                    this.mnuTakeScreenshot.disableProperty());
+        }
+    }
+
+    /**
+     * Initializes the main menu bar.
+     */
+    private void initializeMenuBar() {
+        if (!this.initialized) {
+            if (System.getProperty("os.name", "UNKNOWN").equals("Mac OS X")) {
+                this.mainMenu.setUseSystemMenuBar(true);
+            }
+        }
+    }
+
+    /**
+     * Initializes the label that shows the number of selected games.
+     */
+    private void initializeNumSelectedLabel() {
+        if (!this.initialized) {
+            final ResourceBundle resources = ResourceBundle.getBundle(RESOURCE_BUNDLE_PATH);
+            BindingHelper.bindProperty(Bindings.format(resources.getString(CONNECTED_GAMES_LABEL_KEY),
+                    this.uiPropertyContainer.numSelected), this.lblNumGamesSelected.textProperty());
+        }
     }
 
     /**
@@ -344,24 +368,6 @@ public class MainWindow {
                     fileChooser.showOpenDialog(this.treeViewGames.getScene().getWindow()));
             this.imgBoxArtPreview.setImage(previewImage);
         }
-    }
-
-    /**
-     * Initializes the main menu bar.
-     */
-    private void initializeMenuBar() {
-        if (System.getProperty("os.name", "UNKNOWN").equals("Mac OS X")) {
-            this.mainMenu.setUseSystemMenuBar(true);
-        }
-    }
-
-    /**
-     * Initializes the label that shows the number of selected games.
-     */
-    private void initializeNumSelectedLabel() {
-        final ResourceBundle resources = ResourceBundle.getBundle(RESOURCE_BUNDLE_PATH);
-        BindingHelper.bindProperty(Bindings.format(resources.getString(CONNECTED_GAMES_LABEL_KEY),
-                this.uiPropertyContainer.numSelected), this.lblNumGamesSelected.textProperty());
     }
 
     /**
@@ -403,7 +409,7 @@ public class MainWindow {
     @FXML
     private void onManageLibrariesAndConsolesClicked() throws IOException {
         this.libraryManagementWindow.showWindow();
-        initialize();
+        this.initialize();
     }
 
     /**

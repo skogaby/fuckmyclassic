@@ -94,25 +94,9 @@ public class LibraryManager {
      * Sets up the dropdown for the library selection.
      */
     public void initializeLibrarySelection(final MainWindow mainWindow) {
-        LOG.debug("Initializing the dropdown box for library selection");
-
-        final List<Library> libraries = libraryDAO.getOrCreateLibrariesForConsole(this.userConfiguration.getLastConsoleSID());
-        final ObservableList<Library> items = FXCollections.observableArrayList(libraries);
-        mainWindow.cmbCurrentCollection.setItems(items);
-        final Library library;
-
-        // load the last used library, or the first one if there's no config value yet
-        if (this.userConfiguration.getSelectedLibraryID() == -1L) {
-            library = items.get(0);
-        } else {
-            library = items.stream().filter(l -> l.getId() == this.userConfiguration.getSelectedLibraryID())
-                    .collect(Collectors.toList()).get(0);
-        }
-
-        mainWindow.cmbCurrentCollection.setValue(library);
-        this.userConfiguration.setSelectedLibraryID(library.getId());
-
         if (!mainWindow.initialized) {
+            LOG.debug("Initializing the dropdown box for library selection");
+
             mainWindow.cmbCurrentCollection.valueProperty().addListener(((observable, oldValue, newValue) -> {
                 if (newValue != null) {
                     this.currentLibrary = newValue;
@@ -127,24 +111,22 @@ public class LibraryManager {
                 }
             }));
         }
-
-        this.currentLibrary = library;
     }
 
     /**
      * Initializes the TreeView display for the applications and games.
      */
     public void initializeApplicationTreeView(final MainWindow mainWindow) {
-        LOG.debug("Initializing the tree view for games");
-
-        // initialize the cell factory so we can control theming, drag and drop, etc.
-        mainWindow.treeViewGames.setCellFactory(param ->
-                new ApplicationTreeCell(new AppImporter(this.applicationDAO, this.libraryItemDAO, this,
-                        this.uiPropertyContainer, this.pathConfiguration)));
-
-        // whenever an item is selected, we'll bind the data to the UI and save whatever app
-        // was being viewed previously to the database
         if (!mainWindow.initialized) {
+            LOG.debug("Initializing the tree view for games");
+
+            // initialize the cell factory so we can control theming, drag and drop, etc.
+            mainWindow.treeViewGames.setCellFactory(param ->
+                    new ApplicationTreeCell(new AppImporter(this.applicationDAO, this.libraryItemDAO, this,
+                            this.uiPropertyContainer, this.pathConfiguration)));
+
+            // whenever an item is selected, we'll bind the data to the UI and save whatever app
+            // was being viewed previously to the database
             mainWindow.treeViewGames.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) {
                     final Application app = newValue.getValue().getApplication();
@@ -205,16 +187,6 @@ public class LibraryManager {
                 }
             });
         }
-
-        // load the library items for the current console and library
-        LOG.info(String.format("Loading library for console %s from the database", this.userConfiguration.getLastConsoleSID()));
-        this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary, true, false);
-        mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
-
-        BindingHelper.bindProperty(Bindings.format(
-                ResourceBundle.getBundle(MainWindow.RESOURCE_BUNDLE_PATH).getString(LIBRARY_SIZE_LABEL_KEY),
-                this.currentLibraryTree.getValue().treeFilesizeStringProperty()),
-                mainWindow.lblSizeOfLibrary.textProperty());
     }
 
     /**

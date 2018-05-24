@@ -366,7 +366,10 @@
                         <Insets right="5.0" />
                      </HBox.margin>
                   </Label>
-                  <Label fx:id="lblSizeOfLibrary" text="%MainWindow.lblSizeOfLibrary" />
+                  <Label fx:id="lblSizeOfLibrary" text="%MainWindow.lblSizeOfLibrary">
+                     <font>
+                        <Font size="12.0" />
+                     </font></Label>
                </children>
             </HBox>
          </right>
