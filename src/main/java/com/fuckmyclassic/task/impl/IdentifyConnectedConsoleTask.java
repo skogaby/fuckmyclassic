@@ -8,6 +8,7 @@ import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.fuckmyclassic.ui.util.PlatformUtils;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import com.fuckmyclassic.util.FileUtils;
 import com.jcraft.jsch.JSchException;
 import javafx.concurrent.Task;
 import javafx.scene.control.TextInputDialog;
@@ -72,15 +73,19 @@ public class IdentifyConnectedConsoleTask extends AbstractTaskCreator<String> {
 
                     final String consoleSid = networkManager.runCommand(dstAddress,
                             "echo \"`devmem 0x01C23800``devmem 0x01C23804``devmem 0x01C23808``devmem 0x01C2380C`\"")
-                            .trim().replace("0x", "");
+                            .replace("0x", "");
                     final String consoleType = networkManager.runCommand(dstAddress,
-                            "hakchi eval 'echo \"$sftype-$sfregion\"'").trim();
+                            "hakchi eval 'echo \"$sftype-$sfregion\"'");
                     final String syncPath = networkManager.runCommand(dstAddress,
-                            "hakchi findGameSyncStorage").trim();
+                            "hakchi findGameSyncStorage");
+                    final Long spaceForGames = Long.parseLong(networkManager.runCommand(dstAddress,
+                            String.format("hakchi totalFor games/%s", consoleType))) * 1024;
 
                     LOG.info(String.format("Detected console SID: %s", consoleSid));
                     LOG.info(String.format("Detected console type: %s", consoleType));
                     LOG.info(String.format("Detected console sync path: %s", syncPath));
+                    LOG.info(String.format("Available space for the current firmware's games: %s",
+                            FileUtils.convertToHumanReadable(spaceForGames)));
 
                     final Console console;
 
@@ -109,6 +114,7 @@ public class IdentifyConnectedConsoleTask extends AbstractTaskCreator<String> {
                     console.setConsoleSyncPath(syncPath);
                     console.setConsoleType(ConsoleType.fromCode(consoleType));
                     console.setLastKnownAddress(dstAddress);
+                    console.setSpaceForGames(spaceForGames);
                     consoleDAO.update(console);
                     userConfiguration.setSelectedConsole(console);
                     userConfiguration.addConnectedConsole(console);
