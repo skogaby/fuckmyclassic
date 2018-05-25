@@ -17,7 +17,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -74,6 +73,7 @@ public class Console implements Externalizable {
         out.writeUTF(getConsoleSyncPath());
         out.writeUTF(getNickname());
         out.writeUTF(getLastKnownAddress());
+        out.writeLong(getSpaceForGames());
     }
 
     @Override
@@ -84,6 +84,7 @@ public class Console implements Externalizable {
         setConsoleSyncPath(in.readUTF());
         setNickname(in.readUTF());
         setLastKnownAddress(in.readUTF());
+        setSpaceForGames(in.readLong());
     }
 
     @Id
@@ -174,14 +175,17 @@ public class Console implements Externalizable {
         return this;
     }
 
-    @Transient
+    @Column(name = "space_for_games")
     public long getSpaceForGames() {
         return spaceForGames.get();
     }
 
-    public Console setSpaceForGames(long spaceForGames) {
-        this.spaceForGames.setValue(spaceForGames);
-        return this;
+    public LongProperty spaceForGamesProperty() {
+        return spaceForGames;
+    }
+
+    public void setSpaceForGames(long spaceForGames) {
+        this.spaceForGames.set(spaceForGames);
     }
 
     @Override

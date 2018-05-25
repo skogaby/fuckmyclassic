@@ -82,7 +82,7 @@ public class MainWindow {
 
     // References to all of the UI objects that we need to manipulate
     public ComboBox<Console> cmbCurrentConsole;
-    public ComboBox<Library> cmbCurrentCollection;
+    public ComboBox<Library> cmbCurrentLibrary;
     public TreeView<LibraryItem> treeViewGames;
     public Label lblApplicationId;
     public Label lblGameSize;
@@ -196,6 +196,7 @@ public class MainWindow {
             this.initializeMenuBar();
             this.initializeNumSelectedLabel();
             this.initializeConsoleSelection();
+            this.initializeGameSpaceProgressBar();
             this.libraryManager.initializeLibrarySelection(this);
             this.libraryManager.initializeApplicationTreeView(this);
 
@@ -367,6 +368,15 @@ public class MainWindow {
         if (!this.initialized) {
             BindingHelper.bindProperty(Bindings.format(this.mainResourceBundle.getString(CONNECTED_GAMES_LABEL_KEY),
                     this.uiPropertyContainer.numSelected), this.lblNumGamesSelected.textProperty());
+        }
+    }
+
+    /**
+     * Initializes the progress bar that shows the space used / available for games
+     */
+    private void initializeGameSpaceProgressBar() {
+        if (!this.initialized) {
+            BindingHelper.bindProperty(this.uiPropertyContainer.gameSpaceUsed, this.prgFreeSpace.progressProperty());
         }
     }
 

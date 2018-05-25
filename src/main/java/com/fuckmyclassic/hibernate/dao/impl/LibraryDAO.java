@@ -9,6 +9,7 @@ import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
 import com.fuckmyclassic.userconfig.PathConfiguration;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.TreeItem;
 import org.apache.commons.io.FileUtils;
@@ -41,13 +42,16 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
     private final UiPropertyContainer uiPropertyContainer;
     /** Configuration object for local paths */
     private final PathConfiguration pathConfiguration;
+    /** Configuration for the session */
+    private final UserConfiguration userConfiguration;
 
     @Autowired
     public LibraryDAO(final SessionFactory sessionFactory,
                       final ApplicationDAO applicationDAO,
                       final LibraryItemDAO libraryItemDAO,
                       final UiPropertyContainer uiPropertyContainer,
-                      final PathConfiguration pathConfiguration) {
+                      final PathConfiguration pathConfiguration,
+                      final UserConfiguration userConfiguration) {
         super(sessionFactory);
         setClazz(Library.class);
 
@@ -55,6 +59,7 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
         this.libraryItemDAO = libraryItemDAO;
         this.uiPropertyContainer = uiPropertyContainer;
         this.pathConfiguration = pathConfiguration;
+        this.userConfiguration = userConfiguration;
     }
 
     /**
@@ -145,7 +150,8 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
 
                     if (useCheckboxes) {
                         item = new CheckBoxTreeItem<>(r, null, r.isSelected(), false);
-                        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem((CheckBoxTreeItem) item, this.libraryItemDAO, this.uiPropertyContainer);
+                        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem((CheckBoxTreeItem) item,
+                                this.libraryItemDAO, this.uiPropertyContainer, this.userConfiguration);
                     } else {
                         item = new TreeItem<>(r);
                     }
@@ -263,7 +269,8 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
         if (useCheckboxes) {
             homeItem = new CheckBoxTreeItem<>(homeFolderItem, null,
                     homeFolderItem.isSelected(), false);
-            CheckBoxTreeItemUtils.setCheckListenerOnTreeItem((CheckBoxTreeItem) homeItem, this.libraryItemDAO, this.uiPropertyContainer);
+            CheckBoxTreeItemUtils.setCheckListenerOnTreeItem((CheckBoxTreeItem) homeItem, this.libraryItemDAO,
+                    this.uiPropertyContainer, this.userConfiguration);
         } else {
             homeItem = new TreeItem<>(homeFolderItem, null);
         }

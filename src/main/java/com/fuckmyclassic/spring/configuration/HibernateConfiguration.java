@@ -6,6 +6,7 @@ import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
 import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,8 +92,10 @@ public class HibernateConfiguration {
                                  ApplicationDAO applicationDAO,
                                  LibraryItemDAO libraryItemDAO,
                                  UiPropertyContainer uiPropertyContainer,
-                                 PathConfiguration pathConfiguration) {
-        return new LibraryDAO(sessionFactory, applicationDAO, libraryItemDAO, uiPropertyContainer, pathConfiguration);
+                                 PathConfiguration pathConfiguration,
+                                 UserConfiguration userConfiguration) {
+        return new LibraryDAO(sessionFactory, applicationDAO, libraryItemDAO, uiPropertyContainer,
+                pathConfiguration, userConfiguration);
     }
 
     @Bean

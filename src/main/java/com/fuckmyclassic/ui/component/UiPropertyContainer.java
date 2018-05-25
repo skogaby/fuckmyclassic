@@ -1,9 +1,11 @@
 package com.fuckmyclassic.ui.component;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -36,8 +38,10 @@ public class UiPropertyContainer {
     public final ObjectProperty<Paint> connectionStatusColor;
     /** A property to display how many games are currently selected */
     public final LongProperty numSelected;
+    /** A property to display the overall space usage in a progress bar */
+    public final DoubleProperty gameSpaceUsed;
     /** ResourceBundle for getting localized connection status strings. */
-    private ResourceBundle resourceBundle;
+    private final ResourceBundle resourceBundle;
 
     @Autowired
     public UiPropertyContainer() {
@@ -46,6 +50,7 @@ public class UiPropertyContainer {
         this.selectedConsoleConnectionStatus = new SimpleStringProperty(resourceBundle.getString(DISCONNECTED_STATUS_KEY));
         this.connectionStatusColor = new SimpleObjectProperty<>(Paint.valueOf(DISCONNECTED_CIRCLE_COLOR));
         this.numSelected = new SimpleLongProperty(0);
+        this.gameSpaceUsed = new SimpleDoubleProperty(0);
     }
 
     /**

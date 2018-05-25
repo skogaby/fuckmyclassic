@@ -72,7 +72,7 @@
                      </VBox.margin></Label>
                   <HBox alignment="CENTER" fillHeight="false" maxWidth="1.7976931348623157E308" spacing="10.0" VBox.vgrow="NEVER">
                      <children>
-                        <ComboBox fx:id="cmbCurrentCollection" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                        <ComboBox fx:id="cmbCurrentLibrary" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
                         <Button fx:id="btnManageLibraries" maxHeight="1.7976931348623157E308" mnemonicParsing="false" onAction="#onManageLibrariesAndConsolesClicked" text="%MainWindow.btnManageLibraries">
                            <font>
                               <Font size="12.0" />

@@ -8,6 +8,7 @@ import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
 import com.fuckmyclassic.userconfig.PathConfiguration;
+import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.scene.control.CheckBoxTreeItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,17 +41,21 @@ public class AppImporter {
     private final UiPropertyContainer uiPropertyContainer;
     /** Paths for runtime operations */
     private final PathConfiguration pathConfiguration;
+    /** Configuration for the session */
+    private final UserConfiguration userConfiguration;
 
     public AppImporter(final ApplicationDAO applicationDAO,
                        final LibraryItemDAO libraryItemDAO,
                        final LibraryManager libraryManager,
                        final UiPropertyContainer uiPropertyContainer,
-                       final PathConfiguration pathConfiguration) {
+                       final PathConfiguration pathConfiguration,
+                       final UserConfiguration userConfiguration) {
         this.applicationDAO = applicationDAO;
         this.libraryItemDAO = libraryItemDAO;
         this.libraryManager = libraryManager;
         this.uiPropertyContainer = uiPropertyContainer;
         this.pathConfiguration = pathConfiguration;
+        this.userConfiguration = userConfiguration;
     }
 
     /**
@@ -143,7 +148,8 @@ public class AppImporter {
 
         // create the new CheckBoxTreeItem and insert it
         final CheckBoxTreeItem<LibraryItem> newItem = new CheckBoxTreeItem<>(newLibraryItem, null, true, false);
-        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem(newItem, this.libraryItemDAO, this.uiPropertyContainer);
+        CheckBoxTreeItemUtils.setCheckListenerOnTreeItem(newItem, this.libraryItemDAO,
+                this.uiPropertyContainer, this.userConfiguration);
 
         importFolder.getChildren().add(newItem);
     }

@@ -20,8 +20,6 @@ import com.fuckmyclassic.util.FileUtils;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import org.apache.logging.log4j.LogManager;
@@ -36,9 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /**
  * Class to manage libraries. This includes keeping track of what the current console and library
@@ -99,7 +95,7 @@ public class LibraryManager {
         if (!mainWindow.initialized) {
             LOG.debug("Initializing the dropdown box for library selection");
 
-            mainWindow.cmbCurrentCollection.valueProperty().addListener(((observable, oldValue, newValue) -> {
+            mainWindow.cmbCurrentLibrary.valueProperty().addListener(((observable, oldValue, newValue) -> {
                 if (newValue != null) {
                     final Console selectedConsole = this.userConfiguration.getSelectedConsole();
                     this.currentLibrary = newValue;
@@ -112,13 +108,19 @@ public class LibraryManager {
                             ResourceBundle.getBundle(MainWindow.RESOURCE_BUNDLE_PATH).getString(LIBRARY_SIZE_LABEL_KEY),
                             this.currentLibraryTree.getValue().treeFilesizeStringProperty()),
                             mainWindow.lblSizeOfLibrary.textProperty());
-                    BindingHelper.bindProperty(Bindings.format("%s / %s", this.currentLibraryTree.getValue().treeFilesizeStringProperty(),
-                            FileUtils.convertToHumanReadable(selectedConsole.getSpaceForGames())),
-                            mainWindow.lblFreeSpace.textProperty());
 
                     if (selectedConsole.getSpaceForGames() != 0) {
-                        mainWindow.prgFreeSpace.setProgress(this.currentLibraryTree.getValue().getTreeFilesize() /
-                            selectedConsole.getSpaceForGames());
+                        BindingHelper.bindProperty(Bindings.format("%s / %s", this.currentLibraryTree.getValue().treeFilesizeStringProperty(),
+                                FileUtils.convertToHumanReadable(selectedConsole.getSpaceForGames())),
+                                mainWindow.lblFreeSpace.textProperty());
+                        this.uiPropertyContainer.gameSpaceUsed.setValue(
+                                (double) this.currentLibraryTree.getValue().getTreeFilesize() /
+                                (double) selectedConsole.getSpaceForGames());
+                    } else {
+                        BindingHelper.bindProperty(Bindings.format("%s / ??? MB",
+                                this.currentLibraryTree.getValue().treeFilesizeStringProperty()),
+                                mainWindow.lblFreeSpace.textProperty());
+                        this.uiPropertyContainer.gameSpaceUsed.setValue(0);
                     }
                 }
             }));
@@ -135,7 +137,7 @@ public class LibraryManager {
             // initialize the cell factory so we can control theming, drag and drop, etc.
             mainWindow.treeViewGames.setCellFactory(param ->
                     new ApplicationTreeCell(new AppImporter(this.applicationDAO, this.libraryItemDAO, this,
-                            this.uiPropertyContainer, this.pathConfiguration)));
+                            this.uiPropertyContainer, this.pathConfiguration, this.userConfiguration)));
 
             // whenever an item is selected, we'll bind the data to the UI and save whatever app
             // was being viewed previously to the database

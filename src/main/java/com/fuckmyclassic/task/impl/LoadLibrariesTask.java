@@ -112,9 +112,9 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
                         shouldRefreshConsoles = false;
                     }
 
-                    mainWindow.cmbCurrentCollection.getItems().clear();
-                    mainWindow.cmbCurrentCollection.getItems().addAll(libraryItems);
-                    mainWindow.cmbCurrentCollection.setValue(library);
+                    mainWindow.cmbCurrentLibrary.getItems().clear();
+                    mainWindow.cmbCurrentLibrary.getItems().addAll(libraryItems);
+                    mainWindow.cmbCurrentLibrary.setValue(library);
                 });
 
                 updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));
