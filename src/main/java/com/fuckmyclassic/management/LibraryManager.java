@@ -105,6 +105,7 @@ public class LibraryManager {
                     this.currentLibrary = newValue;
                     this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary, true, false);
                     mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
+                    mainWindow.treeViewGames.getSelectionModel().selectFirst();
                     this.userConfiguration.setSelectedLibraryID(this.currentLibrary.getId());
 
                     BindingHelper.bindProperty(Bindings.format(

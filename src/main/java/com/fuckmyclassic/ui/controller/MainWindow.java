@@ -21,6 +21,7 @@ import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -75,6 +76,9 @@ public class MainWindow {
     private static final String SYNC_TASK_TITLE_KEY = "SyncTaskLabel";
     private static final String CONNECTED_GAMES_LABEL_KEY = "MainWindow.lblNumGamesSelected";
     private static final String SAVE_SCREENSHOT_DIALOG_TITLE_KEY = "TakeScreenshotTask.saveFileDialogTitle";
+    private static final String SPACE_DIALOG_TITLE_KEY = "MainWindow.spaceDialogTitle";
+    private static final String SPACE_DIALOG_HEADER_KEY = "MainWindow.spaceDialogHeader";
+    private static final String SPACE_DIALOG_CONTENT_KEY = "MainWindow.spaceDialogContent";
 
     // References to all of the UI objects that we need to manipulate
     public ComboBox<Console> cmbCurrentConsole;
@@ -119,6 +123,8 @@ public class MainWindow {
     private final NetworkManager networkManager;
     /** Resource bundle for internationalized task strings */
     private final ResourceBundle tasksResourceBundle;
+    /** Resource bundle for the MainWindow strings */
+    private final ResourceBundle mainResourceBundle;
     /** The dialog to run single tasks */
     private final SingleTaskRunnerDialog singleTaskRunnerDialog;
     /** The dialog to run sequential tasks */
@@ -172,6 +178,7 @@ public class MainWindow {
         this.libraryManagementWindow = libraryManagementWindow;
         this.initialized = false;
         this.shouldConsoleListenerRespond = true;
+        this.mainResourceBundle = ResourceBundle.getBundle(RESOURCE_BUNDLE_PATH);;
     }
 
     /**
@@ -204,6 +211,7 @@ public class MainWindow {
         this.userConfiguration.setSelectedConsole(consoles.get(0));
         this.cmbCurrentConsole.setItems(items);
         this.cmbCurrentConsole.getSelectionModel().selectFirst();
+        this.treeViewGames.getSelectionModel().selectFirst();
     }
 
     /**
@@ -357,8 +365,7 @@ public class MainWindow {
      */
     private void initializeNumSelectedLabel() {
         if (!this.initialized) {
-            final ResourceBundle resources = ResourceBundle.getBundle(RESOURCE_BUNDLE_PATH);
-            BindingHelper.bindProperty(Bindings.format(resources.getString(CONNECTED_GAMES_LABEL_KEY),
+            BindingHelper.bindProperty(Bindings.format(this.mainResourceBundle.getString(CONNECTED_GAMES_LABEL_KEY),
                     this.uiPropertyContainer.numSelected), this.lblNumGamesSelected.textProperty());
         }
     }
@@ -388,28 +395,38 @@ public class MainWindow {
         LOG.info("Attempting to sync games to the console's internal memory");
 
         // setup the temp data task
-        final Console selectedConsole = this.userConfiguration.getSelectedConsole();
-        final String syncPath = String.format("%s/%s/%s", selectedConsole.getConsoleSyncPath(),
-                selectedConsole.getConsoleType().getConsoleCode(), PathConfiguration.CONSOLE_STORAGE_DIR);
-        this.taskProvider.createTempDataTask.setSyncPath(syncPath);
+        if (this.libraryManager.getCurrentLibraryTree().getValue().getTreeFilesize() <=
+                this.userConfiguration.getSelectedConsole().getSpaceForGames()) {
+            final Console selectedConsole = this.userConfiguration.getSelectedConsole();
+            final String syncPath = String.format("%s/%s/%s", selectedConsole.getConsoleSyncPath(),
+                    selectedConsole.getConsoleType().getConsoleCode(), PathConfiguration.CONSOLE_STORAGE_DIR);
+            this.taskProvider.createTempDataTask.setSyncPath(syncPath);
 
-        // run the pre-sync tasks
-        sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
-        sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask, taskProvider.showSplashScreenAndStopUiTask,
-                taskProvider.unmountGamesTask);
-        sequentialTaskRunnerDialog.showDialog();
+            // run the pre-sync tasks
+            sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
+            sequentialTaskRunnerDialog.setTaskCreators(taskProvider.createTempDataTask, taskProvider.showSplashScreenAndStopUiTask,
+                    taskProvider.unmountGamesTask);
+            sequentialTaskRunnerDialog.showDialog();
 
-        // run the rsync task
-        rsyncRunnerDialog.setSource(this.pathConfiguration.tempDirectory + File.separator);
-        rsyncRunnerDialog.setDestination(rsyncRunnerDialog.getConnectionPath(String.format("%s/%s/",
-                selectedConsole.getConsoleSyncPath(), selectedConsole.getConsoleType().getConsoleCode()),
-                userConfiguration));
-        rsyncRunnerDialog.showDialog();
+            // run the rsync task
+            rsyncRunnerDialog.setSource(this.pathConfiguration.tempDirectory + File.separator);
+            rsyncRunnerDialog.setDestination(rsyncRunnerDialog.getConnectionPath(String.format("%s/%s/",
+                    selectedConsole.getConsoleSyncPath(), selectedConsole.getConsoleType().getConsoleCode()),
+                    userConfiguration));
+            rsyncRunnerDialog.showDialog();
 
-        // start the console's UI back up
-        sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
-        sequentialTaskRunnerDialog.setTaskCreators(taskProvider.mountGamesAndStartUiTask);
-        sequentialTaskRunnerDialog.showDialog();
+            // start the console's UI back up
+            sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(SYNC_TASK_TITLE_KEY));
+            sequentialTaskRunnerDialog.setTaskCreators(taskProvider.mountGamesAndStartUiTask);
+            sequentialTaskRunnerDialog.showDialog();
+        } else {
+            final Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle(this.mainResourceBundle.getString(SPACE_DIALOG_TITLE_KEY));
+            alert.setHeaderText(this.mainResourceBundle.getString(SPACE_DIALOG_HEADER_KEY));
+            alert.setContentText(this.mainResourceBundle.getString(SPACE_DIALOG_CONTENT_KEY));
+
+            alert.showAndWait();
+        }
     }
 
     /**
