@@ -20,6 +20,7 @@ import com.fuckmyclassic.util.FileUtils;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
+import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import org.apache.logging.log4j.LogManager;
@@ -198,6 +199,13 @@ public class LibraryManager {
                     }
 
                     mainWindow.treeViewGames.refresh();
+
+                    // test, make this integrate more cleanly with the above
+                    if (app instanceof Folder) {
+                        mainWindow.paneFolderOptions.toFront();
+                    } else {
+                        mainWindow.paneGameOptions.toFront();
+                    }
                 }
             });
         }

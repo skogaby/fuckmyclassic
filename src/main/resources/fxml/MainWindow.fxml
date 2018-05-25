@@ -17,6 +17,7 @@
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -121,200 +122,235 @@
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </HBox.margin>
                <children>
-                  <TitledPane animated="false" collapsible="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="%MainWindow.lblGameOptions" VBox.vgrow="ALWAYS">
-                     <content>
-                        <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0">
-                           <children>
-                              <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" VBox.vgrow="NEVER">
-                                <columnConstraints>
-                                  <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
-                                  <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
-                                  <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
-                                </columnConstraints>
-                                <rowConstraints>
-                                  <RowConstraints vgrow="SOMETIMES" />
-                                </rowConstraints>
+                  <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+                     <children>
+                        <TitledPane fx:id="paneGameOptions" animated="false" collapsible="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="%MainWindow.lblGameOptions">
+                           <content>
+                              <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="10.0">
                                  <children>
-                                    <HBox>
-                                       <children>
-                                          <Label text="%MainWindow.lblGameId">
-                                             <font>
-                                                <Font size="12.0" />
-                                             </font>
-                                          </Label>
-                                          <Label fx:id="lblApplicationId">
-                                             <font>
-                                                <Font size="12.0" />
-                                             </font>
-                                          </Label>
-                                       </children>
-                                    </HBox>
-                                    <HBox GridPane.columnIndex="1">
-                                       <children>
-                                          <Label text="%MainWindow.lblGameSize" />
-                                          <Label fx:id="lblGameSize">
-                                             <font>
-                                                <Font size="12.0" />
-                                             </font>
-                                          </Label>
-                                       </children>
-                                    </HBox>
-                                    <CheckBox fx:id="chkCompressed" mnemonicParsing="false" text="%MainWindow.chkCompress" GridPane.columnIndex="2">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></CheckBox>
-                                 </children>
-                              </GridPane>
-                              <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0">
-                                <columnConstraints>
-                                    <ColumnConstraints fillWidth="true" hgrow="ALWAYS" percentWidth="25" />
-                                    <ColumnConstraints fillWidth="true" hgrow="ALWAYS" percentWidth="75" />
-                                </columnConstraints>
-                                <rowConstraints>
-                                    <RowConstraints vgrow="SOMETIMES" />
-                                    <RowConstraints vgrow="SOMETIMES" />
-                                </rowConstraints>
-                                 <children>
-                                    <Label text="%MainWindow.lblGameName" textAlignment="RIGHT" GridPane.hgrow="ALWAYS">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></Label>
-                                    <TextField fx:id="txtApplicationName" GridPane.columnIndex="1">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></TextField>
-                                    <Label text="%MainWindow.lblGameSortName" textAlignment="RIGHT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></Label>
-                                    <TextField fx:id="txtApplicationSortName" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></TextField>
-                                 </children>
-                              </GridPane>
-                              <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0">
-                                <columnConstraints>
-                                  <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
-                                  <ColumnConstraints hgrow="ALWAYS" percentWidth="75" />
-                                </columnConstraints>
-                                <rowConstraints>
-                                  <RowConstraints vgrow="SOMETIMES" />
-                                  <RowConstraints vgrow="SOMETIMES" />
-                                  <RowConstraints vgrow="SOMETIMES" />
-                                </rowConstraints>
-                                 <children>
-                                    <Label text="%MainWindow.lblMaxPlayers" GridPane.rowIndex="1">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></Label>
-                                    <RadioButton fx:id="radOnePlayer" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radOnePlayer" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></RadioButton>
-                                    <RadioButton fx:id="radTwoPlayerNoSim" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radTwoPlayerNoSim" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></RadioButton>
-                                    <RadioButton fx:id="radTwoPlayerSim" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radTwoPlayerSim" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></RadioButton>
-                                 </children>
-                              </GridPane>
-                              <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0">
-                                <columnConstraints>
-                                  <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
-                                  <ColumnConstraints hgrow="ALWAYS" percentWidth="75" />
-                                </columnConstraints>
-                                <rowConstraints>
-                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                </rowConstraints>
-                                 <children>
-                                    <Label text="%MainWindow.lblReleaseDate">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></Label>
-                                    <DatePicker fx:id="dateReleaseDate" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
-                                    <Label text="%MainWindow.lblPublisher" GridPane.rowIndex="1">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></Label>
-                                    <TextField fx:id="txtPublisher" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></TextField>
-                                    <Label text="%MainWindow.lblSaveCount" GridPane.rowIndex="2">
-                                       <font>
-                                          <Font size="12.0" />
-                                       </font></Label>
-                                    <Spinner fx:id="spnSaveCount" editable="true" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" />
-                                 </children>
-                              </GridPane>
-                              <Label text="%MainWindow.lblCommandLine">
-                                 <font>
-                                    <Font size="12.0" />
-                                 </font></Label>
-                              <TextField fx:id="txtCommandLine" maxWidth="1.7976931348623157E308">
-                                 <font>
-                                    <Font size="12.0" />
-                                 </font></TextField>
-                              <Label layoutX="20.0" layoutY="301.0" text="%MainWindow.lblGameGenie">
-                                 <font>
-                                    <Font size="12.0" />
-                                 </font></Label>
-                              <TextField fx:id="txtGameGenieCodes" layoutX="20.0" layoutY="328.0" maxWidth="1.7976931348623157E308">
-                                 <font>
-                                    <Font size="12.0" />
-                                 </font></TextField>
-                              <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
-                                 <center>
-                                    <GridPane hgap="5.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+                                    <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" VBox.vgrow="NEVER">
                                       <columnConstraints>
-                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="75" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="50" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
                                         <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
                                       </columnConstraints>
                                       <rowConstraints>
-                                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                                        <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                        <RowConstraints vgrow="SOMETIMES" />
                                       </rowConstraints>
                                        <children>
-                                          <ImageView fx:id="imgBoxArtPreview" accessibleText="Box art preview" fitHeight="228.0" fitWidth="228.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowSpan="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
-                                             <image>
-                                                <Image url="@../images/warning.png" />
-                                             </image>
-                                          </ImageView>
-                                          <Label text="%MainWindow.lblBoxArt" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                          <HBox>
+                                             <children>
+                                                <Label text="%MainWindow.lblGameId">
+                                                   <font>
+                                                      <Font size="12.0" />
+                                                   </font>
+                                                </Label>
+                                                <Label fx:id="lblApplicationId">
+                                                   <font>
+                                                      <Font size="12.0" />
+                                                   </font>
+                                                </Label>
+                                             </children>
+                                          </HBox>
+                                          <HBox GridPane.columnIndex="1">
+                                             <children>
+                                                <Label text="%MainWindow.lblGameSize" />
+                                                <Label fx:id="lblGameSize">
+                                                   <font>
+                                                      <Font size="12.0" />
+                                                   </font>
+                                                </Label>
+                                             </children>
+                                          </HBox>
+                                          <CheckBox fx:id="chkCompressed" mnemonicParsing="false" text="%MainWindow.chkCompress" GridPane.columnIndex="2">
                                              <font>
                                                 <Font size="12.0" />
-                                             </font></Label>
-                                          <Button fx:id="btnDefaultBoxArt" mnemonicParsing="false" text="%MainWindow.btnDefaultBoxArt" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                             <font>
-                                                <Font size="12.0" />
-                                             </font></Button>
-                                          <Button fx:id="btnBrowseBoxArt" mnemonicParsing="false" onAction="#onBrowseForBoxArtClicked" text="%MainWindow.btnBrowseBoxArt" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                                             <font>
-                                                <Font size="12.0" />
-                                             </font></Button>
-                                          <Button fx:id="btnSearchBoxArt" mnemonicParsing="false" text="%MainWindow.btnSearchBoxArt" GridPane.columnIndex="1" GridPane.rowIndex="4">
-                                             <font>
-                                                <Font size="12.0" />
-                                             </font></Button>
+                                             </font>
+                                          </CheckBox>
                                        </children>
                                     </GridPane>
-                                 </center></BorderPane>
-                           </children>
-                        </VBox>
-                     </content>
-                     <font>
-                        <Font size="12.0" />
-                     </font></TitledPane>
+                                    <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0">
+                                      <columnConstraints>
+                                          <ColumnConstraints fillWidth="true" hgrow="ALWAYS" percentWidth="25" />
+                                          <ColumnConstraints fillWidth="true" hgrow="ALWAYS" percentWidth="75" />
+                                      </columnConstraints>
+                                      <rowConstraints>
+                                          <RowConstraints vgrow="SOMETIMES" />
+                                          <RowConstraints vgrow="SOMETIMES" />
+                                      </rowConstraints>
+                                       <children>
+                                          <Label text="%MainWindow.lblGameName" textAlignment="RIGHT" GridPane.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="txtApplicationName" GridPane.columnIndex="1">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </TextField>
+                                          <Label text="%MainWindow.lblGameSortName" textAlignment="RIGHT" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="txtApplicationSortName" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </GridPane>
+                                    <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="75" />
+                                      </columnConstraints>
+                                      <rowConstraints>
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                      </rowConstraints>
+                                       <children>
+                                          <Label text="%MainWindow.lblMaxPlayers" GridPane.rowIndex="1">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <RadioButton fx:id="radOnePlayer" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radOnePlayer" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </RadioButton>
+                                          <RadioButton fx:id="radTwoPlayerNoSim" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radTwoPlayerNoSim" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </RadioButton>
+                                          <RadioButton fx:id="radTwoPlayerSim" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="%MainWindow.radTwoPlayerSim" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </RadioButton>
+                                       </children>
+                                    </GridPane>
+                                    <GridPane hgap="5.0" maxWidth="1.7976931348623157E308" vgap="5.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
+                                        <ColumnConstraints hgrow="ALWAYS" percentWidth="75" />
+                                      </columnConstraints>
+                                      <rowConstraints>
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                      </rowConstraints>
+                                       <children>
+                                          <Label text="%MainWindow.lblReleaseDate">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <DatePicker fx:id="dateReleaseDate" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+                                          <Label text="%MainWindow.lblPublisher" GridPane.rowIndex="1">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <TextField fx:id="txtPublisher" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </TextField>
+                                          <Label text="%MainWindow.lblSaveCount" GridPane.rowIndex="2">
+                                             <font>
+                                                <Font size="12.0" />
+                                             </font>
+                                          </Label>
+                                          <Spinner fx:id="spnSaveCount" editable="true" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" />
+                                       </children>
+                                    </GridPane>
+                                    <Label text="%MainWindow.lblCommandLine">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField fx:id="txtCommandLine" maxWidth="1.7976931348623157E308">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </TextField>
+                                    <Label layoutX="20.0" layoutY="301.0" text="%MainWindow.lblGameGenie">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Label>
+                                    <TextField fx:id="txtGameGenieCodes" layoutX="20.0" layoutY="328.0" maxWidth="1.7976931348623157E308">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </TextField>
+                                    <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+                                       <center>
+                                          <GridPane hgap="5.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+                                            <columnConstraints>
+                                              <ColumnConstraints hgrow="ALWAYS" percentWidth="75" />
+                                              <ColumnConstraints hgrow="ALWAYS" percentWidth="25" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                              <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                              <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                              <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                              <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                              <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                              <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                                            </rowConstraints>
+                                             <children>
+                                                <ImageView fx:id="imgBoxArtPreview" accessibleText="Box art preview" fitHeight="228.0" fitWidth="228.0" pickOnBounds="true" preserveRatio="true" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowSpan="6" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+                                                   <image>
+                                                      <Image url="@../images/warning.png" />
+                                                   </image>
+                                                </ImageView>
+                                                <Label text="%MainWindow.lblBoxArt" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                                   <font>
+                                                      <Font size="12.0" />
+                                                   </font>
+                                                </Label>
+                                                <Button fx:id="btnDefaultBoxArt" mnemonicParsing="false" text="%MainWindow.btnDefaultBoxArt" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                                   <font>
+                                                      <Font size="12.0" />
+                                                   </font>
+                                                </Button>
+                                                <Button fx:id="btnBrowseBoxArt" mnemonicParsing="false" onAction="#onBrowseForBoxArtClicked" text="%MainWindow.btnBrowseBoxArt" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                                   <font>
+                                                      <Font size="12.0" />
+                                                   </font>
+                                                </Button>
+                                                <Button fx:id="btnSearchBoxArt" mnemonicParsing="false" text="%MainWindow.btnSearchBoxArt" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                                   <font>
+                                                      <Font size="12.0" />
+                                                   </font>
+                                                </Button>
+                                             </children>
+                                          </GridPane>
+                                       </center>
+                                    </BorderPane>
+                                 </children>
+                              </VBox>
+                           </content>
+                           <font>
+                              <Font size="12.0" />
+                           </font>
+                        </TitledPane>
+                        <TitledPane fx:id="paneFolderOptions" animated="false" collapsible="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="%MainWindow.lblFolderOptions">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                          </content>
+                           <font>
+                              <Font size="12.0" />
+                           </font>
+                        </TitledPane>
+                     </children>
+                  </StackPane>
                   <Button fx:id="btnSyncGames" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#onSyncGamesClicked" prefHeight="50.0" text="%MainWindow.btnSynchronizeGames">
                      <VBox.margin>
                         <Insets top="10.0" />

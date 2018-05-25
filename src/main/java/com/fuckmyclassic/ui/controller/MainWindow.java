@@ -36,6 +36,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
@@ -81,7 +82,6 @@ public class MainWindow {
     private static final String SPACE_DIALOG_TITLE_KEY = "MainWindow.spaceDialogTitle";
     private static final String SPACE_DIALOG_HEADER_KEY = "MainWindow.spaceDialogHeader";
     private static final String SPACE_DIALOG_CONTENT_KEY = "MainWindow.spaceDialogContent";
-    private static final String STYLESHEET_PATH = "css/MainWindow.css";
 
     // References to all of the UI objects that we need to manipulate
     public ComboBox<Console> cmbCurrentConsole;
@@ -111,6 +111,8 @@ public class MainWindow {
     public Label lblSizeOfLibrary;
     public ProgressBar prgFreeSpace;
     public Label lblFreeSpace;
+    public TitledPane paneGameOptions;
+    public TitledPane paneFolderOptions;
 
     /** The configuration object for user options and session settings */
     private final UserConfiguration userConfiguration;
