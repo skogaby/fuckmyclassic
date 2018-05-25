@@ -357,7 +357,7 @@
                         <Insets left="10.0" right="10.0" />
                      </padding>
                   </ProgressBar>
-                  <Label fx:id="lblFreeSpace" StackPane.alignment="CENTER">
+                  <Label fx:id="lblFreeSpace" textFill="WHITE" StackPane.alignment="CENTER">
                      <font>
                         <Font size="12.0" />
                      </font>

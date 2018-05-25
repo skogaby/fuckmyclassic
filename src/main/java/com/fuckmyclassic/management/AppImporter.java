@@ -10,6 +10,7 @@ import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.TreeItem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -152,6 +153,22 @@ public class AppImporter {
                 this.uiPropertyContainer, this.userConfiguration);
 
         importFolder.getChildren().add(newItem);
+
+        // update the parent file tree sizes
+        TreeItem<LibraryItem> parent = newItem;
+
+        while (parent.getParent() != null) {
+            parent = parent.getParent();
+            parent.getValue().setTreeFilesize(parent.getValue().getTreeFilesize() + applicationSize);
+        }
+
+        // update the space usage
+        this.uiPropertyContainer.numSelected.set(this.uiPropertyContainer.numSelected.get() + 1L);
+        if (this.userConfiguration.getSelectedConsole().getSpaceForGames() != 0) {
+            this.uiPropertyContainer.gameSpaceUsed.setValue(
+                    (double) parent.getValue().getTreeFilesize() /
+                            (double) userConfiguration.getSelectedConsole().getSpaceForGames());
+        }
     }
 
     /**

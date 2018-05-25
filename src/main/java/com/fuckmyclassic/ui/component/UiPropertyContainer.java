@@ -30,6 +30,14 @@ public class UiPropertyContainer {
     public static final String DISCONNECTED_CIRCLE_COLOR = "CRIMSON";
     public static final String CONNECTED_CIRCLE_COLOR = "LIMEGREEN";
 
+    // static CSS for simple theming
+    private static final String BASE_PROGRESSBAR_STYLE = "-fx-control-inner-background: dimgray; " +
+            "-fx-text-box-border: white; -fx-shadow-highlight-color: gray; ";
+    private static final String GREEN_PROGRESSBAR_STYLE = BASE_PROGRESSBAR_STYLE + "-fx-box-border: black; -fx-accent: limegreen;";
+    private static final String YELLOW_PROGRESSBAR_STYLE = BASE_PROGRESSBAR_STYLE + "-fx-box-border: black; -fx-accent: goldenrod;";
+    private static final String RED_PROGRESSBAR_STYLE = BASE_PROGRESSBAR_STYLE + "-fx-box-border: black; -fx-accent: red;";
+    private static final String BLACK_PROGRESSBAR_STYLE = BASE_PROGRESSBAR_STYLE + "-fx-box-border: black; -fx-accent: black;";
+
     /** A property that exposes whether the console is connected */
     public final BooleanProperty selectedConsoleDisconnected;
     /** A property that displays the localized connection status */
@@ -40,6 +48,8 @@ public class UiPropertyContainer {
     public final LongProperty numSelected;
     /** A property to display the overall space usage in a progress bar */
     public final DoubleProperty gameSpaceUsed;
+    /** The style for the progress bar in the main window */
+    public final StringProperty progressBarStyle;
     /** ResourceBundle for getting localized connection status strings. */
     private final ResourceBundle resourceBundle;
 
@@ -51,6 +61,19 @@ public class UiPropertyContainer {
         this.connectionStatusColor = new SimpleObjectProperty<>(Paint.valueOf(DISCONNECTED_CIRCLE_COLOR));
         this.numSelected = new SimpleLongProperty(0);
         this.gameSpaceUsed = new SimpleDoubleProperty(0);
+        this.progressBarStyle = new SimpleStringProperty(GREEN_PROGRESSBAR_STYLE);
+
+        this.gameSpaceUsed.addListener(((observable, oldValue, newValue) -> {
+            if (newValue.doubleValue() >= 1.0) {
+                this.progressBarStyle.setValue(BLACK_PROGRESSBAR_STYLE);
+            } else if (newValue.doubleValue() > 0.90) {
+                this.progressBarStyle.setValue(RED_PROGRESSBAR_STYLE);
+            } else if (newValue.doubleValue() > 0.80) {
+                this.progressBarStyle.setValue(YELLOW_PROGRESSBAR_STYLE);
+            } else {
+                this.progressBarStyle.setValue(GREEN_PROGRESSBAR_STYLE);
+            }
+        }));
     }
 
     /**

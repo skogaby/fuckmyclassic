@@ -8,7 +8,6 @@ import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.network.NetworkManager;
-import com.fuckmyclassic.network.NetworkConstants;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.task.TaskProvider;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
@@ -16,11 +15,14 @@ import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -53,6 +55,7 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -68,17 +71,17 @@ import static com.fuckmyclassic.boot.KernelFlasher.BOOT_IMG_PATH;
 @Component
 public class MainWindow {
 
-    private final String ON_CONSOLE_SWITCH_MESSAGE_KEY = "SwitchConsoleTaskLabel";
-
     static Logger LOG = LogManager.getLogger(MainWindow.class.getName());
 
     public static final String RESOURCE_BUNDLE_PATH = "i18n/MainWindow";
     private static final String SYNC_TASK_TITLE_KEY = "SyncTaskLabel";
+    private static final String ON_CONSOLE_SWITCH_MESSAGE_KEY = "SwitchConsoleTaskLabel";
     private static final String CONNECTED_GAMES_LABEL_KEY = "MainWindow.lblNumGamesSelected";
     private static final String SAVE_SCREENSHOT_DIALOG_TITLE_KEY = "TakeScreenshotTask.saveFileDialogTitle";
     private static final String SPACE_DIALOG_TITLE_KEY = "MainWindow.spaceDialogTitle";
     private static final String SPACE_DIALOG_HEADER_KEY = "MainWindow.spaceDialogHeader";
     private static final String SPACE_DIALOG_CONTENT_KEY = "MainWindow.spaceDialogContent";
+    private static final String STYLESHEET_PATH = "css/MainWindow.css";
 
     // References to all of the UI objects that we need to manipulate
     public ComboBox<Console> cmbCurrentConsole;
@@ -178,7 +181,7 @@ public class MainWindow {
         this.libraryManagementWindow = libraryManagementWindow;
         this.initialized = false;
         this.shouldConsoleListenerRespond = true;
-        this.mainResourceBundle = ResourceBundle.getBundle(RESOURCE_BUNDLE_PATH);;
+        this.mainResourceBundle = ResourceBundle.getBundle(RESOURCE_BUNDLE_PATH);
     }
 
     /**
@@ -377,6 +380,7 @@ public class MainWindow {
     private void initializeGameSpaceProgressBar() {
         if (!this.initialized) {
             BindingHelper.bindProperty(this.uiPropertyContainer.gameSpaceUsed, this.prgFreeSpace.progressProperty());
+            BindingHelper.bindProperty((StringExpression) this.uiPropertyContainer.progressBarStyle, this.prgFreeSpace.styleProperty());
         }
     }
 
