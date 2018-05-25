@@ -40,7 +40,7 @@ public class Console implements Externalizable {
     private StringProperty consoleSyncPath;
     private StringProperty nickname;
     private StringProperty lastKnownAddress;
-    private long spaceForGames;
+    private LongProperty spaceForGames;
 
     public Console() {
         this.id = new SimpleLongProperty(this, "id");
@@ -49,7 +49,7 @@ public class Console implements Externalizable {
         this.consoleSyncPath = new SimpleStringProperty(null);
         this.nickname = new SimpleStringProperty(null);
         this.lastKnownAddress = new SimpleStringProperty(null);
-        this.spaceForGames = 0L;
+        this.spaceForGames = new SimpleLongProperty(0);
     }
 
     public Console(final String consoleSid,
@@ -63,7 +63,7 @@ public class Console implements Externalizable {
         this.consoleSyncPath = new SimpleStringProperty(consoleSyncPath);
         this.nickname = new SimpleStringProperty(nickname);
         this.lastKnownAddress = new SimpleStringProperty(lastKnownAddress);
-        this.spaceForGames = 0L;
+        this.spaceForGames = new SimpleLongProperty(0);
     }
 
     @Override
@@ -176,11 +176,11 @@ public class Console implements Externalizable {
 
     @Transient
     public long getSpaceForGames() {
-        return spaceForGames;
+        return spaceForGames.get();
     }
 
     public Console setSpaceForGames(long spaceForGames) {
-        this.spaceForGames = spaceForGames;
+        this.spaceForGames.setValue(spaceForGames);
         return this;
     }
 

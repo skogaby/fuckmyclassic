@@ -64,8 +64,9 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
      * @return The list of Library metadata items for the given console
      */
     public List<Library> getOrCreateLibrariesForConsole(final String consoleSid) {
-        this.openCurrentSessionWithTransaction();
+        this.openCurrentSession();
         List<Library> results = getLibrariesForConsole(consoleSid);
+        this.closeCurrentSession();
 
         // create a default library if none exists
         if (results.isEmpty()) {
@@ -74,7 +75,6 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
             results.add(defaultLibrary);
         }
 
-        this.closeCurrentSessionwithTransaction();
         return results;
     }
 
@@ -102,20 +102,18 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
      */
     public LibraryItem loadLibraryItemByApplication(final Application application, final Library library) {
         this.openCurrentSession();
-
         final Query<LibraryItem> query = this.currentSession.createQuery(
                 "from LibraryItem l where l.application = :application and l.library = :library");
         query.setParameter("application", application);
         query.setParameter("library", library);
-
         final List<LibraryItem> results = query.getResultList();
+        this.closeCurrentSession();
+
         LibraryItem item = null;
 
         if (!results.isEmpty()) {
             item = results.get(0);
         }
-
-        this.closeCurrentSession();
 
         return item;
     }
@@ -175,6 +173,8 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
                     return item;
                 })
                 .collect(Collectors.toList());
+
+        this.closeCurrentSession();
         parentFolder.getChildren().addAll(itemResults);
 
         // iterate through the results and recurse down for any folders that are inside this one
@@ -222,7 +222,6 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
             }
         }
 
-        this.closeCurrentSession();
         return numNodes;
     }
 
@@ -234,10 +233,10 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
      * @return A tree representing the requested library.
      */
     public TreeItem<LibraryItem> loadApplicationTreeForLibrary(Library library, boolean useCheckboxes, boolean onlySelected) {
-        this.openCurrentSessionWithTransaction();
-
         // check if the HOME folder exists, create one if it doesn't
+        this.openCurrentSession();
         Application homeFolder = this.applicationDAO.loadApplicationByAppId(SharedConstants.HOME_FOLDER_ID);
+        this.closeCurrentSession();
 
         if (homeFolder == null) {
             homeFolder = new Folder();
@@ -273,7 +272,6 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
         homeItem.getValue().setNumNodes(loadApplicationsForFolder(homeItem, library, useCheckboxes, onlySelected) + 1);
         this.uiPropertyContainer.numSelected.set(getNumSelectedForLibrary(library));
 
-        this.closeCurrentSessionwithTransaction();
         return homeItem;
     }
 

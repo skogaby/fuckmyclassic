@@ -3,6 +3,7 @@ package com.fuckmyclassic.management;
 import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAO;
 import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
 import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
+import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
@@ -15,6 +16,7 @@ import com.fuckmyclassic.ui.util.BindingHelper;
 import com.fuckmyclassic.ui.util.ImageResizer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import com.fuckmyclassic.util.FileUtils;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
@@ -99,6 +101,7 @@ public class LibraryManager {
 
             mainWindow.cmbCurrentCollection.valueProperty().addListener(((observable, oldValue, newValue) -> {
                 if (newValue != null) {
+                    final Console selectedConsole = this.userConfiguration.getSelectedConsole();
                     this.currentLibrary = newValue;
                     this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary, true, false);
                     mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
@@ -108,6 +111,14 @@ public class LibraryManager {
                             ResourceBundle.getBundle(MainWindow.RESOURCE_BUNDLE_PATH).getString(LIBRARY_SIZE_LABEL_KEY),
                             this.currentLibraryTree.getValue().treeFilesizeStringProperty()),
                             mainWindow.lblSizeOfLibrary.textProperty());
+                    BindingHelper.bindProperty(Bindings.format("%s / %s", this.currentLibraryTree.getValue().treeFilesizeStringProperty(),
+                            FileUtils.convertToHumanReadable(selectedConsole.getSpaceForGames())),
+                            mainWindow.lblFreeSpace.textProperty());
+
+                    if (selectedConsole.getSpaceForGames() != 0) {
+                        mainWindow.prgFreeSpace.setProgress(this.currentLibraryTree.getValue().getTreeFilesize() /
+                            selectedConsole.getSpaceForGames());
+                    }
                 }
             }));
         }

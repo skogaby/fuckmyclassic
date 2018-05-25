@@ -28,6 +28,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -101,6 +102,8 @@ public class MainWindow {
     public Label lblNumGamesSelected;
     public MenuItem mnuTakeScreenshot;
     public Label lblSizeOfLibrary;
+    public ProgressBar prgFreeSpace;
+    public Label lblFreeSpace;
 
     /** The configuration object for user options and session settings */
     private final UserConfiguration userConfiguration;
@@ -132,6 +135,8 @@ public class MainWindow {
     private final LibraryManagementWindow libraryManagementWindow;
     /** Says whether or not we've already initialized this window once before */
     public boolean initialized;
+    /** Says whether or not the console dropdown listener should respond to events */
+    public boolean shouldConsoleListenerRespond;
 
     /**
      * Constructor.
@@ -166,6 +171,7 @@ public class MainWindow {
         this.consoleDAO = consoleDAO;
         this.libraryManagementWindow = libraryManagementWindow;
         this.initialized = false;
+        this.shouldConsoleListenerRespond = true;
     }
 
     /**
@@ -195,8 +201,9 @@ public class MainWindow {
         // and library data
         final List<Console> consoles = this.consoleDAO.getAllConsoles();
         final ObservableList<Console> items = FXCollections.observableArrayList(consoles);
+        this.userConfiguration.setSelectedConsole(consoles.get(0));
         this.cmbCurrentConsole.setItems(items);
-        this.cmbCurrentConsole.setValue(userConfiguration.getSelectedConsole());
+        this.cmbCurrentConsole.getSelectionModel().selectFirst();
     }
 
     /**
@@ -206,17 +213,19 @@ public class MainWindow {
         if (!this.initialized) {
             this.cmbCurrentConsole.valueProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue != null) {
-                    try {
-                        this.userConfiguration.setSelectedConsole(newValue);
+                    if (this.shouldConsoleListenerRespond) {
+                        try {
+                            this.userConfiguration.setSelectedConsole(newValue);
 
-                        this.sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONSOLE_SWITCH_MESSAGE_KEY));
-                        this.sequentialTaskRunnerDialog.setTaskCreators(taskProvider.loadLibrariesTask);
-                        this.sequentialTaskRunnerDialog.showDialog();
+                            this.sequentialTaskRunnerDialog.setMainTaskMessage(this.tasksResourceBundle.getString(ON_CONSOLE_SWITCH_MESSAGE_KEY));
+                            this.sequentialTaskRunnerDialog.setTaskCreators(taskProvider.loadLibrariesTask);
+                            this.sequentialTaskRunnerDialog.showDialog();
 
-                        this.uiPropertyContainer.setConnectedProperties(
-                                this.networkManager.isConnected(newValue.getLastKnownAddress()));
-                    } catch (IOException e) {
-                        LOG.error(e);
+                            this.uiPropertyContainer.setConnectedProperties(
+                                    this.networkManager.isConnected(newValue.getLastKnownAddress()));
+                        } catch (IOException e) {
+                            LOG.error(e);
+                        }
                     }
                 }
             });

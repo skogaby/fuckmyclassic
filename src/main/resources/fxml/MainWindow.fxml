@@ -22,6 +22,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
@@ -346,14 +347,23 @@
             <Insets bottom="10.0" left="10.0" right="10.0" />
          </VBox.margin>
          <center>
-            <ProgressBar maxWidth="1.7976931348623157E308" prefWidth="500.0" progress="0.0" BorderPane.alignment="CENTER">
+            <StackPane BorderPane.alignment="CENTER">
                <BorderPane.margin>
                   <Insets />
                </BorderPane.margin>
-               <padding>
-                  <Insets left="10.0" right="10.0" />
-               </padding>
-            </ProgressBar>
+               <children>
+                  <ProgressBar fx:id="prgFreeSpace" maxWidth="1.7976931348623157E308" prefWidth="500.0" progress="0.0">
+                     <padding>
+                        <Insets left="10.0" right="10.0" />
+                     </padding>
+                  </ProgressBar>
+                  <Label fx:id="lblFreeSpace" StackPane.alignment="CENTER">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+            </StackPane>
          </center>
          <right>
             <HBox BorderPane.alignment="CENTER">

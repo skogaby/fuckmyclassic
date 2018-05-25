@@ -104,7 +104,11 @@ public class LoadLibrariesTask extends AbstractTaskCreator<Void> {
                     if (shouldRefreshConsoles) {
                         mainWindow.cmbCurrentConsole.getItems().clear();
                         mainWindow.cmbCurrentConsole.getItems().addAll(consoleItems);
+
+                        mainWindow.shouldConsoleListenerRespond = false;
                         mainWindow.cmbCurrentConsole.setValue(userConfiguration.getSelectedConsole());
+                        mainWindow.shouldConsoleListenerRespond = true;
+
                         shouldRefreshConsoles = false;
                     }
 

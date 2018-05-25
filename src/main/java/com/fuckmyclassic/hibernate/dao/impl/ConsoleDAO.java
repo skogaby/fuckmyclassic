@@ -27,9 +27,9 @@ public class ConsoleDAO extends AbstractHibernateDAO<Console> {
      * Get a list of all known consoles (or the default console if none exist)
      */
     public List<Console> getAllConsoles() {
-        this.openCurrentSessionWithTransaction();
-
+        this.openCurrentSession();
         final List<Console> consoles = this.currentSession.createQuery("from Console").getResultList();
+        this.closeCurrentSession();
 
         if (consoles.isEmpty()) {
             final Console console = new Console();
@@ -39,7 +39,6 @@ public class ConsoleDAO extends AbstractHibernateDAO<Console> {
             super.create(console);
         }
 
-        this.closeCurrentSessionwithTransaction();
         return consoles;
     }
 
@@ -50,17 +49,17 @@ public class ConsoleDAO extends AbstractHibernateDAO<Console> {
      */
     public Console getConsoleForSid(String consoleSid) {
         this.openCurrentSession();
-
         final Query<Console> query = this.currentSession.createQuery("from Console where console_sid = :sid");
         query.setParameter("sid", consoleSid);
         final List<Console> results = query.getResultList();
+        this.closeCurrentSession();
+
         Console console = null;
 
         if (!results.isEmpty()) {
             console = results.get(0);
         }
 
-        this.closeCurrentSession();
         return console;
     }
 
@@ -70,11 +69,12 @@ public class ConsoleDAO extends AbstractHibernateDAO<Console> {
      * @return The Console corresponding to the given SID
      */
     public Console getOrCreateConsoleForSid(String consoleSid) {
-        this.openCurrentSessionWithTransaction();
-
+        this.openCurrentSession();
         final Query<Console> query = this.currentSession.createQuery("from Console where console_sid = :sid");
         query.setParameter("sid", consoleSid);
         final List<Console> results = query.getResultList();
+        this.closeCurrentSession();
+
         Console console = null;
 
         if (!results.isEmpty()) {
@@ -89,7 +89,6 @@ public class ConsoleDAO extends AbstractHibernateDAO<Console> {
             super.create(console);
         }
 
-        this.closeCurrentSessionwithTransaction();
         return console;
     }
 
@@ -99,14 +98,11 @@ public class ConsoleDAO extends AbstractHibernateDAO<Console> {
      * @return The newly created Console
      */
     public Console createConsoleForSid(String consoleSid) {
-        this.openCurrentSessionWithTransaction();
-
         final Console console = new Console();
         console.setNickname(SharedConstants.DEFAULT_CONSOLE_NICKNAME);
         console.setConsoleSid(consoleSid);
         super.create(console);
 
-        this.closeCurrentSessionwithTransaction();
         return console;
     }
 
@@ -124,11 +120,12 @@ public class ConsoleDAO extends AbstractHibernateDAO<Console> {
         final List<Console> results = query.getResultList();
         Console console = null;
 
+        this.closeCurrentSession();
+
         if (!results.isEmpty()) {
             console = results.get(0);
         }
 
-        this.closeCurrentSession();
         return console;
     }
 }
