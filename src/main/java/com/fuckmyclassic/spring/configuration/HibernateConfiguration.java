@@ -7,7 +7,6 @@ import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -88,14 +87,8 @@ public class HibernateConfiguration {
     }
 
     @Bean
-    public LibraryDAO libraryDAO(SessionFactory sessionFactory,
-                                 ApplicationDAO applicationDAO,
-                                 LibraryItemDAO libraryItemDAO,
-                                 UiPropertyContainer uiPropertyContainer,
-                                 PathConfiguration pathConfiguration,
-                                 UserConfiguration userConfiguration) {
-        return new LibraryDAO(sessionFactory, applicationDAO, libraryItemDAO, uiPropertyContainer,
-                pathConfiguration, userConfiguration);
+    public LibraryDAO libraryDAO(SessionFactory sessionFactory) {
+        return new LibraryDAO(sessionFactory);
     }
 
     @Bean
@@ -104,7 +97,13 @@ public class HibernateConfiguration {
     }
 
     @Bean
-    public LibraryItemDAO libraryItemDAO(SessionFactory sessionFactory) {
-        return new LibraryItemDAO(sessionFactory);
+    public LibraryItemDAO libraryItemDAO(SessionFactory sessionFactory,
+                                         ApplicationDAO applicationDAO,
+                                         LibraryDAO libraryDAO,
+                                         UiPropertyContainer uiPropertyContainer,
+                                         PathConfiguration pathConfiguration,
+                                         UserConfiguration userConfiguration) {
+        return new LibraryItemDAO(sessionFactory, applicationDAO, libraryDAO, uiPropertyContainer,
+                pathConfiguration, userConfiguration);
     }
 }

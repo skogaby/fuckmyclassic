@@ -70,10 +70,10 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    public LibraryManager libraryManager(UserConfiguration userConfiguration, PathConfiguration pathConfiguration, LibraryDAO libraryDAO,
+    public LibraryManager libraryManager(UserConfiguration userConfiguration, PathConfiguration pathConfiguration,
                                          ApplicationDAO applicationDAO, LibraryItemDAO libraryItemDAO, ImageResizer imageResizer,
                                          UiPropertyContainer uiPropertyContainer) {
-        return new LibraryManager(userConfiguration, pathConfiguration, libraryDAO, applicationDAO, libraryItemDAO,
+        return new LibraryManager(userConfiguration, pathConfiguration, applicationDAO, libraryItemDAO,
                 imageResizer, uiPropertyContainer);
     }
 

@@ -235,7 +235,7 @@ public class LibraryManagementWindow {
         BindingHelper.bindPropertyBidirectional(oldLibrary == null ? null : oldLibrary.libraryNameProperty(),
                 newLibrary.libraryNameProperty(), this.txtLibraryName.textProperty());
 
-        final TreeItem<LibraryItem> applications = libraryDAO.loadApplicationTreeForLibrary(newLibrary, false, true);
+        final TreeItem<LibraryItem> applications = this.libraryItemDAO.getApplicationTreeForLibrary(newLibrary, false, true);
         this.treeViewGames.setRoot(applications);
     }
 
@@ -312,7 +312,7 @@ public class LibraryManagementWindow {
         // objects instead of the originals themselves, because if we cancel the window
         // and need to re-insert the records to the database, they have to have new IDs.
         // so we'll construct new objects and let Hibernate do its thing
-        final List<LibraryItem> libraryItems = this.libraryDAO.getApplicationsForLibrary(this.selectedLibrary, false);
+        final List<LibraryItem> libraryItems = this.libraryItemDAO.getLibraryItemsForLibrary(this.selectedLibrary, false);
         this.removedLibraryItems.addAll(libraryItems.stream()
                 .map(item -> new LibraryItem(libraryToDelete, item.getApplication(), item.getFolder(),
                         item.isSelected(), item.getNumNodes(), item.getTreeFilesize()))
@@ -341,7 +341,7 @@ public class LibraryManagementWindow {
         this.newLibraries.add(libraryToAdd);
         this.libraryDAO.create(libraryToAdd);
 
-        final List<LibraryItem> newItems = this.libraryDAO.getApplicationsForLibrary(this.selectedLibrary, false)
+        final List<LibraryItem> newItems = this.libraryItemDAO.getLibraryItemsForLibrary(this.selectedLibrary, false)
                 .stream()
                 .map(item -> new LibraryItem(libraryToAdd, item.getApplication(), item.getFolder(),
                         item.isSelected(), item.getNumNodes(), item.getTreeFilesize()))

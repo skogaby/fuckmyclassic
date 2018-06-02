@@ -1,7 +1,6 @@
 package com.fuckmyclassic.management;
 
 import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAO;
-import com.fuckmyclassic.hibernate.dao.impl.LibraryDAO;
 import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Folder;
@@ -20,7 +19,6 @@ import com.fuckmyclassic.util.FileUtils;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
-import javafx.scene.Node;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import org.apache.logging.log4j.LogManager;
@@ -53,8 +51,6 @@ public class LibraryManager {
     private final UserConfiguration userConfiguration;
     /** Path configuration for runtime operations */
     private final PathConfiguration pathConfiguration;
-    /** DAO for library metadata */
-    private final LibraryDAO libraryDAO;
     /** DAO for application metadata */
     private final ApplicationDAO applicationDAO;
     /** DAO for library item metadata */
@@ -73,14 +69,12 @@ public class LibraryManager {
     @Autowired
     public LibraryManager(final UserConfiguration userConfiguration,
                           final PathConfiguration pathConfiguration,
-                          final LibraryDAO libraryDAO,
                           final ApplicationDAO applicationDAO,
                           final LibraryItemDAO libraryItemDAO,
                           final ImageResizer imageResizer,
                           final UiPropertyContainer uiPropertyContainer) {
         this.userConfiguration = userConfiguration;
         this.pathConfiguration = pathConfiguration;
-        this.libraryDAO = libraryDAO;
         this.applicationDAO = applicationDAO;
         this.libraryItemDAO = libraryItemDAO;
         this.imageResizer = imageResizer;
@@ -100,7 +94,7 @@ public class LibraryManager {
                 if (newValue != null) {
                     final Console selectedConsole = this.userConfiguration.getSelectedConsole();
                     this.currentLibrary = newValue;
-                    this.currentLibraryTree = this.libraryDAO.loadApplicationTreeForLibrary(this.currentLibrary, true, false);
+                    this.currentLibraryTree = this.libraryItemDAO.getApplicationTreeForLibrary(this.currentLibrary, true, false);
                     mainWindow.treeViewGames.setRoot(this.currentLibraryTree);
                     mainWindow.treeViewGames.getSelectionModel().selectFirst();
                     this.userConfiguration.setSelectedLibraryID(this.currentLibrary.getId());
