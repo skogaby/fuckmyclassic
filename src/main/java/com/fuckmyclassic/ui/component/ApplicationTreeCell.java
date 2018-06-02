@@ -3,9 +3,13 @@ package com.fuckmyclassic.ui.component;
 import com.fuckmyclassic.management.AppImporter;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
+import com.fuckmyclassic.userconfig.PathConfiguration;
+import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.CheckBoxTreeItem;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.input.DragEvent;
@@ -14,7 +18,11 @@ import javafx.scene.input.TransferMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ResourceBundle;
 
 /**
  * Class to encapsulate the logic for each cell in the TreeView
@@ -25,6 +33,10 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
 
     static Logger LOG = LogManager.getLogger(ApplicationTreeCell.class.getName());
 
+    private static final String APP_OPEN_FOLDER_KEY = "MainWindow.appOpenInExplorer";
+    private static final String APP_DELETE_FROM_LIBRARY_KEY = "MainWindow.appRemoveFromLibrary";
+    private static final String APP_DELETE_KEY = "MainWindow.appDelete";
+
     /** The path to the stylesheet for this cell */
     private static final String STYLESHEET_PATH = "css/MainWindow.css";
     /** CSS style class for a cell in the TreeView that's selected */
@@ -32,18 +44,43 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
 
     /** Helper class to import new games to the current library */
     private final AppImporter appImporter;
+    /** Helper class to have file paths for opening in explorer, etc. */
+    private final PathConfiguration pathConfiguration;
+    /** Context menu for games and applications */
+    private final ContextMenu appContextMenu;
 
     /**
      * Constructor. Sets up the event handlers.
      */
-    public ApplicationTreeCell(final AppImporter appImporter) {
+    public ApplicationTreeCell(final AppImporter appImporter,
+                               final PathConfiguration pathConfiguration) {
         this.appImporter = appImporter;
+        this.pathConfiguration = pathConfiguration;
+        this.appContextMenu = new ContextMenu();
 
         // set the event handlers for the cell
         setOnDragOver(event -> onDragOver(event));
         setOnDragDropped(event -> onDragDropped(event));
         setOnDragEntered(event -> onDragEntered(event));
         setOnDragExited(event -> onDragExited(event));
+
+        // setup the context menus
+        final ResourceBundle resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
+        final ObservableList<MenuItem> appMenuItems = this.appContextMenu.getItems();
+        final MenuItem openFolderMenuItem = new MenuItem(resourceBundle.getString(APP_OPEN_FOLDER_KEY));
+        final MenuItem removeFromLibraryMenuItem = new MenuItem(resourceBundle.getString(APP_DELETE_FROM_LIBRARY_KEY));
+        final MenuItem deleteAppMenuItem = new MenuItem(resourceBundle.getString(APP_DELETE_KEY));
+        appMenuItems.add(openFolderMenuItem);
+        appMenuItems.add(removeFromLibraryMenuItem);
+        appMenuItems.add(deleteAppMenuItem);
+
+        openFolderMenuItem.setOnAction(event -> {
+            try {
+                onOpenFolderMenuItemClicked();
+            } catch (IOException e) {
+                LOG.error(e);
+            }
+        });
 
         // styling
         getStylesheets().add(ApplicationTreeCell.class.getClassLoader().getResource(STYLESHEET_PATH).toExternalForm());
@@ -64,6 +101,10 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
             setGraphic(null);
         } else {
             setText(item.getApplication().getApplicationName());
+
+            if (!(item.getApplication() instanceof Folder)) {
+                setContextMenu(this.appContextMenu);
+            }
         }
     }
 
@@ -165,5 +206,15 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
         }
 
         return null;
+    }
+
+    /**
+     * Opens the selected application in the file explorer.
+     */
+    private void onOpenFolderMenuItemClicked() throws IOException {
+        Desktop.getDesktop().open(
+                new File(
+                        Paths.get(this.pathConfiguration.gamesDirectory,
+                                getTreeItem().getValue().getApplication().getApplicationId()).toString()));
     }
 }
