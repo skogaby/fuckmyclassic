@@ -137,9 +137,9 @@ public class LibraryManager {
 
             // initialize the cell factory so we can control theming, drag and drop, etc.
             mainWindow.treeViewGames.setCellFactory(param ->
-                    new ApplicationTreeCell(new AppImporter(this.applicationDAO, this.libraryItemDAO, this,
-                            this.uiPropertyContainer, this.pathConfiguration, this.userConfiguration),
-                            this.pathConfiguration));
+                    new ApplicationTreeCell(this.applicationDAO, this.libraryItemDAO, new AppImporter(
+                            this.applicationDAO, this.libraryItemDAO, this, this.uiPropertyContainer,
+                            this.pathConfiguration, this.userConfiguration), this.pathConfiguration));
 
             // whenever an item is selected, we'll bind the data to the UI and save whatever app
             // was being viewed previously to the database

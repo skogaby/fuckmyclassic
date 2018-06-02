@@ -1,27 +1,35 @@
 package com.fuckmyclassic.ui.component;
 
+import com.fuckmyclassic.hibernate.dao.impl.ApplicationDAO;
+import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.management.AppImporter;
+import com.fuckmyclassic.model.Application;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
 import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
@@ -36,27 +44,40 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
     private static final String APP_OPEN_FOLDER_KEY = "MainWindow.appOpenInExplorer";
     private static final String APP_DELETE_FROM_LIBRARY_KEY = "MainWindow.appRemoveFromLibrary";
     private static final String APP_DELETE_KEY = "MainWindow.appDelete";
+    private static final String CONFIRMATION_HEADER_KEY = "Confirmation.Header";
+    private static final String REMOVE_CONFIRMATION_KEY = "MainWindow.removefromLibraryConfirmation";
 
     /** The path to the stylesheet for this cell */
     private static final String STYLESHEET_PATH = "css/MainWindow.css";
     /** CSS style class for a cell in the TreeView that's selected */
     private static final String SELECTED_CELL_STYLE_CLASS = "selected-cell";
 
+    /** DAO for manipulating Applications */
+    private final ApplicationDAO applicationDAO;
+    /** DAO for manipulating LibraryItems */
+    private final LibraryItemDAO libraryItemDAO;
     /** Helper class to import new games to the current library */
     private final AppImporter appImporter;
     /** Helper class to have file paths for opening in explorer, etc. */
     private final PathConfiguration pathConfiguration;
     /** Context menu for games and applications */
     private final ContextMenu appContextMenu;
+    /** Localization */
+    private final ResourceBundle resourceBundle;
 
     /**
      * Constructor. Sets up the event handlers.
      */
-    public ApplicationTreeCell(final AppImporter appImporter,
+    public ApplicationTreeCell(final ApplicationDAO applicationDAO,
+                               final LibraryItemDAO libraryItemDAO,
+                               final AppImporter appImporter,
                                final PathConfiguration pathConfiguration) {
+        this.applicationDAO = applicationDAO;
+        this.libraryItemDAO = libraryItemDAO;
         this.appImporter = appImporter;
         this.pathConfiguration = pathConfiguration;
         this.appContextMenu = new ContextMenu();
+        this.resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
 
         // set the event handlers for the cell
         setOnDragOver(event -> onDragOver(event));
@@ -65,11 +86,10 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
         setOnDragExited(event -> onDragExited(event));
 
         // setup the context menus
-        final ResourceBundle resourceBundle = ResourceBundle.getBundle("i18n/MainWindow");
         final ObservableList<MenuItem> appMenuItems = this.appContextMenu.getItems();
-        final MenuItem openFolderMenuItem = new MenuItem(resourceBundle.getString(APP_OPEN_FOLDER_KEY));
-        final MenuItem removeFromLibraryMenuItem = new MenuItem(resourceBundle.getString(APP_DELETE_FROM_LIBRARY_KEY));
-        final MenuItem deleteAppMenuItem = new MenuItem(resourceBundle.getString(APP_DELETE_KEY));
+        final MenuItem openFolderMenuItem = new MenuItem(this.resourceBundle.getString(APP_OPEN_FOLDER_KEY));
+        final MenuItem removeFromLibraryMenuItem = new MenuItem(this.resourceBundle.getString(APP_DELETE_FROM_LIBRARY_KEY));
+        final MenuItem deleteAppMenuItem = new MenuItem(this.resourceBundle.getString(APP_DELETE_KEY));
         appMenuItems.add(openFolderMenuItem);
         appMenuItems.add(removeFromLibraryMenuItem);
         appMenuItems.add(deleteAppMenuItem);
@@ -77,6 +97,14 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
         openFolderMenuItem.setOnAction(event -> {
             try {
                 onOpenFolderMenuItemClicked();
+            } catch (IOException e) {
+                LOG.error(e);
+            }
+        });
+
+        removeFromLibraryMenuItem.setOnAction(event -> {
+            try {
+                onRemoveFromLibraryMenuItemClicked();
             } catch (IOException e) {
                 LOG.error(e);
             }
@@ -212,9 +240,46 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
      * Opens the selected application in the file explorer.
      */
     private void onOpenFolderMenuItemClicked() throws IOException {
-        Desktop.getDesktop().open(
+        java.awt.Desktop.getDesktop().open(
                 new File(
                         Paths.get(this.pathConfiguration.gamesDirectory,
-                                getTreeItem().getValue().getApplication().getApplicationId()).toString()));
+                                getItem().getApplication().getApplicationId()).toString()));
+    }
+
+    /**
+     * Removes the selected item from the current library
+     */
+    private void onRemoveFromLibraryMenuItemClicked() throws IOException {
+        final Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(null);
+        alert.setHeaderText(this.resourceBundle.getString(CONFIRMATION_HEADER_KEY));
+        alert.setContentText(this.resourceBundle.getString(REMOVE_CONFIRMATION_KEY));
+
+        final Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.get() == ButtonType.OK) {
+            final TreeItem<LibraryItem> treeItem = getTreeItem();
+            final LibraryItem libraryItem = getItem();
+            final Application application = libraryItem.getApplication();
+
+            // check if this application belongs to any other libraries or is a duplicate. if it is,
+            // then we'll just delete the LibraryItem from the current library and call it good.
+            // if it doesn't exist in any other library, we need to also delete the actual game data and Application
+            final List<LibraryItem> libraryItemList = this.libraryItemDAO.getLibraryItemsForApplication(application);
+            boolean isDuplicate = libraryItemList.size() > 1;
+
+            // delete the current library item and remove it from the view
+            getTreeItem().getParent().getChildren().removeAll(treeItem);
+            libraryItemDAO.delete(libraryItem);
+
+            if (!isDuplicate) {
+                // remove the game data
+                FileUtils.deleteDirectory(
+                        Paths.get(pathConfiguration.gamesDirectory, application.getApplicationId()).toFile());
+
+                // delete the application
+                this.applicationDAO.delete(application);
+            }
+        }
     }
 }
