@@ -165,14 +165,6 @@ public class LibraryDAO extends AbstractHibernateDAO<Library> {
                         long appSize = FileUtils.sizeOfDirectory(new File(Paths.get(this.pathConfiguration.gamesDirectory,
                                 application.getApplicationId()).toString()));
 
-                        // if there's boxart, add the size for that too
-                        if (Files.exists(Paths.get(this.pathConfiguration.boxartDirectory, application.getBoxArtPath()))) {
-                            appSize += FileUtils.sizeOf(new File(Paths.get(this.pathConfiguration.boxartDirectory,
-                                    application.getBoxArtPath()).toString()));
-                            appSize += FileUtils.sizeOf(new File(Paths.get(this.pathConfiguration.boxartDirectory,
-                                    application.getBoxArtPath().replace(".png", "_small.png")).toString()));
-                        }
-
                         application.setApplicationSize(appSize);
                     }
 

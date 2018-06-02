@@ -20,6 +20,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,7 +65,7 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
     public Task<Void> createTask() {
         return new Task<Void>() {
             @Override
-            protected Void call() throws IOException {
+            protected Void call() throws IOException, URISyntaxException {
                 LOG.info("Processing temporary data for the current library");
 
                 int maxItems = libraryManager.getCurrentLibraryTree().getValue().getNumNodes();
@@ -88,17 +90,25 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                 String desktopFileContents;
                 BufferedWriter desktopFileWriter;
                 int visitedNodes = 0;
+                String currentAppId;
+
+                // resource to copy a warning image for games with no boxart
+                final URL warningResource = ClassLoader.getSystemResource(
+                        Paths.get(PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString());
+                final URL warningThumbnailResource = ClassLoader.getSystemResource(
+                        Paths.get(PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL).toString());
 
                 while (!nodesToVisit.isEmpty()) {
                     visitedNodes++;
                     currentNode = nodesToVisit.remove(0);
-                    nodesToVisit.addAll(currentNode.getChildren());
-                    currentApp = currentNode.getValue().getApplication();
 
                     // skip to the next one if this item isn't selected
                     if (!currentNode.getValue().isSelected()) {
                         continue;
                     }
+
+                    nodesToVisit.addAll(currentNode.getChildren());
+                    currentApp = currentNode.getValue().getApplication();
 
                     updateMessage(String.format(resourceBundle.getString(IN_PROGRESS_MESSAGE_KEY),
                             currentApp.getApplicationName()));
@@ -110,22 +120,21 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
                     if (shouldCreateApp) {
                         LOG.debug(String.format("Processing temp data for %s", currentApp.getApplicationName()));
 
-                        originalGamePath = Paths.get(pathConfiguration.gamesDirectory, currentApp.getApplicationId());
+                        currentAppId = currentApp.getApplicationId();
+                        originalGamePath = Paths.get(pathConfiguration.gamesDirectory, currentAppId);
 
                         // create the folder in .storage
-                        newAppDirectoryStorage = new File(Paths.get(storageDir,
-                                currentApp.getApplicationId()).toUri());
+                        newAppDirectoryStorage = new File(Paths.get(storageDir, currentAppId).toUri());
                         newAppDirectoryStorage.mkdirs();
                         // create the folder for this app in the parent folder's directory
                         newAppDirectoryTemp = new File(Paths.get(pathConfiguration.tempDirectory,
-                                currentNode.getParent().getValue().getApplication().getApplicationId(),
-                                currentApp.getApplicationId()).toUri());
+                                currentNode.getParent().getValue().getApplication().getApplicationId(), currentAppId).toUri());
                         newAppDirectoryTemp.mkdirs();
 
                         // create the desktop file for this app in the "real" folder
                         desktopFileContents = currentApp.getDesktopFile(syncPath);
                         desktopFileWriter = new BufferedWriter(new FileWriter(Paths.get(newAppDirectoryTemp.toString(),
-                                String.format("%s.desktop", currentApp.getApplicationId())).toString()));
+                                String.format("%s.desktop", currentAppId)).toString()));
                         desktopFileWriter.write(desktopFileContents);
                         desktopFileWriter.close();
 
@@ -133,33 +142,31 @@ public class CreateTempDataTask extends AbstractTaskCreator<Void> {
 
                         // symlink the actual contents of the app itself in the "storage" folder, minus the autoplay
                         // and pixelart folders
-                        if (!(currentApp instanceof Folder)) {
-                            symlinkContentsOfDirectory(originalGamePath, newAppDirectoryStorage.toPath());
-                        }
-
-                        // symlink the boxart into the "storage" folder
-                        final String boxartName = currentApp.getBoxArtPath();
-                        final String thumbnailName = boxartName.replace(".png", "_small.png");
-                        final String desiredBoxartName = String.format("%s.png", currentApp.getApplicationId());
-                        final String desiredThumbnailName = String.format("%s_small.png", currentApp.getApplicationId());
-                        final File sourceBoxart = Paths.get(pathConfiguration.boxartDirectory, boxartName)
-                                .toAbsolutePath().toFile();
-                        final File sourceThumbnail = Paths.get(pathConfiguration.boxartDirectory, thumbnailName)
-                                .toAbsolutePath().toFile();
+                        symlinkContentsOfDirectory(originalGamePath, newAppDirectoryStorage.toPath());
 
                         // if the boxart for the game isn't set or doesn't exist, just copy the warning image in its place
-                        Files.createSymbolicLink(
-                                Paths.get(newAppDirectoryStorage.toString(), desiredBoxartName).toAbsolutePath(),
-                                (!StringUtils.isBlank(boxartName) && sourceBoxart.exists()) ?
-                                        Paths.get(pathConfiguration.boxartDirectory, boxartName).toAbsolutePath() :
-                                        Paths.get(pathConfiguration.boxartDirectory, SharedConstants.WARNING_IMAGE).toAbsolutePath());
-                        Files.createSymbolicLink(
-                                Paths.get(newAppDirectoryStorage.toString(), desiredThumbnailName).toAbsolutePath(),
-                                (!StringUtils.isBlank(thumbnailName) && sourceThumbnail.exists()) ?
-                                        Paths.get(pathConfiguration.boxartDirectory, thumbnailName).toAbsolutePath() :
-                                        Paths.get(pathConfiguration.boxartDirectory, SharedConstants.WARNING_IMAGE_THUMBNAIL).toAbsolutePath());
+                        final String boxartName = currentApp.getBoxArtPath();
+                        final String thumbnailName = boxartName.replace(".png", "_small.png");
+                        final File sourceBoxart = Paths.get(pathConfiguration.gamesDirectory, currentAppId, boxartName)
+                                .toAbsolutePath().toFile();
+                        final File sourceThumbnail = Paths.get(pathConfiguration.gamesDirectory, currentAppId, thumbnailName)
+                                .toAbsolutePath().toFile();
+                        final boolean boxartExists = (!StringUtils.isBlank(boxartName) && sourceBoxart.exists());
+                        final boolean thumbnailExists = (!StringUtils.isBlank(thumbnailName) && sourceThumbnail.exists());
 
-                        LOG.debug(String.format("Symlinked the boxart for %s", currentApp.getApplicationName()));
+                        if (!boxartExists) {
+                            final String desiredBoxartName = String.format("%s.png", currentAppId);
+                            Files.createSymbolicLink(
+                                    Paths.get(newAppDirectoryStorage.toString(), desiredBoxartName).toAbsolutePath(),
+                                    Paths.get(warningResource.toURI()).toFile().toPath());
+                        }
+
+                        if (!thumbnailExists) {
+                            final String desiredThumbnailName = String.format("%s_small.png", currentAppId);
+                            Files.createSymbolicLink(
+                                    Paths.get(newAppDirectoryStorage.toString(), desiredThumbnailName).toAbsolutePath(),
+                                    Paths.get(warningThumbnailResource.toURI()).toFile().toPath());
+                        }
 
                         // if they exist in the original game, create a pixelart and autoplay
                         // folder in the temp folder for the game and symlink back to the originals

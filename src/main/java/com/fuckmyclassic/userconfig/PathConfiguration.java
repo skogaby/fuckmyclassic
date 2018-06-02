@@ -46,9 +46,6 @@ public class PathConfiguration {
     /** Directory where the untouched data for the original games is stored */
     public static final String ORIGINAL_GAMES_DIRECTORY = "original_games";
 
-    /** Directory where boxart is stored */
-    public static String BOXART_DIRECTORY = "boxart";
-
     /** Directory where resource images are stored. */
     public static final String IMAGES_DIRECTORY = "images";
 
@@ -73,9 +70,6 @@ public class PathConfiguration {
 
     /** Directory where the local games storage is */
     public final String gamesDirectory;
-
-    /** Directory where the local boxart storage is */
-    public final String boxartDirectory;
 
     /** The directory to use for temporary data */
     public final String tempDirectory;
@@ -105,7 +99,6 @@ public class PathConfiguration {
 
         // setup the portable/non-portable dependent paths
         this.gamesDirectory = Paths.get(this.externalDirectory, GAMES_DIRECTORY).toString();
-        this.boxartDirectory = Paths.get(this.externalDirectory, BOXART_DIRECTORY).toString();
         this.originalGamesDirectory = Paths.get(this.externalDirectory, ORIGINAL_GAMES_DIRECTORY).toString();
 
         final File tempFolderFlag = new File(Paths.get(programDirectory, TEMP_FOLDER_FLAG).toString());

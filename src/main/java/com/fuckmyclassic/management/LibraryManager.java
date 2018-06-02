@@ -185,7 +185,8 @@ public class LibraryManager {
                     if (!StringUtils.isEmpty(app.getBoxArtPath())) {
                         try {
                             mainWindow.imgBoxArtPreview.setImage(new Image(
-                                    Paths.get(pathConfiguration.boxartDirectory, app.getBoxArtPath()).toUri().toURL().toExternalForm()));
+                                    Paths.get(pathConfiguration.gamesDirectory, app.getApplicationId(),
+                                            app.getBoxArtPath()).toUri().toURL().toExternalForm()));
                         } catch (MalformedURLException e) {
                             LOG.error(e);
                         }
@@ -231,20 +232,22 @@ public class LibraryManager {
             BufferedImage inputImage = ImageIO.read(boxArt);
             BufferedImage resizedImage = this.imageResizer.resizeProportionally(inputImage,
                     SharedConstants.BOXART_SIZE, SharedConstants.BOXART_SIZE);
-            File outputFile = new File(Paths.get(this.pathConfiguration.boxartDirectory, newBoxartFile).toUri());
+            File outputFile = new File(Paths.get(this.pathConfiguration.gamesDirectory, this.currentApp.getApplicationId(),
+                    newBoxartFile).toUri());
             ImageIO.write(resizedImage, "png", outputFile);
 
             // now, do the thumbnail
             resizedImage = this.imageResizer.resizeProportionally(inputImage,
                     SharedConstants.THUMBNAIL_SIZE, SharedConstants.THUMBNAIL_SIZE);
-            outputFile = new File(Paths.get(this.pathConfiguration.boxartDirectory, newThumbnailFile).toUri());
+            outputFile = new File(Paths.get(this.pathConfiguration.gamesDirectory, this.currentApp.getApplicationId(), newThumbnailFile).toUri());
             ImageIO.write(resizedImage, "png", outputFile);
 
             // also update the Application itself
             this.currentApp.setBoxArtPath(newBoxartFile);
             this.applicationDAO.update(currentApp);
 
-            return new Image(Paths.get(this.pathConfiguration.boxartDirectory, newBoxartFile).toUri().toURL().toExternalForm());
+            return new Image(Paths.get(this.pathConfiguration.gamesDirectory, this.currentApp.getApplicationId(),
+                    newBoxartFile).toUri().toURL().toExternalForm());
         } else {
             return null;
         }

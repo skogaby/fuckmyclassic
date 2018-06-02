@@ -99,30 +99,14 @@ public class Main extends Application {
      * Create the directories we need for runtime such as boxart, games, etc.
      * and also pre-populate any static content we need.
      */
-    public static void setupRuntimeDirectories() throws URISyntaxException, IOException {
+    public static void setupRuntimeDirectories() {
         // create the directories
         final PathConfiguration pathConfiguration = applicationContext.getBean(PathConfiguration.class);
         new File(pathConfiguration.gamesDirectory).mkdirs();
-        new File(pathConfiguration.boxartDirectory).mkdirs();
 
         for (ConsoleType consoleType : ConsoleType.values()) {
             new File(Paths.get(pathConfiguration.originalGamesDirectory, consoleType.getConsoleCode()).toString()).mkdirs();
         }
-
-        // prepopulate static assets
-        URL warningResource = ClassLoader.getSystemResource(
-                Paths.get(PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString());
-        Files.copy(
-                Paths.get(warningResource.toURI()).toFile().toPath(),
-                Paths.get(pathConfiguration.boxartDirectory, SharedConstants.WARNING_IMAGE),
-                StandardCopyOption.REPLACE_EXISTING);
-
-        warningResource = ClassLoader.getSystemResource(
-                Paths.get(PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE_THUMBNAIL).toString());
-        Files.copy(
-                Paths.get(warningResource.toURI()).toFile().toPath(),
-                Paths.get(pathConfiguration.boxartDirectory, SharedConstants.WARNING_IMAGE_THUMBNAIL),
-                StandardCopyOption.REPLACE_EXISTING);
     }
 
     public static void main(String[] args) {
