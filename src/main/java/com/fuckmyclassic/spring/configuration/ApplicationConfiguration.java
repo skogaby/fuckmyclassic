@@ -48,11 +48,12 @@ public class ApplicationConfiguration {
 
     @Bean
     public LibraryManagementWindow libraryManagementWindow(UserConfiguration userConfiguration,
+                                                           PathConfiguration pathConfiguration,
                                                            ConsoleDAO consoleDAO,
                                                            LibraryDAO libraryDAO,
                                                            ApplicationDAO applicationDAO,
                                                            LibraryItemDAO libraryItemDAO) {
-        return new LibraryManagementWindow(userConfiguration, consoleDAO, libraryDAO, applicationDAO, libraryItemDAO);
+        return new LibraryManagementWindow(userConfiguration, pathConfiguration, consoleDAO, libraryDAO, applicationDAO, libraryItemDAO);
     }
 
     @Bean

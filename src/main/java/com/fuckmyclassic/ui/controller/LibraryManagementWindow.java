@@ -10,6 +10,7 @@ import com.fuckmyclassic.model.Library;
 import com.fuckmyclassic.model.LibraryItem;
 import com.fuckmyclassic.shared.SharedConstants;
 import com.fuckmyclassic.ui.util.BindingHelper;
+import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
 import javafx.beans.property.ReadOnlyProperty;
 import javafx.collections.FXCollections;
@@ -25,12 +26,15 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -59,6 +63,8 @@ public class LibraryManagementWindow {
 
     /** The configuration object for user options and session settings */
     private final UserConfiguration userConfiguration;
+    /** Configuration for runtime paths */
+    private final PathConfiguration pathConfiguration;
     /** DAO for accessing known consoles */
     private final ConsoleDAO consoleDAO;
     /** DAO for library metadata */
@@ -79,6 +85,8 @@ public class LibraryManagementWindow {
     private final Set<Library> removedLibraries;
     /** The set of LibraryItems that are newly deleted */
     private final Set<LibraryItem> removedLibraryItems;
+    /** The set of Applications that are newly deleted */
+    private final Set<Application> removedApplications;
     /** The selected console for this window */
     private Console selectedConsole;
     /** The currently selected library for this window */
@@ -92,11 +100,13 @@ public class LibraryManagementWindow {
 
     @Autowired
     public LibraryManagementWindow(final UserConfiguration userConfiguration,
+                                   final PathConfiguration pathConfiguration,
                                    final ConsoleDAO consoleDAO,
                                    final LibraryDAO libraryDAO,
                                    final ApplicationDAO applicationDAO,
                                    final LibraryItemDAO libraryItemDAO) {
         this.userConfiguration = userConfiguration;
+        this.pathConfiguration = pathConfiguration;
         this.consoleDAO = consoleDAO;
         this.libraryDAO = libraryDAO;
         this.applicationDAO = applicationDAO;
@@ -107,6 +117,7 @@ public class LibraryManagementWindow {
         this.newLibraryItems = new HashSet<>();
         this.removedLibraries = new HashSet<>();
         this.removedLibraryItems = new HashSet<>();
+        this.removedApplications = new HashSet<>();
     }
 
     @FXML
@@ -119,6 +130,7 @@ public class LibraryManagementWindow {
         this.newLibraryItems.clear();
         this.removedLibraries.clear();
         this.removedLibraryItems.clear();
+        this.removedApplications.clear();
         this.cmbCurrentConsole.setItems(null);
         this.lstLibraries.setItems(null);
         this.shouldSave = false;
@@ -242,9 +254,15 @@ public class LibraryManagementWindow {
     /**
      * Saves all the edited entities and clears the set.
      */
-    private void saveEditedEntities() {
+    private void saveEditedEntities() throws IOException {
         this.libraryDAO.update(this.editedLibraries.toArray(new Library[this.editedLibraries.size()]));
         this.consoleDAO.update(this.editedConsoles.toArray(new Console[this.editedConsoles.size()]));
+
+        // also delete the application data for any applications that were deleted
+        for (Application app : this.removedApplications) {
+            FileUtils.deleteDirectory(
+                    Paths.get(this.pathConfiguration.gamesDirectory, app.getApplicationId()).toFile());
+        }
 
         this.editedConsoles.clear();
         this.editedLibraries.clear();
@@ -252,6 +270,7 @@ public class LibraryManagementWindow {
         this.newLibraryItems.clear();
         this.removedLibraryItems.clear();
         this.removedLibraries.clear();
+        this.removedApplications.clear();
     }
 
     /**
@@ -294,7 +313,7 @@ public class LibraryManagementWindow {
         final Library libraryToDelete = new Library(this.selectedLibrary);
         this.removedLibraries.add(libraryToDelete);
 
-        // make sure we didn't delete the selected console
+        // make sure we didn't delete the selected library in the main window
         if (this.selectedLibrary.getId() == this.userConfiguration.getSelectedLibraryID()) {
             final Console c = this.displayedConsoles.get(0);
             this.userConfiguration.setSelectedConsole(c);
@@ -313,13 +332,38 @@ public class LibraryManagementWindow {
         // and need to re-insert the records to the database, they have to have new IDs.
         // so we'll construct new objects and let Hibernate do its thing
         final List<LibraryItem> libraryItems = this.libraryItemDAO.getLibraryItemsForLibrary(this.selectedLibrary, false);
-        this.removedLibraryItems.addAll(libraryItems.stream()
-                .map(item -> new LibraryItem(libraryToDelete, item.getApplication(), item.getFolder(),
-                        item.isSelected(), item.getNumNodes(), item.getTreeFilesize()))
-                .collect(Collectors.toList()));
-        this.libraryItemDAO.delete(libraryItems.toArray(new LibraryItem[libraryItems.size()]));
+        final List<LibraryItem> libraryItemsToDelete = new ArrayList<>();
+
+        // need to do a sanity check on the deleted library items; for each library item
+        // that is deleted, we need to make sure no duplicates of it exist (same application, different
+        // library item). if there are no duplicates at the time of deletion, then also remove
+        // the Application from the database and delete the actual game data
+        for (LibraryItem item : libraryItems) {
+            // don't do any removal of data for the home folder
+            if (item.getApplication().getApplicationId().equals(SharedConstants.HOME_FOLDER_ID)) {
+                libraryItemsToDelete.add(new LibraryItem(libraryToDelete, item.getApplication(), item.getFolder(),
+                        item.isSelected(), item.getNumNodes(), item.getTreeFilesize()));
+                continue;
+            }
+
+            boolean isDuplicate = this.libraryItemDAO.getLibraryItemsForApplication(item.getApplication()).size() > 1;
+
+            if (!isDuplicate) {
+                final Application appToDelete = new Application(item.getApplication());
+                libraryItemsToDelete.add(new LibraryItem(libraryToDelete, appToDelete, item.getFolder(),
+                        item.isSelected(), item.getNumNodes(), item.getTreeFilesize()));
+                this.removedApplications.add(appToDelete);
+                this.applicationDAO.delete(item.getApplication());
+            } else {
+                libraryItemsToDelete.add(new LibraryItem(libraryToDelete, item.getApplication(), item.getFolder(),
+                        item.isSelected(), item.getNumNodes(), item.getTreeFilesize()));
+            }
+        }
+
+        this.removedLibraryItems.addAll(libraryItemsToDelete);
 
         // remove the library from the database
+        this.libraryItemDAO.delete(libraryItems.toArray(new LibraryItem[libraryItems.size()]));
         this.libraryDAO.delete(this.selectedLibrary);
 
         // remove the library from the collections
@@ -330,6 +374,7 @@ public class LibraryManagementWindow {
         // refresh the list and select the first item
         this.lstLibraries.refresh();
         this.lstLibraries.getSelectionModel().selectFirst();
+
     }
 
     /**
@@ -367,7 +412,7 @@ public class LibraryManagementWindow {
      * OnClick handler for the Apply button.
      */
     @FXML
-    private void onApplyClick() {
+    private void onApplyClick() throws IOException {
         this.shouldSave = true;
         this.saveEditedEntities();
     }
@@ -376,7 +421,7 @@ public class LibraryManagementWindow {
      * OnClick handler for the OK button.
      */
     @FXML
-    private void onOKClick() {
+    private void onOKClick() throws IOException {
         this.shouldSave = true;
         this.saveEditedEntities();
         this.closeWindow();
@@ -402,6 +447,7 @@ public class LibraryManagementWindow {
         if (!this.shouldSave) {
             this.libraryItemDAO.delete(this.newLibraryItems.toArray(new LibraryItem[this.newLibraryItems.size()]));
             this.libraryDAO.delete(this.newLibraries.toArray(new Library[this.newLibraries.size()]));
+            this.applicationDAO.create(this.removedApplications.toArray(new Application[this.removedApplications.size()]));
             this.libraryDAO.create(this.removedLibraries.toArray(new Library[this.removedLibraries.size()]));
             this.libraryItemDAO.create(this.removedLibraryItems.toArray(new LibraryItem[this.removedLibraryItems.size()]));
         }

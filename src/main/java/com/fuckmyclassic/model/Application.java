@@ -84,6 +84,28 @@ public class Application implements Externalizable {
         this.applicationSizeString = new SimpleStringProperty(null);
     }
 
+    public Application(final Application other) {
+        this.id = new SimpleLongProperty(this, "id");
+        this.commandLine = other.commandLine;
+        this.savePath = other.savePath;
+        this.applicationName = other.applicationName;
+        this.boxArtPath = other.boxArtPath;
+        this.applicationId = other.applicationId;
+        this.testId = other.testId;
+        this.canoeId = other.canoeId;
+        this.singlePlayer = other.singlePlayer;
+        this.nonSimultaneousMultiplayer = other.nonSimultaneousMultiplayer;
+        this.simultaneousMultiplayer = other.simultaneousMultiplayer;
+        this.releaseDate = other.releaseDate;
+        this.saveCount = other.saveCount;
+        this.sortName = other.sortName;
+        this.publisher = other.publisher;
+        this.copyright = other.copyright;
+        this.applicationSize = other.applicationSize;
+        this.compressed = other.compressed;
+        this.applicationSizeString = other.applicationSizeString;
+    }
+
     public Application(final String applicationId, final String applicationName, final String commandLine,
                        final String boxArtPath, final String savePath, final int testId, final int canoeId,
                        final int numPlayers, final boolean hasSimultaneousMultiplayer, final LocalDate releaseDate,
