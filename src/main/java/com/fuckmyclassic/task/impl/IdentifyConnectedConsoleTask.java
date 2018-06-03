@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -124,6 +125,15 @@ public class IdentifyConnectedConsoleTask extends AbstractTaskCreator<String> {
 
                     if (defaultConsole != null) {
                         consoleDAO.delete(defaultConsole);
+                    }
+
+                    // if another console previously held our new address, invalidate it
+                    final List<Console> otherIpConsole = consoleDAO.getConsolesForLastKnownAddress(dstAddress);
+                    for (Console other : otherIpConsole) {
+                        if (other.getId() != console.getId()) {
+                            other.setLastKnownAddress(String.format("%s (OLD)", other.getLastKnownAddress()));
+                            consoleDAO.update(other);
+                        }
                     }
 
                     updateMessage(resourceBundle.getString(COMPLETE_MESSAGE_KEY));

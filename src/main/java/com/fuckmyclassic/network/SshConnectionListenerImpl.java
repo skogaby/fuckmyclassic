@@ -86,7 +86,7 @@ public class SshConnectionListenerImpl implements SshConnectionListener {
 
         // remove the connected console from the UserConfiguration's collection
         // of connected consoles, as well as the NetworkManager's collection
-        final Console console = this.consoleDAO.getConsoleForLastKnownAddress(address);
+        final Console console = this.consoleDAO.getFirstConsoleForLastKnownAddress(address);
 
         if (console != null) {
             this.userConfiguration.removeConnectedConsole(console);

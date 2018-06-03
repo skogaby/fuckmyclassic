@@ -112,7 +112,7 @@ public class ConsoleDAO extends AbstractHibernateDAO<Console> {
      * @param lastKnownAddress The last known IP address of the console
      * @return The requested Console, or null if it doesn't exist
      */
-    public Console getConsoleForLastKnownAddress(String lastKnownAddress) {
+    public Console getFirstConsoleForLastKnownAddress(String lastKnownAddress) {
         this.openCurrentSession();
 
         final Query<Console> query = this.currentSession.createQuery("from Console where last_known_address = :address");
@@ -127,5 +127,22 @@ public class ConsoleDAO extends AbstractHibernateDAO<Console> {
         }
 
         return console;
+    }
+
+    /**
+     * Fetch consoles from the database based on last known IP address,
+     * or null if no such console exists.
+     * @param lastKnownAddress The last known IP address of the console
+     * @return The requested Console, or null if it doesn't exist
+     */
+    public List<Console> getConsolesForLastKnownAddress(String lastKnownAddress) {
+        this.openCurrentSession();
+
+        final Query<Console> query = this.currentSession.createQuery("from Console where last_known_address = :address");
+        query.setParameter("address", lastKnownAddress);
+        final List<Console> results = query.getResultList();
+        this.closeCurrentSession();
+
+        return results;
     }
 }
