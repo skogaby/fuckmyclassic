@@ -15,6 +15,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.cell.CheckBoxTreeCell;
@@ -46,6 +47,7 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
     private static final String APP_DELETE_KEY = "MainWindow.appDelete";
     private static final String CONFIRMATION_HEADER_KEY = "Confirmation.Header";
     private static final String REMOVE_CONFIRMATION_KEY = "MainWindow.removefromLibraryConfirmation";
+    private static final String DELETE_CONFIRMATION_KEY = "MainWindow.deleteConfirmation";
 
     /** The path to the stylesheet for this cell */
     private static final String STYLESHEET_PATH = "css/MainWindow.css";
@@ -91,6 +93,7 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
         final MenuItem removeFromLibraryMenuItem = new MenuItem(this.resourceBundle.getString(APP_DELETE_FROM_LIBRARY_KEY));
         final MenuItem deleteAppMenuItem = new MenuItem(this.resourceBundle.getString(APP_DELETE_KEY));
         appMenuItems.add(openFolderMenuItem);
+        appMenuItems.add(new SeparatorMenuItem());
         appMenuItems.add(removeFromLibraryMenuItem);
         appMenuItems.add(deleteAppMenuItem);
 
@@ -105,6 +108,14 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
         removeFromLibraryMenuItem.setOnAction(event -> {
             try {
                 onRemoveFromLibraryMenuItemClicked();
+            } catch (IOException e) {
+                LOG.error(e);
+            }
+        });
+
+        deleteAppMenuItem.setOnAction(event -> {
+            try {
+                deleteAppMenuItem();
             } catch (IOException e) {
                 LOG.error(e);
             }
@@ -247,7 +258,8 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
     }
 
     /**
-     * Removes the selected item from the current library
+     * Removes the selected item from the current library and deletes the application
+     * directory if no other LibraryItems reference the same application.
      */
     private void onRemoveFromLibraryMenuItemClicked() throws IOException {
         final Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -280,6 +292,37 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
                 // delete the application
                 this.applicationDAO.delete(application);
             }
+        }
+    }
+
+    /**
+     * Removes the selected item from all libraries and deletes the application data.
+     * @throws IOException
+     */
+    private void deleteAppMenuItem() throws IOException {
+        final Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(null);
+        alert.setHeaderText(this.resourceBundle.getString(CONFIRMATION_HEADER_KEY));
+        alert.setContentText(this.resourceBundle.getString(DELETE_CONFIRMATION_KEY));
+
+        final Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.get() == ButtonType.OK) {
+            final TreeItem<LibraryItem> treeItem = getTreeItem();
+            final LibraryItem libraryItem = getItem();
+            final Application application = libraryItem.getApplication();
+            final List<LibraryItem> libraryItemList = this.libraryItemDAO.getLibraryItemsForApplication(application);
+
+            // delete the library items and remove it from the view
+            getTreeItem().getParent().getChildren().removeAll(treeItem);
+            libraryItemDAO.delete(libraryItemList.toArray(new LibraryItem[libraryItemList.size()]));
+
+            // remove the game data
+            FileUtils.deleteDirectory(
+                    Paths.get(pathConfiguration.gamesDirectory, application.getApplicationId()).toFile());
+
+            // delete the application
+            this.applicationDAO.delete(application);
         }
     }
 }
