@@ -9,6 +9,8 @@ import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.util.CheckBoxTreeItemUtils;
 import com.fuckmyclassic.userconfig.PathConfiguration;
 import com.fuckmyclassic.userconfig.UserConfiguration;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBoxTreeItem;
 import javafx.scene.control.TreeItem;
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +22,7 @@ import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -153,6 +156,7 @@ public class AppImporter {
                 this.uiPropertyContainer, this.userConfiguration);
 
         importFolder.getChildren().add(newItem);
+        FXCollections.sort(importFolder.getChildren(), Comparator.comparing(TreeItem::getValue));
 
         // update the parent file tree sizes
         TreeItem<LibraryItem> parent = newItem;

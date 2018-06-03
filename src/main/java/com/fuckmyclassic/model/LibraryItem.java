@@ -23,8 +23,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Objects;
 
-import static com.fuckmyclassic.shared.SharedConstants.SIZE_DICT;
-
 /**
  * Class to represent an item in a library. Each item belongs to
  * a particular library, has an application, and has a parent folder.
@@ -32,7 +30,7 @@ import static com.fuckmyclassic.shared.SharedConstants.SIZE_DICT;
  */
 @Entity
 @Table(name = "library_items")
-public class LibraryItem implements Externalizable {
+public class LibraryItem implements Externalizable, Comparable<LibraryItem> {
 
     private static final long serialVersionUID = 1L;
 
@@ -205,5 +203,21 @@ public class LibraryItem implements Externalizable {
     @Override
     public int hashCode() {
         return Objects.hash(id, library);
+    }
+
+    @Override
+    public int compareTo(LibraryItem o) {
+        final boolean isSelfFolder = (this.application != null &&
+                this.application instanceof Folder);
+        final boolean isOtherFolder = (o.application != null &&
+                o.application instanceof Folder);
+
+        if (isSelfFolder && !isOtherFolder) {
+            return 1;
+        } else if (!isSelfFolder && isOtherFolder) {
+            return -1;
+        } else {
+            return this.application.getApplicationName().compareTo(o.application.getApplicationName());
+        }
     }
 }

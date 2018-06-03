@@ -122,6 +122,7 @@ public class LibraryItemDAO extends AbstractHibernateDAO<LibraryItem> {
         query.setParameter("folder", parentFolder.getValue().getApplication());
 
         final List<TreeItem<LibraryItem>> itemResults = query.getResultStream()
+                .sorted()
                 .map(r -> {
                     final TreeItem<LibraryItem> item;
 

@@ -239,7 +239,8 @@ public class ApplicationTreeCell extends CheckBoxTreeCell<LibraryItem> {
         final Group cellGroup = (Group) getStyleableParent();
 
         for (Node node : cellGroup.getChildren()) {
-            if (((TreeCell<LibraryItem>) node).getTreeItem().getValue().equals(parentFolder)) {
+            if (((TreeCell<LibraryItem>) node).getTreeItem() != null &&
+                    ((TreeCell<LibraryItem>) node).getTreeItem().getValue().equals(parentFolder)) {
                 return (TreeCell<LibraryItem>) node;
             }
         }
