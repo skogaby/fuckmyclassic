@@ -143,7 +143,7 @@ public class LibraryManager {
                     final Application oldApp = oldValue == null ? null : oldValue.getValue().getApplication();
                     this.currentApp = app;
 
-                    Property oldGameSizeProperty = (oldApp == null) ? null :
+                    final Property oldGameSizeProperty = (oldApp == null) ? null :
                                 ((oldApp instanceof Folder) ? oldValue.getValue().treeFilesizeStringProperty() :
                                         oldValue.getValue().getApplication().applicationSizeStringProperty());
 

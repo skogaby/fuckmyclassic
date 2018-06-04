@@ -1,9 +1,7 @@
 package com.fuckmyclassic.task.impl;
 
 import com.fuckmyclassic.model.Console;
-import com.fuckmyclassic.model.DefaultGame;
-import com.fuckmyclassic.model.OriginalGameCodes;
-import com.fuckmyclassic.network.NetworkConstants;
+import com.fuckmyclassic.model.OriginalGameLists;
 import com.fuckmyclassic.network.NetworkManager;
 import com.fuckmyclassic.task.AbstractTaskCreator;
 import com.fuckmyclassic.ui.controller.RsyncRunnerDialog;
@@ -68,7 +66,7 @@ public class DumpOriginalGamesTask extends AbstractTaskCreator<Void> {
                 // for the running console type
                 final Console selectedConsole = userConfiguration.getSelectedConsole();
                 final Path dstDir = Paths.get(pathConfiguration.originalGamesDirectory, selectedConsole.getConsoleType().getConsoleCode());
-                final DefaultGame[] defaultGames = OriginalGameCodes.getGamesForConsoleType(selectedConsole.getConsoleType());
+                final String[] defaultGames = OriginalGameLists.getGamesForConsoleType(selectedConsole.getConsoleType());
                 final int numLocalDirs = FileUtils.numFilesInDirectory(dstDir);
 
                 // only run rsync if the count of folders in the cache is different than the canonical count

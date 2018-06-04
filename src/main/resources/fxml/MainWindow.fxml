@@ -11,6 +11,7 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TitledPane?>
@@ -34,7 +35,10 @@
         <menus>
           <Menu mnemonicParsing="false" text="%MainWindow.mnuFile">
             <items>
-              <MenuItem mnemonicParsing="false" text="%MainWindow.mnuClose" />
+                  <MenuItem mnemonicParsing="false" text="%MainWindow.mnuAddOriginalGames" />
+                  <MenuItem mnemonicParsing="false" text="%MainWindow.mnuRevertOriginalGames" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+              <MenuItem fx:id="mnuClose" mnemonicParsing="false" text="%MainWindow.mnuClose" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="%MainWindow.mnuKernel">
