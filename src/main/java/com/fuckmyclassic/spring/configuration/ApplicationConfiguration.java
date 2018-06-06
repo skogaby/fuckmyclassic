@@ -66,8 +66,9 @@ public class ApplicationConfiguration {
         return new SequentialTaskRunnerDialog();
     }
 
-    @Bean RsyncRunnerDialog rsyncRunnerDialog(RsyncDataTask rsyncDataTask, ResourceBundle resourceBundle) {
-        return new RsyncRunnerDialog(rsyncDataTask, resourceBundle);
+    @Bean
+    public RsyncRunnerDialog rsyncRunnerDialog(RsyncDataTask rsyncDataTask, ResourceBundle resourceBundle, UserConfiguration userConfiguration) {
+        return new RsyncRunnerDialog(rsyncDataTask, resourceBundle, userConfiguration);
     }
 
     @Bean

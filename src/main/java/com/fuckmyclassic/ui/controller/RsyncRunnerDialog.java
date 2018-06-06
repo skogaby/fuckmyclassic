@@ -44,16 +44,23 @@ public class RsyncRunnerDialog {
     private final RsyncDataTask rsyncDataTask;
     /** The ResourceBundle for Task related strings */
     private final ResourceBundle resourceBundle;
-    /** The source path to sync from */
-    private String source;
+    /** User configuration, so we can get console IPs, etc. */
+    private final UserConfiguration userConfiguration;
+    /** The local path to pass to rsync */
+    private String localPath;
     /** The destination path to sync to */
-    private String destination;
+    private String remotePath;
+    /** Whether we're uploading to the console or downloading from the console */
+    private boolean upload;
 
     @Autowired
     public RsyncRunnerDialog(final RsyncDataTask rsyncDataTask,
-                             final ResourceBundle resourceBundle) {
+                             final ResourceBundle resourceBundle,
+                             final UserConfiguration userConfiguration) {
         this.rsyncDataTask = rsyncDataTask;
         this.resourceBundle = resourceBundle;
+        this.userConfiguration = userConfiguration;
+        this.upload = false;
     }
 
     /**
@@ -62,6 +69,9 @@ public class RsyncRunnerDialog {
      */
     @FXML
     public void initialize() {
+        final String source = upload ? this.localPath : this.remotePath;
+        final String destination = upload ? this.remotePath : this.localPath;
+
         this.lblMainMessage.setText(String.format(resourceBundle.getString(IN_PROGRESS_MESSAGE_KEY),
                 source, destination));
 
@@ -127,30 +137,34 @@ public class RsyncRunnerDialog {
     /**
      * Takes the given remote
      * @param remotePath
-     * @param userConfiguration
      * @return
      */
-    public String getConnectionPath(final String remotePath,
-                                    final UserConfiguration userConfiguration) {
-        return String.format("rsync://%s@%s/%s%s", RSYNC_USER_NAME, userConfiguration.getSelectedConsole().getLastKnownAddress(),
+    private String getConnectionPath(final String remotePath) {
+        return String.format("rsync://%s@%s/%s%s", RSYNC_USER_NAME, this.userConfiguration.getSelectedConsole().getLastKnownAddress(),
                 RSYNC_MODULE_NAME, remotePath);
     }
 
-    public String getSource() {
-        return source;
+    public String getLocalPath() {
+        return localPath;
     }
 
-    public RsyncRunnerDialog setSource(String source) {
-        this.source = source;
-        return this;
+    public void setLocalPath(String localPath) {
+        this.localPath = localPath;
     }
 
-    public String getDestination() {
-        return destination;
+    public String getRemotePath() {
+        return remotePath;
     }
 
-    public RsyncRunnerDialog setDestination(String destination) {
-        this.destination = destination;
-        return this;
+    public void setRemotePath(String remotePath) {
+        this.remotePath = getConnectionPath(remotePath);
+    }
+
+    public boolean isUpload() {
+        return upload;
+    }
+
+    public void setUpload(boolean upload) {
+        this.upload = upload;
     }
 }

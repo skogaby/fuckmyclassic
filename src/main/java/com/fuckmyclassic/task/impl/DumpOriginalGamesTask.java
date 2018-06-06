@@ -74,8 +74,9 @@ public class DumpOriginalGamesTask extends AbstractTaskCreator<Void> {
                     final String remoteGamesPath = networkManager.runCommand("hakchi eval 'echo \"$squashfs$gamepath\"'");
 
                     PlatformUtils.runAndWait(() -> {
-                        rsyncRunnerDialog.setSource(rsyncRunnerDialog.getConnectionPath(remoteGamesPath + "/", userConfiguration));
-                        rsyncRunnerDialog.setDestination(dstDir.toString());
+                        rsyncRunnerDialog.setRemotePath(remoteGamesPath + "/");
+                        rsyncRunnerDialog.setLocalPath(dstDir.toString());
+                        rsyncRunnerDialog.setUpload(false);
 
                         try {
                             rsyncRunnerDialog.showDialog();
