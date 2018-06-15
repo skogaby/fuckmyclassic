@@ -24,12 +24,15 @@ public class OriginalGame extends Application implements Serializable {
     private boolean boxartModified;
     /** Says whether or not this is a NES game -- if it is, we have a different squashfs path to point to */
     private boolean nesGame;
+    /** The console type for the original game */
+    private String consoleType;
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeBoolean(boxartModified);
         out.writeBoolean(nesGame);
+        out.writeUTF(consoleType);
     }
 
     @Override
@@ -37,6 +40,7 @@ public class OriginalGame extends Application implements Serializable {
         super.readExternal(in);
         setBoxartModified(in.readBoolean());
         setNesGame(in.readBoolean());
+        setConsoleType(in.readUTF());
     }
 
     /**
@@ -106,6 +110,16 @@ public class OriginalGame extends Application implements Serializable {
 
     public OriginalGame setNesGame(boolean nesGame) {
         this.nesGame = nesGame;
+        return this;
+    }
+
+    @Column(name = "console_type")
+    public String getConsoleType() {
+        return consoleType;
+    }
+
+    public OriginalGame setConsoleType(String consoleType) {
+        this.consoleType = consoleType;
         return this;
     }
 

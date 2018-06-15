@@ -26,10 +26,12 @@ import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.io.Externalizable;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Class to represent a game or app that runs on the NES/SNES Mini.
@@ -216,6 +218,79 @@ public class Application implements Externalizable {
         sb.append("MyPlayDemoTime=45\n"); // TODO: handle correctly
 
         return sb.toString();
+    }
+
+    public Application(final String desktopFile) {
+        this.id = new SimpleLongProperty(this, "id");
+
+        // parse the contents of the .desktop file
+        for (String line : desktopFile.split("\n")) {
+            final int pos = line.indexOf('=');
+
+            if (pos <= 0) {
+                continue;
+            }
+
+            final String lhs = line.substring(0, pos).trim().toLowerCase();
+            final String rhs = line.substring(pos).trim();
+
+            switch (lhs) {
+                case "exec":
+                    // we need to replace the original executable path with /var/games
+                    final String[] tokens = com.fuckmyclassic.util.StringUtils.tokenizeString(rhs);
+
+                    for (String token : tokens) {
+                        if (token.contains("CLV-")) {
+                            int gameCodeIndex = token.indexOf("CLV-");
+
+                            // get the new exec line
+                            final String pathToReplace = token.substring((token.startsWith("\"") || (token.startsWith("'"))) ? 1 : 0,
+                                    (token.charAt(gameCodeIndex - 1) == '\'' || token.charAt(gameCodeIndex - 1) == '"') ? gameCodeIndex - 1 : gameCodeIndex);
+                            final String newExecLine = rhs.replace(pathToReplace, PathConfiguration.CONSOLE_GAMES_DIR);
+
+                            this.commandLine = new SimpleStringProperty(newExecLine);
+                            break;
+                        }
+                    }
+
+                    break;
+                case "name":
+                    this.applicationName = new SimpleStringProperty(rhs);
+                    break;
+                case "icon":
+                    this.boxArtPath = new SimpleStringProperty(new File(rhs).getName());
+                    break;
+                case "code":
+                    this.applicationId = new SimpleStringProperty(rhs);
+                    break;
+                case "testid":
+                    this.testId = new SimpleIntegerProperty(Integer.parseInt(rhs));
+                    break;
+                case "id":
+                    this.canoeId = new SimpleIntegerProperty(Integer.parseInt(rhs));
+                    break;
+                case "players":
+                    this.singlePlayer = new SimpleBooleanProperty(Integer.parseInt(rhs) == 1);
+                    break;
+                case "simultaneous":
+                    this.simultaneousMultiplayer = new SimpleBooleanProperty(Integer.parseInt(rhs) == 1);
+                    break;
+                case "releasedate":
+                    this.releaseDate = new SimpleObjectProperty<>(LocalDate.parse(rhs));
+                    break;
+                case "savecount":
+                    this.saveCount = new SimpleIntegerProperty(Integer.parseInt(rhs));
+                    break;
+                case "sortrawtitle":
+                    this.sortName = new SimpleStringProperty(rhs);
+                    break;
+                case "sortrawpublisher":
+                    this.publisher = new SimpleStringProperty(rhs);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     public String toString() {

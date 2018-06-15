@@ -5,6 +5,7 @@ import com.fuckmyclassic.hibernate.dao.impl.LibraryItemDAO;
 import com.fuckmyclassic.model.Console;
 import com.fuckmyclassic.model.Folder;
 import com.fuckmyclassic.model.LibraryItem;
+import com.fuckmyclassic.model.OriginalGame;
 import com.fuckmyclassic.ui.component.UiPropertyContainer;
 import com.fuckmyclassic.ui.controller.MainWindow;
 import com.fuckmyclassic.model.Application;
@@ -176,17 +177,24 @@ public class LibraryManager {
                     mainWindow.radTwoPlayerSim.setSelected(app.isSimultaneousMultiplayer());
 
                     // set the box art if there is any
-                    if (!StringUtils.isEmpty(app.getBoxArtPath())) {
-                        try {
+                    try {
+                        if (app instanceof OriginalGame &&
+                                !((OriginalGame) app).isBoxartModified()) {
                             mainWindow.imgBoxArtPreview.setImage(new Image(
-                                    Paths.get(pathConfiguration.gamesDirectory, app.getApplicationId(),
-                                            app.getBoxArtPath()).toUri().toURL().toExternalForm()));
-                        } catch (MalformedURLException e) {
-                            LOG.error(e);
+                                    Paths.get(pathConfiguration.originalGamesDirectory, ((OriginalGame) app).getConsoleType(),
+                                            app.getApplicationId(), app.getBoxArtPath()).toUri().toURL().toExternalForm()));
+                        } else {
+                            if (!StringUtils.isEmpty(app.getBoxArtPath())) {
+                                mainWindow.imgBoxArtPreview.setImage(new Image(
+                                        Paths.get(pathConfiguration.gamesDirectory, app.getApplicationId(),
+                                                app.getBoxArtPath()).toUri().toURL().toExternalForm()));
+                            } else {
+                                mainWindow.imgBoxArtPreview.setImage(new Image(Paths.get(
+                                        PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString()));
+                            }
                         }
-                    } else {
-                        mainWindow.imgBoxArtPreview.setImage(new Image(Paths.get(
-                                PathConfiguration.IMAGES_DIRECTORY, SharedConstants.WARNING_IMAGE).toString()));
+                    } catch (MalformedURLException e) {
+                        LOG.error(e);
                     }
 
                     // persist the item to the database and refresh the application view
@@ -237,6 +245,10 @@ public class LibraryManager {
             ImageIO.write(resizedImage, "png", outputFile);
 
             // also update the Application itself
+            if (this.currentApp instanceof OriginalGame) {
+                ((OriginalGame) this.currentApp).setBoxartModified(true);
+            }
+
             this.currentApp.setBoxArtPath(newBoxartFile);
             this.applicationDAO.update(currentApp);
 

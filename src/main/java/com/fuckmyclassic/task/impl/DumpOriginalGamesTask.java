@@ -85,6 +85,8 @@ public class DumpOriginalGamesTask extends AbstractTaskCreator<Void> {
                             e.printStackTrace();
                         }
                     });
+
+                    // once we've synced the games, make sure they exist in the database
                 }
 
                 LOG.info("Local original games cache is in sync");
