@@ -55,6 +55,12 @@ public class PathConfiguration {
     /** Name of the flag file to designate the temp folder, if the user wants the location specified */
     public static final String TEMP_FOLDER_FLAG = "tempfolder.flag";
 
+    /** Squashfs games path for NES-based consoles */
+    public static final String NES_SQUASHFS_GAMES_PATH = "/var/squashfs/usr/share/games/nes/kachikachi";
+
+    /** Squashfs games path for SNES-based consoles */
+    public static final String SNES_SQUASHFS_GAMES_PATH = "/var/squashfs/usr/share/games";
+
     //////////////////////////////////////////////////////////////////////////
     // Non-static members
     //////////////////////////////////////////////////////////////////////////

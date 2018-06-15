@@ -40,27 +40,27 @@ import java.time.LocalDate;
 @Table(name = "games_and_folders")
 public class Application implements Externalizable {
 
-    private static final long serialVersionUID = 1L;
+    protected static final long serialVersionUID = 1L;
 
-    private LongProperty id;
-    private StringProperty commandLine;
-    private StringProperty savePath;
-    private StringProperty applicationName;
-    private StringProperty boxArtPath;
-    private StringProperty applicationId;
-    private IntegerProperty testId;
-    private IntegerProperty canoeId;
-    private BooleanProperty singlePlayer;
-    private BooleanProperty nonSimultaneousMultiplayer;
-    private BooleanProperty simultaneousMultiplayer;
-    private ObjectProperty<LocalDate> releaseDate;
-    private IntegerProperty saveCount;
-    private StringProperty sortName;
-    private StringProperty publisher;
-    private StringProperty copyright;
-    private LongProperty applicationSize;
-    private BooleanProperty compressed;
-    private StringProperty applicationSizeString;
+    protected LongProperty id;
+    protected StringProperty commandLine;
+    protected StringProperty savePath;
+    protected StringProperty applicationName;
+    protected StringProperty boxArtPath;
+    protected StringProperty applicationId;
+    protected IntegerProperty testId;
+    protected IntegerProperty canoeId;
+    protected BooleanProperty singlePlayer;
+    protected BooleanProperty nonSimultaneousMultiplayer;
+    protected BooleanProperty simultaneousMultiplayer;
+    protected ObjectProperty<LocalDate> releaseDate;
+    protected IntegerProperty saveCount;
+    protected StringProperty sortName;
+    protected StringProperty publisher;
+    protected StringProperty copyright;
+    protected LongProperty applicationSize;
+    protected BooleanProperty compressed;
+    protected StringProperty applicationSizeString;
 
     public Application() {
         this.id = new SimpleLongProperty(this, "id");
